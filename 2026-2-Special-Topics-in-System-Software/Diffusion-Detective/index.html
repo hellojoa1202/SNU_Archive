@@ -2,6 +2,6 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Diffusion Detective</title></head>
 <body><script>
 const requested=new URLSearchParams(location.search).get('lang');
-const target=new URL((requested==='ko'?'Korean/':'English/')+(location.protocol==='file:'?'index.html':''),location.href);
+const target=new URL((requested==='ko'?'Korean%20ver/':'English%20ver/')+(location.protocol==='file:'?'index.html':''),location.href);
 target.search=location.search;target.hash=location.hash;location.replace(target);
-</script><noscript><a href="English/">English</a> · <a href="Korean/">한국어</a></noscript></body></html>
+</script><noscript><a href="English%20ver/">English ver</a> · <a href="Korean%20ver/">Korean ver</a></noscript></body></html>

@@ -1,4 +1,4 @@
-/* English is the submission default; Korean has its own Korean/ entry point.
+/* English is the submission default; Korean has its own Korean ver/ entry point.
    Both views use the same DOM, controls, equations, and numerical model. */
 (function(){
   'use strict';
@@ -206,7 +206,7 @@
   "SNU · SPECIAL TOPICS IN SYSTEM SOFTWARE · 2026": "서울대학교 · 시스템소프트웨어특강 · 2026"
 };
   const requested=new URLSearchParams(location.search).get('lang');
-  let language=requested==='ko'||(requested!=='en'&&/\/Korean\/(?:index\.html)?$/.test(location.pathname))?'ko':'en';
+  let language=requested==='ko'||(requested!=='en'&&/\/Korean(?:%20| )ver\/(?:index\.html)?$/.test(location.pathname))?'ko':'en';
   const textNodes=[],attributes=[];
   const walker=document.createTreeWalker(document.documentElement,NodeFilter.SHOW_TEXT);
   while(walker.nextNode()){
@@ -237,7 +237,7 @@
     const offset=section?scrollY-section.offsetTop:scrollY;
     language=next;
     const url=new URL(location.href);
-    url.pathname=url.pathname.replace(/\/(English|Korean)\/(?:index\.html)?$/,(next==='ko'?'/Korean/':'/English/')+(url.pathname.endsWith('/index.html')?'index.html':''));
+    url.pathname=url.pathname.replace(/\/(English|Korean)(?:%20| )ver\/(?:index\.html)?$/,(next==='ko'?'/Korean%20ver/':'/English%20ver/')+(url.pathname.endsWith('/index.html')?'index.html':''));
     url.searchParams.delete('lang');
     if(location.protocol==='file:'){url.pathname=location.pathname;url.searchParams.set('lang',next);}
     history.replaceState(null,'',url);
