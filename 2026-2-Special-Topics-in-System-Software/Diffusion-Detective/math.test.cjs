@@ -54,7 +54,7 @@ test('score-based simulations use the same prior and approximate target moments'
 
 test('English and Korean prose stay paired without duplicating equations or controls',()=>{
   const fs=require('node:fs'),path=require('node:path');
-  const html=fs.readFileSync(path.join(__dirname,'index.html'),'utf8');
+  const html=fs.readFileSync(path.join(__dirname,'English','index.html'),'utf8');
   const source=fs.readFileSync(path.join(__dirname,'i18n.js'),'utf8');
   const translations=JSON.parse(source.split('const prose=')[1].split(';\n  const ui=')[0]);
   const blocks=[...html.matchAll(/<([a-z0-9]+)\b[^>]*data-i18n="([^"]+)"[^>]*>([\s\S]*?)<\/\1>/g)];
@@ -64,5 +64,14 @@ test('English and Korean prose stay paired without duplicating equations or cont
     assert.ok(/[가-힣]/.test(translations[key].ko),`Korean prose missing: ${key}`);
     assert.ok(!/<(?:input|select|math)\b/.test(translations[key].ko),'shared controls and math remain outside prose translation');
   }
-  assert.ok(html.indexOf('src="i18n.js"')<html.indexOf('src="app.js"'));
+  assert.ok(html.indexOf('src="../i18n.js"')<html.indexOf('src="../app.js"'));
+});
+
+
+test('language folders share identical experiments and reference the same assets',()=>{
+  const fs=require('node:fs'),path=require('node:path');
+  const english=fs.readFileSync(path.join(__dirname,'English','index.html'),'utf8');
+  const korean=fs.readFileSync(path.join(__dirname,'Korean','index.html'),'utf8');
+  assert.equal(korean.replace('<html lang="ko">','<html lang="en">'),english);
+  for(const filename of ['app.js','math.js','i18n.js','style.css'])assert.ok(english.includes('"../'+filename+'"'));
 });
