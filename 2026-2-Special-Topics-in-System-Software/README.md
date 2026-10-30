@@ -10,3 +10,5 @@
 </table>
 
 <p><sub><a href="https://hellojoa1202.github.io/SNU_Archive/2026-2-Special-Topics-in-System-Software/Diffusion-Detective/">프로젝트 실행 ↗</a></sub></p>
+
+<p><sub><a href="https://hellojoa1202.github.io/SNU_Archive/2026-2-Special-Topics-in-System-Software/Diffusion-Detective/?lang=ko">한국어 검토 버전 ↗</a></sub></p>

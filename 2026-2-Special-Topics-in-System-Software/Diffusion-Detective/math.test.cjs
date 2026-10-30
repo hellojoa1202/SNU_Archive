@@ -51,3 +51,18 @@ test('score-based simulations use the same prior and approximate target moments'
   const fixed=M.simulate(c,0,20,3,64);
   for(let i=0;i<64;i++){near(fixed.ode[0][i],fixed.ode[20][i]);near(fixed.sde[0][i],fixed.sde[20][i]);}
 });
+
+test('English and Korean prose stay paired without duplicating equations or controls',()=>{
+  const fs=require('node:fs'),path=require('node:path');
+  const html=fs.readFileSync(path.join(__dirname,'index.html'),'utf8');
+  const source=fs.readFileSync(path.join(__dirname,'i18n.js'),'utf8');
+  const translations=JSON.parse(source.split('const prose=')[1].split(';\n  const ui=')[0]);
+  const blocks=[...html.matchAll(/<([a-z0-9]+)\b[^>]*data-i18n="([^"]+)"[^>]*>([\s\S]*?)<\/\1>/g)];
+  assert.equal(blocks.length,Object.keys(translations).length);
+  for(const [,tag,key,english] of blocks){
+    assert.equal(translations[key].en,english,`English prose drift: ${key}`);
+    assert.ok(/[가-힣]/.test(translations[key].ko),`Korean prose missing: ${key}`);
+    assert.ok(!/<(?:input|select|math)\b/.test(translations[key].ko),'shared controls and math remain outside prose translation');
+  }
+  assert.ok(html.indexOf('src="i18n.js"')<html.indexOf('src="app.js"'));
+});

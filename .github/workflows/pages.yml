@@ -31,6 +31,7 @@ jobs:
         working-directory: 2026-2-Special-Topics-in-System-Software/Diffusion-Detective
         run: |
           node --check app.js
+          node --check i18n.js
           node --check math.js
           node --test math.test.cjs
       - name: Assemble website and preserve previous links
@@ -39,6 +40,7 @@ jobs:
           mkdir -p "$site_project"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/index.html "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/app.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/i18n.js "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/math.js "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/style.css "$site_project/"
           printf '%s\n' '<!doctype html><html lang="ko"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=2026-2-Special-Topics-in-System-Software/Diffusion-Detective/"><title>SNU Archive</title><a href="2026-2-Special-Topics-in-System-Software/Diffusion-Detective/">Diffusion Detective</a></html>' > _site/index.html
@@ -52,7 +54,7 @@ jobs:
           project = Path('_site/2026-2-Special-Topics-in-System-Software/Diffusion-Detective')
           page = project / 'index.html'
           html = page.read_text()
-          for filename in ['app.js', 'math.js', 'style.css']:
+          for filename in ['app.js', 'math.js', 'i18n.js', 'style.css']:
               digest = sha256((project / filename).read_bytes()).hexdigest()[:12]
               html = html.replace('"' + filename + '"', '"' + filename + '?v=' + digest + '"')
           page.write_text(html)

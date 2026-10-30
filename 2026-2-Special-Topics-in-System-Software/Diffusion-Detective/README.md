@@ -5,6 +5,10 @@
 <p><sub>An interactive essay on spectral diffusion, inverse problems, regularization, and score-based sampling.</sub></p>
 <p><sub><a href="https://hellojoa1202.github.io/SNU_Archive/2026-2-Special-Topics-in-System-Software/Diffusion-Detective/">Open the experiments ↗</a> · <a href="../">Course archive</a></sub></p>
 
+<p><sub><strong>Languages · 언어</strong></sub></p>
+<p><sub><a href="https://hellojoa1202.github.io/SNU_Archive/2026-2-Special-Topics-in-System-Software/Diffusion-Detective/">English · submission</a> / <a href="https://hellojoa1202.github.io/SNU_Archive/2026-2-Special-Topics-in-System-Software/Diffusion-Detective/?lang=ko">한국어 · 검토용</a>. Use the header language switch to change languages while keeping the experiment and puzzle state. The plain URL always defaults to English.</sub></p>
+<p><sub>한국어 화면을 보고 피드백을 주면 영어·한국어 본문과 동적 설명을 함께 수정합니다. 두 버전은 동일한 수식, 계산 코드, 실험을 공유합니다.</sub></p>
+
 <p><sub><strong>Getting started</strong></sub></p>
 <p><sub>Open <code>index.html</code> in a browser. No installation, build step, account, or external library is needed. Equations use native MathML. The essay follows a continuous scroll, with experiments placed beside their mathematical context.</sub></p>
 <table>
@@ -29,8 +33,8 @@
 <p><sub>Fast high-frequency decay leads to exponential noise amplification under inversion. Regularization trades bias for variance. Reconstructions retain negative values and use independent vertical scales. Density inversion and score-based sampling are separate experiments. The sampling panels retain finite-sample and numerical integration error; agreement of continuous-time marginals does not imply identical paths or histograms. All distributional calculations are analytic, with no neural network training.</sub></p>
 
 <p><sub><strong>Files and validation</strong></sub></p>
-<p><sub><code>index.html</code>: essay and equations · <code>style.css</code>: responsive layout · <code>math.js</code>: Fourier model, filters, risk, score, and sampling · <code>app.js</code>: SVG plots and interaction · <code>math.test.cjs</code>: mathematical checks.</sub></p>
-<p><sub><code>node --test math.test.cjs</code> checks positivity, normalization, exact inversion, the heat semigroup, score derivatives, puzzle identifiability, expected risk against Monte Carlo estimates, and generated moments. The root GitHub Actions workflow runs checks and publishes the four web assets.</sub></p>
+<p><sub><code>index.html</code>: essay and equations · <code>style.css</code>: responsive layout · <code>math.js</code>: Fourier model, filters, risk, score, and sampling · <code>i18n.js</code>: shared bilingual text and language switching · <code>app.js</code>: SVG plots and interaction · <code>math.test.cjs</code>: mathematical checks.</sub></p>
+<p><sub><code>node --test math.test.cjs</code> checks positivity, normalization, exact inversion, the heat semigroup, score derivatives, puzzle identifiability, expected risk against Monte Carlo estimates, and generated moments. The root GitHub Actions workflow runs checks and publishes the five web assets.</sub></p>
 
 <p><sub><strong>References</strong></sub></p>
 <p><sub>Course lectures: Lecture 2 · Score-Based Perspective; Lecture 3 · Score SDE Framework; Lecture A · Differential Equations.<br><a href="https://the-principles-of-diffusion-models.github.io/#/blog">Tracing the Principles Behind Modern Diffusion Models</a> — reference for the scrolling equation-and-experiment format.<br><a href="https://arxiv.org/abs/2011.13456">Song et al., Score-Based Generative Modeling through Stochastic Differential Equations, ICLR 2021</a>.<br>Evans, Partial Differential Equations — heat equation.</sub></p>
