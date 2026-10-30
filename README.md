@@ -17,7 +17,7 @@
     <tr>
       <td><sub>2026-2</sub></td>
       <td><sub>시스템소프트웨어특강</sub></td>
-      <td><sub>Diffusion Detective: 퍼즐 조각의 위치 확산과 역과정</sub></td>
+      <td><sub>Diffusion Detective: 확산의 주파수 해석과 역과정</sub></td>
       <td><sub>개인</sub></td>
     </tr>
   </tbody>

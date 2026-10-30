@@ -1,44 +1,69 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const M=require('./math.js');
-const near=(a,b,tol=1e-9)=>assert.ok(Math.abs(a-b)<tol,`${a} ≈ ${b}`);
-test('grid eigenvectors are orthonormal and diagonalize the actual adjacency Laplacian',()=>{
- const m=M.create(6,4,2);
- for(let a=0;a<m.n;a++)for(let b=0;b<m.n;b++)near(m.modes[a].u.reduce((s,u,i)=>s+u*m.modes[b].u[i],0),a===b?1:0);
- for(const mode of m.modes){const Lu=new Float64Array(m.n);for(const [i,j]of m.edges){Lu[i]+=mode.u[i]-mode.u[j];Lu[j]+=mode.u[j]-mode.u[i];}for(let i=0;i<m.n;i++)near(Lu[i],mode.lambda*mode.u[i]);}
- const x=M.forward(m,.2,12);assert.ok(M.rms(M.fromModes(m,M.toModes(m,x)),x)<1e-12);
+const near=(a,b,tol=1e-10)=>assert.ok(Math.abs(a-b)<tol,`${a} ≈ ${b}`);
+
+test('all initial distributions are positive and preserve uniform mean',()=>{
+  for(const preset of ['asymmetric','twin','single'])for(const k of [4,9,16])for(const phase of [0,.3,2.4]){
+    const c=M.initial(preset,k,.18,phase);
+    assert.ok(Math.min(...M.sample(c,1025))>0);
+    near(Array.from({length:1024},(_,i)=>M.value(c,i/1024*M.TAU)).reduce((a,b)=>a+b,0)/1024,1);
+  }
 });
-test('displayed energy and covariance define the same prior; score is the log-density gradient',()=>{
- const m=M.create(6,4,3),x=M.forward(m,.001,18),z=M.toModes(m,x);
- near(M.energy(m,x),z.reduce((s,v,i)=>s+v*v/(2*m.v0[Math.floor(i/2)]),0),1e-8);
- for(const time of [0,.08]){const score=M.score(m,x,time),h=1e-7;for(const i of [0,5,19,37]){const plus=Float64Array.from(x),minus=Float64Array.from(x);plus[i]+=h;minus[i]-=h;near(score[i],(M.logDensity(m,plus,time)-M.logDensity(m,minus,time))/(2*h),.0001);}}
+test('heat semigroup, exact inverse, and phase translation',()=>{
+  const c=M.initial('asymmetric',9,.14,.3),clean=M.forward(c,.025);
+  assert.ok(M.error(M.restore(clean,.025,24,0,'cutoff'),c)<1e-12);
+  assert.ok(M.error(M.forward(M.forward(c,.02),.03),M.forward(c,.05))<1e-12);
+  const base=M.initial('asymmetric',9,.14,0);
+  near(M.value(c,1.5),M.value(base,1.5-.3));
 });
-test('forward samples have graph-mode covariance v0 + 2Dt',()=>{
- const m=M.create(3,2,2),time=.15,count=6000,sum=new Float64Array(12),square=new Float64Array(12);
- for(let seed=1;seed<=count;seed++){const z=M.toModes(m,M.forward(m,time,seed));for(let i=0;i<12;i++){sum[i]+=z[i];square[i]+=z[i]**2;}}
- for(let i=0;i<12;i++){assert.ok(Math.abs(sum[i]/count)<.015);assert.ok(Math.abs(square[i]/count/(m.v0[Math.floor(i/2)]+2*M.D*time)-1)<.06);}
+test('exact score equals the derivative of log density',()=>{
+  const c=M.forward(M.initial('twin',12,.18,.5),.04),h=1e-6;
+  for(let x=.1;x<6;x+=.17)near(M.score(c,x),(Math.log(M.value(c,x+h))-Math.log(M.value(c,x-h)))/(2*h),1e-8);
 });
-test('exact reverse ODE solves the covariance flow and both processes preserve Gaussian target marginals',()=>{
- const m=M.create(3,2,2),time=.2,counts=4000,sums={ode:0,sde:0};
- for(let seed=1;seed<=counts;seed++){const start=M.forward(m,time,seed),sim=M.simulate(m,start,time,16,seed);
+test('bias variance risk matches Monte Carlo squared L2 error',()=>{
+  const c=M.initial('asymmetric',9,.14,0),T=.04,eps=.003,lambda=.001;
+  const r=M.risk(c,T,eps,24,lambda,'tikhonov');let total=0;
+  for(let seed=1;seed<=6000;seed++)total+=M.error(M.restore(M.observe(c,T,eps,seed),T,24,lambda,'tikhonov'),c)**2;
+  assert.ok(Math.abs(total/6000-r.rmse**2)/(r.rmse**2)<.03);
+  near(r.rmse**2,r.bias2+r.variance);
+  const raw=M.restore(M.observe(c,T,eps,7),T,24,0,'cutoff');
+  const reg=M.restore(M.observe(c,T,eps,7),T,24,lambda,'tikhonov');
+  assert.ok(M.error(reg,c)<M.error(raw,c));
+});
+test('score-based simulations use the same prior and approximate target moments',()=>{
+  const c=M.initial('twin',6,.12,.2),sim=M.simulate(c,.05,160,7,2048);
   assert.deepEqual(sim.ode[0],sim.sde[0]);
-  if(seed===1){for(let j=0;j<sim.times.length;j++)assert.ok(M.rms(M.fromModes(m,sim.ode[j]),M.exactODE(m,start,sim.times[j],time))<1e-12);}
-  for(const type of ['ode','sde'])for(let i=0;i<12;i++)sums[type]+=sim[type][16][i]**2/m.v0[Math.floor(i/2)];
- }
- for(const type of ['ode','sde'])assert.ok(Math.abs(sums[type]/(12*counts)-1)<.035);
+  assert.ok(M.momentError(sim.ode[160],c)<.2);
+  assert.ok(M.momentError(sim.sde[160],c)<.2);
+  for(const type of ['ode','sde']){
+    const xs=sim[type][160];assert.ok(xs.every(x=>x>=0&&x<M.TAU));
+    near(M.histogram(xs).reduce((s,v)=>s+v,0)/32,1);
+  }
+  const fixed=M.simulate(c,0,20,3,64);
+  for(let i=0;i<64;i++){near(fixed.ode[0][i],fixed.ode[20][i]);near(fixed.sde[0][i],fixed.sde[20][i]);}
 });
-test('Euler converges to exact ODE, and all 150-piece configurations stay finite without snapping',()=>{
- const m=M.create(15,10,8),start=M.forward(m,.8,12),exact=M.exactODE(m,start,0,.8);let prev=Infinity;
- for(const steps of [16,64,256]){const sim=M.simulate(m,start,.8,steps,12,'euler'),x=M.fromModes(m,sim.ode[steps]),err=M.rms(x,exact);assert.ok(err<prev);prev=err;for(const type of ['sde','ode'])assert.ok(sim[type].every(xs=>xs.every(Number.isFinite)));}
- const sim=M.simulate(m,start,.8,64,12),end=M.fromModes(m,sim.ode[64]);assert.ok(M.seamError(m,end)<M.seamError(m,start));assert.ok(M.rms(end,m.mu)>0);
- const zero=M.simulate(m,m.mu,0,16,12);for(const type of ['ode','sde'])assert.ok(M.rms(M.fromModes(m,zero[type][16]),m.mu)<1e-12);
+
+test('English and Korean prose stay paired without duplicating equations or controls',()=>{
+  const fs=require('node:fs'),path=require('node:path');
+  const html=fs.readFileSync(path.join(__dirname,'English ver','index.html'),'utf8');
+  const source=fs.readFileSync(path.join(__dirname,'i18n.js'),'utf8');
+  const translations=JSON.parse(source.split('const prose=')[1].split(';\n  const ui=')[0]);
+  const blocks=[...html.matchAll(/<([a-z0-9]+)\b[^>]*data-i18n="([^"]+)"[^>]*>([\s\S]*?)<\/\1>/g)];
+  assert.equal(blocks.length,Object.keys(translations).length);
+  for(const [,tag,key,english] of blocks){
+    assert.equal(translations[key].en,english,`English prose drift: ${key}`);
+    assert.ok(/[가-힣]/.test(translations[key].ko),`Korean prose missing: ${key}`);
+    assert.ok(!/<(?:input|select|math)\b/.test(translations[key].ko),'shared controls and math remain outside prose translation');
+  }
+  assert.ok(html.indexOf('src="../i18n.js"')<html.indexOf('src="../app.js"'));
 });
-test('English and Korean entries share experiments, assets, and paired concise copy',()=>{
- const fs=require('node:fs'),path=require('node:path');
- const en=fs.readFileSync(path.join(__dirname,'English ver/index.html'),'utf8'),ko=fs.readFileSync(path.join(__dirname,'Korean ver/index.html'),'utf8');
- assert.equal(en,ko.replace('<html lang="ko">','<html lang="en">'));
- const source=fs.readFileSync(path.join(__dirname,'i18n.js'),'utf8'),copy=JSON.parse(source.split('const prose=')[1].split(';\nconst query=')[0]);
- for(const [,tag,key,text]of en.matchAll(/<([a-z0-9]+)\b[^>]*data-i18n="([^"]+)"[^>]*>([\s\S]*?)<\/\1>/g)){assert.equal(copy[key].en,text,key);assert.ok(copy[key].ko);assert.ok(!/<(?:input|select|canvas)\b/.test(copy[key].ko));}
- for(const asset of ['app.js','math.js','i18n.js','style.css'])assert.ok(en.includes('"../'+asset+'"'));
- assert.ok(!en.includes('puzzle-0-options'));
+
+
+test('language folders share identical experiments and reference the same assets',()=>{
+  const fs=require('node:fs'),path=require('node:path');
+  const english=fs.readFileSync(path.join(__dirname,'English ver','index.html'),'utf8');
+  const korean=fs.readFileSync(path.join(__dirname,'Korean ver','index.html'),'utf8');
+  assert.equal(korean.replace('<html lang="ko">','<html lang="en">'),english);
+  for(const filename of ['app.js','math.js','i18n.js','style.css'])assert.ok(english.includes('"../'+filename+'"'));
 });

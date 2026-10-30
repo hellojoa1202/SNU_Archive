@@ -33,7 +33,10 @@ jobs:
           node --check app.js
           node --check i18n.js
           node --check math.js
-          node --test math.test.cjs
+          node --check puzzle.js
+          node --check puzzle-math.js
+          node --check equations.js
+          node --test math.test.cjs puzzle.test.cjs
       - name: Assemble website and preserve previous links
         run: |
           site_project="_site/2026-2-Special-Topics-in-System-Software/Diffusion-Detective"
@@ -43,6 +46,10 @@ jobs:
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/i18n.js "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/math.js "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/style.css "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/puzzle.css "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/puzzle.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/puzzle-math.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/equations.js "$site_project/"
           cp -R "2026-2-Special-Topics-in-System-Software/Diffusion-Detective/English ver" "$site_project/"
           cp -R "2026-2-Special-Topics-in-System-Software/Diffusion-Detective/Korean ver" "$site_project/"
           printf '%s\n' '<!doctype html><html lang="ko"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=2026-2-Special-Topics-in-System-Software/Diffusion-Detective/"><title>SNU Archive</title><a href="2026-2-Special-Topics-in-System-Software/Diffusion-Detective/">Diffusion Detective</a></html>' > _site/index.html
@@ -61,7 +68,7 @@ jobs:
           for folder in ['English ver', 'Korean ver']:
               page = project / folder / 'index.html'
               html = page.read_text()
-              for filename in ['app.js', 'math.js', 'i18n.js', 'style.css']:
+              for filename in ['app.js', 'math.js', 'i18n.js', 'style.css', 'puzzle.css', 'puzzle.js', 'puzzle-math.js', 'equations.js']:
                   digest = sha256((project / filename).read_bytes()).hexdigest()[:12]
                   html = html.replace('"../' + filename + '"', '"../' + filename + '?v=' + digest + '"')
               page.write_text(html)

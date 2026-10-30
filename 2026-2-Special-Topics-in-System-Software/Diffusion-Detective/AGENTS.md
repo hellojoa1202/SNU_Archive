@@ -10,5 +10,7 @@
 - The project README contains only two execution links, Korean and English. The archive root README stays a plain EWHA-style table without links. The course README is only its small course title.
 - Deploy through this repository's GitHub Pages workflow. Do not update a Sites copy unless requested.
 
-- The demo is a continuous-position jigsaw with a graph-Gaussian prior, not a multiple-choice quiz. Keep the known-reference assumption explicit.
+- Preserve the Fourier, inverse-filter, bias–variance and circle SDE/ODE explanations and experiments. The jigsaw is an additional graph-Gaussian experiment in section 04, replacing the old quiz only. Keep its known-reference assumption explicit.
 - Highlight the affected equation terms when controls change. Show actual numerical positions without snapping.
+
+- Use compact typography and impersonal descriptive prose in both languages. Korean uses concise declarative forms such as “감소한다”, not conversational endings or invitations. Do not replace the page structure during local revisions.
