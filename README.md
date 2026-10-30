@@ -1,4 +1,4 @@
-### SNU Archive
+<p><sub><strong>SNU Archive</strong></sub></p>
 
 ---
 
@@ -17,8 +17,10 @@
     <tr>
       <td><sub>2026-2</sub></td>
       <td><sub><a href="2026-2-Special-Topics-in-System-Software">시스템소프트웨어특강</a></sub></td>
-      <td><sub><a href="https://hellojoa1202.github.io/SNU_Archive/2026-2-Special-Topics-in-System-Software/">Diffusion Detective: 확산으로 지워진 정보의 복원과 한계</a></sub></td>
+      <td><sub><a href="2026-2-Special-Topics-in-System-Software/Diffusion-Detective">Diffusion Detective: 확산으로 지워진 정보의 복원과 한계</a></sub></td>
       <td><sub>개인</sub></td>
     </tr>
   </tbody>
 </table>
+
+<p><sub><a href="https://hellojoa1202.github.io/SNU_Archive/2026-2-Special-Topics-in-System-Software/Diffusion-Detective/">프로젝트 실행 ↗</a></sub></p>

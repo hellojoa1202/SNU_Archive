@@ -22,29 +22,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
       - name: Verify JavaScript and mathematics
-        working-directory: 2026-2-Special-Topics-in-System-Software
+        working-directory: 2026-2-Special-Topics-in-System-Software/Diffusion-Detective
         run: |
-          node --check dist/app.js
-          node --check dist/math.js
-          node --test tests/math.test.cjs
-      - name: Assemble archive website
+          node --check app.js
+          node --check math.js
+          node --test math.test.cjs
+      - name: Assemble website and preserve previous links
         run: |
-          mkdir -p _site/2026-2-Special-Topics-in-System-Software
-          cp index.html _site/index.html
-          cp -R 2026-2-Special-Topics-in-System-Software/dist/. _site/2026-2-Special-Topics-in-System-Software/
+          site_project="_site/2026-2-Special-Topics-in-System-Software/Diffusion-Detective"
+          mkdir -p "$site_project"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/index.html "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/app.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/math.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/style.css "$site_project/"
+          printf '%s\n' '<!doctype html><html lang="ko"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=2026-2-Special-Topics-in-System-Software/Diffusion-Detective/"><title>SNU Archive</title><a href="2026-2-Special-Topics-in-System-Software/Diffusion-Detective/">Diffusion Detective</a></html>' > _site/index.html
+          printf '%s\n' '<!doctype html><html lang="ko"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=Diffusion-Detective/"><title>Diffusion Detective</title><a href="Diffusion-Detective/">Diffusion Detective</a></html>' > _site/2026-2-Special-Topics-in-System-Software/index.html
           touch _site/.nojekyll
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Upload website
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: _site
       - name: Deploy website
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
