@@ -44,6 +44,19 @@ jobs:
           printf '%s\n' '<!doctype html><html lang="ko"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=2026-2-Special-Topics-in-System-Software/Diffusion-Detective/"><title>SNU Archive</title><a href="2026-2-Special-Topics-in-System-Software/Diffusion-Detective/">Diffusion Detective</a></html>' > _site/index.html
           printf '%s\n' '<!doctype html><html lang="ko"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=Diffusion-Detective/"><title>Diffusion Detective</title><a href="Diffusion-Detective/">Diffusion Detective</a></html>' > _site/2026-2-Special-Topics-in-System-Software/index.html
           touch _site/.nojekyll
+      - name: Version browser assets by content
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from hashlib import sha256
+          project = Path('_site/2026-2-Special-Topics-in-System-Software/Diffusion-Detective')
+          page = project / 'index.html'
+          html = page.read_text()
+          for filename in ['app.js', 'math.js', 'style.css']:
+              digest = sha256((project / filename).read_bytes()).hexdigest()[:12]
+              html = html.replace('"' + filename + '"', '"' + filename + '?v=' + digest + '"')
+          page.write_text(html)
+          PY
       - name: Configure Pages
         uses: actions/configure-pages@v6
       - name: Upload website
