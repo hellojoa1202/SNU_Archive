@@ -1,7 +1,7 @@
-/* Link a focused control to the corresponding terms in the main essay. */
+/* Focused interactions identify the terms they change. */
 (function(){
-const mapping={sigma:'sigma',scheme:'scheme',y:'y',h:'h',u:'u'};
-function activate(key){document.querySelectorAll('[data-link]').forEach(el=>el.classList.toggle('active',el.dataset.link.split(' ').includes(key)));}
-for(const [id,key] of Object.entries(mapping))document.getElementById(id).addEventListener('focus',()=>activate(key));
-document.querySelectorAll('[data-link]').forEach(el=>el.addEventListener('pointerenter',()=>activate(el.dataset.link.split(' ')[0])));
+for(const e of document.querySelectorAll('.time-control'))e.addEventListener('focus',()=>FlowLab.highlight('time'));
+for(const e of document.querySelectorAll('.piece-select,#destination'))e.addEventListener('focus',()=>FlowLab.highlight('connection'));
+document.getElementById('budget').addEventListener('focus',()=>FlowLab.highlight('budget'));
+document.querySelectorAll('[data-link]').forEach(e=>e.addEventListener('pointerenter',()=>FlowLab.highlight(e.dataset.link.split(' ')[0])));
 })();

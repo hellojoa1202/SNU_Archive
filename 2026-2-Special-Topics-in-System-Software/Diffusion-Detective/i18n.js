@@ -1,423 +1,205 @@
-/* Shared paired prose. Numerical computation is language-independent. */
-(function(){
-'use strict';
-  const prose={
-  "nav-geometry": {
-    "en": "Covariance & Jacobian",
-    "ko": "공분산과 Jacobian"
+/* Paired prose; numerical state is independent of language. */
+(function(){'use strict';
+const prose={
+  "nav-coupling": {
+    "en": "Design a coupling",
+    "ko": "이동 계획"
   },
-  "nav-sensitivity": {
-    "en": "Local sensitivity",
-    "ko": "국소 민감도"
+  "nav-velocity": {
+    "en": "Average the directions",
+    "ko": "평균 속도장"
   },
-  "nav-posterior": {
-    "en": "Optimality & validity",
-    "ko": "최적성과 샘플 타당성"
+  "nav-transport": {
+    "en": "Follow the flow",
+    "ko": "분포와 경로"
   },
-  "nav-puzzle": {
-    "en": "Predictor error · puzzle",
-    "ko": "예측기 오차와 퍼즐"
-  },
-  "nav-notes": {
-    "en": "Scope & references",
-    "ko": "범위와 참고문헌"
+  "nav-solver": {
+    "en": "Compute the path",
+    "ko": "수치 계산"
   },
   "hero-title": {
-    "en": "When optimal denoising<br><span>amplifies perturbations.</span>",
-    "ko": "최적의 복원은<br><span>언제 변화를 증폭할까?</span>"
+    "en": "Same destination.<br><span>Different flows.</span>",
+    "ko": "같은 도착 분포.<br><span>다른 이동 경로.</span>"
   },
   "hero-lead": {
-    "en": "Posterior covariance, denoiser Jacobians, and the limits of minimum-MSE reconstruction.",
-    "ko": "사후 공분산, 복원 함수의 Jacobian, 최소 MSE 복원의 한계."
+    "en": "Design the connections. Build a velocity field. Trace what actually moves.",
+    "ko": "연결을 설계하고, 속도장을 구성하고, 실제 이동을 추적한다."
   },
   "hero-question": {
-    "en": "A Bayes-optimal denoiser minimizes reconstruction error. Does it also suppress small changes in the observation? The answer is controlled by posterior uncertainty.",
-    "ko": "Bayes 최적 복원기는 복원 오차를 최소화한다. 관측값의 작은 변화도 항상 억제할까? 그 답은 사후 불확실성에 의해 결정된다."
+    "en": "A coupling assigns destinations to starting points. A flow sees only the current position and time. This distinction changes the paths—even when the endpoint distributions stay the same.",
+    "ko": "결합은 출발점에 목적지를 지정한다. 속도장은 현재 위치와 시간으로 이동을 결정한다. 두 방식은 출발·도착 분포가 같아도 서로 다른 경로를 만들 수 있다."
   },
   "hero-meta": {
-    "en": "Starting point: DDPM/NCSN prediction identities · extension: local sensitivity",
-    "ko": "출발점: DDPM·NCSN 예측 관계식 · 확장: 국소 민감도"
-  },
-  "geometry-number": {
-    "en": "01 / ESTIMATOR GEOMETRY",
-    "ko": "01 / 복원 함수의 기하"
-  },
-  "geometry-title": {
-    "en": "From Tweedie’s identity to a covariance Jacobian",
-    "ko": "Tweedie 공식에서 공분산 Jacobian으로"
-  },
-  "geometry-start": {
-    "en": "Fix a noise level: y = ax₀ + σε with a > 0 and ε ∼ 𝒩(0, I). Write D(y) = E[x₀ | y], ε*(y) = E[ε | y], and s*(y) = ∇ log p(y). Starting from the lecture’s prediction identities, differentiate D with respect to its observation.",
-    "ko": "한 노이즈 수준에서 y = ax₀ + σε, a > 0, ε ∼ 𝒩(0, I)로 둔다. D(y) = E[x₀ | y], ε*(y) = E[ε | y], s*(y) = ∇ log p(y)로 쓴다. 강의의 예측 관계식을 출발점으로 D를 관측값에 대해 미분한다."
-  },
-  "geometry-theorem": {
-    "en": "The local response of the optimal denoiser is determined by its posterior covariance:",
-    "ko": "최적 복원기의 국소 반응은 사후 공분산으로 결정된다."
-  },
-  "geometry-meaning": {
-    "en": "For a unit direction v, the directional gain vᵀJ_Dv equals (a/σ²) Var(vᵀx₀ | y). An unresolved direction in the posterior can therefore become an amplified direction in the output. Minimum MSE does not imply a contraction.",
-    "ko": "단위 방향 v의 증폭률 vᵀJ_Dv는 (a/σ²) Var(vᵀx₀ | y)이다. 사후분포에서 결정되지 않은 방향은 출력 변화가 증폭되는 방향이 될 수 있다. 최소 MSE라는 성질만으로 수축성이 보장되지는 않는다."
-  },
-  "geometry-proof-title": {
-    "en": "Derivation from the posterior score",
-    "ko": "사후분포의 score를 이용한 유도"
-  },
-  "geometry-proof-text": {
-    "en": "Differentiate under the posterior integral. Gaussian smoothing and finite conditional second moments justify the identity under the usual integrability conditions. The result applies to a general prior; the next experiment uses a finite prior so every term can be checked exactly.",
-    "ko": "사후분포 적분을 미분하면 위 관계를 얻는다. 가우시안 평활화와 유한 조건부 이차 모멘트 아래에서 통상적인 적분 가능 조건을 가정한다. 관계식은 일반 사전분포에 적용되며, 다음 실험에서는 각 항을 정확히 확인할 수 있는 유한 사전분포를 사용한다."
-  },
-  "geometry-credit": {
-    "en": "Extension of lecture 2’s Tweedie formula; derivative identity:",
-    "ko": "강의 2의 Tweedie 공식에서 확장한 분석 · 미분 관계식:"
-  },
-  "sensitivity-number": {
-    "en": "02 / LOCAL SENSITIVITY",
-    "ko": "02 / 국소 민감도"
-  },
-  "sensitivity-title": {
-    "en": "Measure the response to an observation perturbation",
-    "ko": "관측값의 작은 변화가 출력에 미치는 영향"
-  },
-  "sensitivity-model": {
-    "en": "Use the symmetric prior P(x₀ = ±1) = 1/2 as an exact stress test. Its posterior mean and derivative are available in closed form:",
-    "ko": "대칭 사전분포 P(x₀ = ±1) = 1/2로 민감도를 정확히 분석한다. 사후평균과 미분은 다음과 같다."
-  },
-  "scheme-label": {
-    "en": "Amplitude convention",
-    "ko": "신호 진폭 설정"
-  },
-  "sigma-label": {
-    "en": "Noise level σ",
-    "ko": "노이즈 수준 σ"
-  },
-  "y-label": {
-    "en": "Base observation y",
-    "ko": "기준 관측값 y"
-  },
-  "h-label": {
-    "en": "Observation perturbation h",
-    "ko": "관측 변화 h"
-  },
-  "curve-caption": {
-    "en": "Solid: D(y). Dashed: tangent at the selected observation. Dots: y and y+h.",
-    "ko": "실선: D(y). 점선: 선택한 관측점의 접선. 두 점: y와 y+h."
-  },
-  "gain-caption": {
-    "en": "The shaded interval has D′(y) > 1. The scale follows the peak derivative.",
-    "ko": "음영 구간은 D′(y) > 1인 영역이다. 세로 눈금은 미분의 최댓값에 맞춘다."
-  },
-  "gain-metric": {
-    "en": "Local gain D′(y)",
-    "ko": "국소 증폭률 D′(y)"
-  },
-  "variance-metric": {
-    "en": "Posterior variance",
-    "ko": "사후분산"
-  },
-  "curvature-metric": {
-    "en": "Score derivative s′(y)",
-    "ko": "Score의 미분 s′(y)"
-  },
-  "actual-change": {
-    "en": "Actual output change",
-    "ko": "실제 출력 변화"
-  },
-  "linear-change": {
-    "en": "Linear prediction D′(y)h",
-    "ko": "선형 예측 D′(y)h"
-  },
-  "linear-remainder": {
-    "en": "Linearization residual",
-    "ko": "선형 근사 잔차"
-  },
-  "finite-step-note": {
-    "en": "D′ is a local quantity. A finite h can cross the steep transition region, so its secant gain need not equal D′(y). Reducing h tests the linear approximation directly.",
-    "ko": "D′는 국소적인 양이다. 유한한 h는 급격한 전이 구간을 가로지를 수 있어 실제 증폭률이 D′(y)와 다를 수 있다. h를 줄이면 선형 근사의 정확도를 직접 확인할 수 있다."
-  },
-  "rare-event-title": {
-    "en": "Large local gain can be a rare event",
-    "ko": "큰 국소 증폭이 드문 사건일 수 있다"
-  },
-  "rare-event-copy": {
-    "en": "At y = 0, D′(0) = a/σ² grows as noise decreases. But y = 0 also lies between the clean modes and can become extremely unlikely. A large worst-case derivative is not the same as a large average reconstruction error.",
-    "ko": "y = 0에서 D′(0) = a/σ²는 노이즈가 줄어들수록 커진다. 반면 y = 0은 두 원본 모드 사이에 있어 매우 드문 관측이 될 수 있다. 최악의 국소 민감도와 평균적인 복원 오차는 같은 지표가 아니다."
-  },
-  "region-mass": {
-    "en": "P(D′(Y) > 1), integrated under p(y):",
-    "ko": "관측분포로 적분한 P(D′(Y) > 1):"
-  },
-  "posterior-number": {
-    "en": "03 / OPTIMALITY & VALIDITY",
-    "ko": "03 / 최적성과 타당한 샘플"
-  },
-  "posterior-title": {
-    "en": "Bayes optimality, stability, and valid samples are different",
-    "ko": "Bayes 최적성·안정성·샘플의 타당성은 다르다"
-  },
-  "posterior-intro": {
-    "en": "For the same posterior, compare three decisions: the conditional mean, a MAP estimate, and an independent posterior draw. They optimize different criteria. At the symmetric boundary, the mean is unsupported even though it has the smallest conditional MSE.",
-    "ko": "같은 사후분포에서 조건부 평균, MAP 추정, 독립적인 사후 샘플을 비교한다. 각 선택은 서로 다른 기준을 따른다. 대칭 경계에서는 평균이 데이터 지지집합에 없더라도 조건부 MSE가 가장 작다."
-  },
-  "posterior-shared": {
-    "en": "Uses the same σ and y as the sensitivity experiment",
-    "ko": "민감도 실험과 같은 σ, y 사용"
-  },
-  "ambiguous-label": {
-    "en": "Set y = 0",
-    "ko": "y = 0으로 설정"
-  },
-  "posterior-sample-label": {
-    "en": "Draw one candidate",
-    "ko": "후보 하나 뽑기"
-  },
-  "risk-intro": {
-    "en": "A candidate estimate u has two costs: its distance from the conditional mean, and the uncertainty that remains after observing y. Only the first can be reduced by choosing u.",
-    "ko": "추정값 u의 오차는 조건부 평균에서 벗어난 정도와 관측 후에도 남은 불확실성으로 나뉜다. u를 바꿔 줄일 수 있는 것은 첫 항이다."
-  },
-  "estimate-label": {
-    "en": "Candidate estimate u",
-    "ko": "추정값 u"
-  },
-  "risk-total": {
-    "en": "Conditional MSE",
-    "ko": "조건부 MSE"
-  },
-  "risk-excess": {
-    "en": "Distance penalty",
-    "ko": "평균과의 거리 비용"
-  },
-  "risk-floor": {
-    "en": "Remaining uncertainty",
-    "ko": "남은 불확실성"
-  },
-  "optimal-label": {
-    "en": "Use the conditional mean",
-    "ko": "조건부 평균으로 설정"
-  },
-  "mean-derive-title": {
-    "en": "Why the conditional mean minimizes MSE",
-    "ko": "조건부 평균이 MSE를 최소화하는 이유"
-  },
-  "mean-derive-text": {
-    "en": "The conditional mean has risk Var(x₀|y). For an independent posterior draw X̃₀, averaging over both X₀ and X̃₀ doubles that variance. For this binary prior the MAP risk is 2(1 − |D(y)|). A supported output and minimum MSE are distinct goals.",
-    "ko": "조건부 평균의 위험은 Var(x₀|y)이다. 사후분포에서 독립적으로 뽑은 X̃₀는 X₀와 X̃₀ 모두에 대해 평균하면 위험이 그 분산의 두 배가 된다. 이 이진 사전분포에서 MAP의 위험은 2(1 − |D(y)|)이다. 지지집합에 속하는 출력과 최소 MSE는 서로 다른 목표이다."
-  },
-  "mean-decision": {
-    "en": "Mean: conditional risk",
-    "ko": "평균의 조건부 위험"
-  },
-  "sample-decision": {
-    "en": "Posterior draw: expected risk",
-    "ko": "사후 샘플의 기대 위험"
-  },
-  "map-decision": {
-    "en": "MAP: conditional risk",
-    "ko": "MAP의 조건부 위험"
-  },
-  "jig-title": {
-    "en": "A puzzle of noise prediction",
-    "ko": "노이즈 예측으로 복원하는 퍼즐"
-  },
-  "prose-13": {
-    "en": "Observation sensitivity and predictor error are separate mechanisms. The experiments above differentiate the exact estimator with respect to y. This photographic puzzle holds an observation fixed and changes the error in its predicted noise.",
-    "ko": "관측값에 대한 민감도와 예측기 오차는 별개이다. 앞에서는 정확한 복원기를 y에 대해 미분했다. 사진 퍼즐에서는 관측을 고정한 채 예측한 노이즈의 오차를 바꾼다."
-  },
-  "jig-forward-copy": {
-    "en": "Noise moves the pieces; aₜ also contracts their positions toward the center. The photograph and the shapes of the pieces remain fixed.",
-    "ko": "노이즈가 조각을 흩뜨리고, aₜ는 위치를 중심 쪽으로 축소한다. 사진과 조각의 모양은 유지된다."
-  },
-  "jig-sigma-label": {
-    "en": "Noise level σₜ",
-    "ko": "노이즈 수준 σₜ"
-  },
-  "jig-error-label": {
-    "en": "Prediction error η",
-    "ko": "예측 오차 η"
-  },
-  "jig-pieces-label": {
-    "en": "Pieces",
-    "ko": "조각 수"
-  },
-  "jig-observed-title": {
-    "en": "NOISY OBSERVATION · xₜ",
-    "ko": "노이즈가 섞인 배치 · xₜ"
-  },
-  "jig-estimate-title": {
-    "en": "RECONSTRUCTED POSITIONS · x̂₀",
-    "ko": "추정한 원본 배치 · x̂₀"
-  },
-  "jig-shuffle": {
-    "en": "New noise",
-    "ko": "다른 노이즈"
-  },
-  "jig-perfect": {
-    "en": "Zero prediction error",
-    "ko": "예측 오차 0"
-  },
-  "jig-denoise-copy": {
-    "en": "Subtract the predicted noise, then undo the contraction. The orange outline marks the same piece in the reconstructed picture.",
-    "ko": "예측한 노이즈를 뺀 뒤 축소된 크기를 되돌린다. 주황색 윤곽은 추정 결과에서 같은 조각을 표시한다."
-  },
-  "jig-predictor": {
-    "en": "The predictor is a controlled simulation: ε̂ = ε + ηz, with independent standard-normal z. The slider changes its error, not a trained network. η = 0 uses the true injected noise as an ideal reference.",
-    "ko": "추정 노이즈는 ε̂ = ε + ηz로 구성한다. z는 독립적인 표준정규 난수이고, η로 예측 오차를 조절한다. 학습된 신경망 대신 예측 오차를 가정하는 실험이다. η = 0은 실제로 더한 노이즈를 사용하는 이상적인 기준이다."
-  },
-  "jig-error-title": {
-    "en": "Why the same error matters more at high noise",
-    "ko": "같은 예측 오차가 더 크게 나타나는 이유"
-  },
-  "jig-error-copy": {
-    "en": "If the prediction misses the noise by δ, the position error is multiplied by σₜ/aₜ. More noise means less signal, so a small prediction error can leave a visibly misaligned puzzle.",
-    "ko": "노이즈 예측이 δ만큼 틀리면 위치 오차에는 σₜ/aₜ가 곱해진다. 노이즈가 커지고 신호가 약해질수록 작은 예측 오차도 눈에 띄는 조각 어긋남으로 이어진다."
-  },
-  "jig-noise-rms": {
-    "en": "Noise prediction RMS",
-    "ko": "노이즈 예측 RMS"
-  },
-  "jig-gain-label": {
-    "en": "Amplification σₜ/aₜ",
-    "ko": "증폭률 σₜ/aₜ"
-  },
-  "jig-position-rms": {
-    "en": "Position RMS",
-    "ko": "위치 RMS"
-  },
-  "jig-detail-title": {
-    "en": "Derivation and connection to the lecture",
-    "ko": "수식 유도와 강의 내용 연결"
-  },
-  "jig-lecture": {
-    "en": "Lecture 1, “One model, three parameterizations” (slide 60/85), converts noise prediction into x-prediction. Here aₜ denotes the lecture’s ᾱₜ, and σₜ = √(1 − aₜ²). All formulas apply coordinate by coordinate.",
-    "ko": "강의 1의 “One model, three parameterizations”(60/85쪽)는 노이즈 예측과 원본 예측 사이의 변환을 다룬다. 여기서 aₜ는 강의의 ᾱₜ이고, σₜ = √(1 − aₜ²)이다. 모든 식은 각 좌표에 적용된다."
-  },
-  "jig-loss": {
-    "en": "Define SNR = aₜ²/σₜ². Then the squared reconstruction error is the squared noise-prediction error divided by SNR. Equal noise-prediction error at two noise levels need not imply equal reconstruction error.",
-    "ko": "SNR = aₜ²/σₜ²로 두면 원본 추정의 제곱오차는 노이즈 예측의 제곱오차를 SNR로 나눈 값이다. 서로 다른 노이즈 수준에서 예측 오차가 같아도 원본 추정 오차는 달라질 수 있다."
-  },
-  "jig-scope": {
-    "en": "A puzzle image supplies recognizable pieces; the calculation acts on their continuous positions. The known original and injected noise make the error measurable. This is a single noise level and one reconstruction identity, rather than a full generative sampler or an image-recognition puzzle solver.",
-    "ko": "사진은 조각을 구분하는 역할을 하고 계산 대상은 연속적인 조각 위치이다. 원본과 실제 노이즈를 알고 있어 오차를 측정할 수 있다. 한 노이즈 수준에서의 추정식을 다루며 전체 생성 샘플러나 그림 인식 기반 퍼즐 풀이를 구현한 것은 아니다."
-  },
-  "jig-seed-label": {
-    "en": "Random seed",
-    "ko": "난수 시드"
-  },
-  "prose-14": {
-    "en": "A small pointwise prediction error does not control the derivative of that error. The puzzle measures pointwise reconstruction error; the preceding Jacobian experiment measures response to observation perturbations.",
-    "ko": "한 점에서 예측 오차가 작다고 그 오차의 미분까지 작다는 보장은 없다. 퍼즐은 점별 원본 추정 오차를 측정하고, 앞의 Jacobian 실험은 관측 변화에 대한 반응을 측정한다."
-  },
-  "jig-credit": {
-    "en": "center-cropped; photo adaptation under the same license",
-    "ko": "중앙 크롭 · 사진 변형물에 동일 라이선스 적용"
-  },
-  "learned-title": {
-    "en": "Extending the identity to an imperfect score",
-    "ko": "불완전한 score로의 확장"
-  },
-  "learned-copy": {
-    "en": "A predictor can be accurate at a point but vary rapidly nearby. Controlling reconstruction error and controlling local sensitivity therefore require different information. The puzzle does not assume or measure a learned J_e.",
-    "ko": "예측기는 한 점에서 정확해도 그 주변에서 급격하게 변할 수 있다. 복원 오차와 국소 민감도를 제어하려면 서로 다른 정보가 필요하다. 이 퍼즐은 학습된 J_e를 가정하거나 측정하지 않는다."
-  },
-  "notes-number": {
-    "en": "05 / SCOPE & REFERENCES",
-    "ko": "05 / 범위와 참고문헌"
+    "en": "CH4 · Conditional Flow Matching → CH3 · continuity equation → numerical integration",
+    "ko": "CH4 · Conditional Flow Matching → CH3 · 연속방정식 → 수치 적분"
+  },
+  "coupling-intro": {
+    "en": "Twelve photo pieces mark twelve starting centers Aᵢ. Each is paired with a destination Bπ(i). Swap two assignments: the destination set stays fixed, but the intermediate routes change.",
+    "ko": "사진 조각 12개가 출발 중심 Aᵢ를 표시한다. 각 중심은 도착점 Bπ(i)와 연결된다. 두 연결을 교환하면 도착점의 집합은 유지되지만 중간 이동 경로는 달라진다."
+  },
+  "piece-plan": {
+    "en": "Tracked piece",
+    "ko": "추적할 조각"
+  },
+  "dest-label": {
+    "en": "Assigned destination",
+    "ko": "연결할 도착점"
+  },
+  "time-plan": {
+    "en": "Time t",
+    "ko": "시간 t"
+  },
+  "reset": {
+    "en": "Reset arrangement",
+    "ko": "배치 초기화"
+  },
+  "plan-hint": {
+    "en": "At t = 0, drag a piece to move its start. Choose another destination to exchange two assignments. Arrow keys move the selected start.",
+    "ko": "t = 0에서 조각을 드래그해 출발점을 이동한다. 도착점 선택은 두 연결을 교환한다. 방향키로도 선택한 출발점을 이동할 수 있다."
+  },
+  "plan-identity": {
+    "en": "The image identifies a piece; the equations move its center. Exchanging assignments preserves the set of destination locations, not the completed photograph.",
+    "ko": "사진은 조각의 정체성을 표시하고, 수식은 그 중심을 이동시킨다. 연결 교환이 유지하는 것은 도착 위치의 집합이며, 완성된 사진의 배열은 아니다."
+  },
+  "model-title": {
+    "en": "The smooth probability model behind the pieces",
+    "ko": "조각 뒤의 연속 확률모형"
+  },
+  "model-copy": {
+    "en": "To obtain a smooth field, each center carries a Gaussian component of fixed width τ = 0.16. For a component i, the same offset Z is carried from Aᵢ to Bπ(i). The puzzle outlines are identity markers, not probability contours.",
+    "ko": "매끄러운 속도장을 위해 각 중심에 고정 폭 τ = 0.16인 가우시안 성분을 둔다. 성분 i에서는 같은 오프셋 Z를 Aᵢ에서 Bπ(i)까지 운반한다. 직소 조각의 외곽선은 정체성 표시이며 확률 등고선이 아니다."
+  },
+  "model-endpoints": {
+    "en": "Changing the permutation π leaves p₀ and p₁ unchanged. Dragging a starting center changes p₀. The time convention throughout is source at t = 0, destination at t = 1.",
+    "ko": "순열 π를 바꿔도 p₀와 p₁은 유지된다. 출발 중심을 드래그하면 p₀가 바뀐다. 전체 시간 방향은 t = 0의 출발 분포에서 t = 1의 도착 분포로 통일한다."
+  },
+  "coupling-title": {
+    "en": "Design a route for each piece",
+    "ko": "조각마다 이동 계획을 만든다"
+  },
+  "velocity-intro": {
+    "en": "The field receives (x,t), not the hidden component identity I. Near one location, several components can contribute different velocities. Their posterior-weighted average is the velocity available to the field.",
+    "ko": "속도장은 숨겨진 성분 I 대신 (x,t)를 입력받는다. 한 위치에 여러 성분이 기여하면 서로 다른 속도가 가능하다. 속도장이 사용하는 방향은 사후확률로 가중한 평균이다."
+  },
+  "time-field": {
+    "en": "Time t",
+    "ko": "시간 t"
+  },
+  "probe-label": {
+    "en": "Probe location",
+    "ko": "관측 위치"
+  },
+  "probe-button": {
+    "en": "Probe the tracked route",
+    "ko": "선택한 경로의 현재 위치"
+  },
+  "field-hint": {
+    "en": "Click anywhere to probe the field. Thin arrows: local field. Colored arrows: rᵢuᵢ for the three highest-weight components. Dark arrow: the sum over all twelve. All arrows use the same length scale.",
+    "ko": "화면을 클릭해 속도장을 조사한다. 가는 화살표는 속도장, 색 화살표는 가중치가 큰 세 성분의 rᵢuᵢ, 진한 화살표는 12개 전체의 합이다. 모든 화살표는 같은 길이 배율을 사용한다."
+  },
+  "loss-intro": {
+    "en": "Training can use the individual velocity U, which is known for every sampled pair. The model still learns the conditional mean because the squared-error objective splits into a learnable term and a constant.",
+    "ko": "학습에는 각 쌍에서 계산 가능한 개별 속도 U를 사용할 수 있다. 제곱오차 목적함수는 학습 가능한 항과 상수항으로 분해되므로, 모델은 조건부 평균 속도를 학습한다."
+  },
+  "loss-proof-title": {
+    "en": "Why the cross term vanishes",
+    "ko": "교차항이 사라지는 이유"
+  },
+  "loss-proof": {
+    "en": "Expand vθ − U = (vθ − v*) + (v* − U), then condition on (Xₜ,t). The residual has conditional mean zero. The equality holds for any predictor; attaining v* additionally requires sufficient model capacity and optimization. Here v* is evaluated analytically. Expectations average over t ∼ Uniform[0,1] and the sampled component and offset.",
+    "ko": "vθ − U = (vθ − v*) + (v* − U)를 전개한 뒤 (Xₜ,t)에 조건을 건다. 잔차의 조건부 평균이 0이므로 교차항이 사라진다. 이 등식은 임의의 예측기에 성립하며, v*를 실제 학습하려면 모델 용량과 최적화 조건이 추가로 필요하다. 여기서는 v*를 해석적으로 계산한다. 기대값은 t ∼ Uniform[0,1]과 표본 성분·오프셋에 대해 계산한다."
+  },
+  "velocity-title": {
+    "en": "Merge the plans into one velocity field",
+    "ko": "이동 계획을 하나의 속도장으로 합친다"
+  },
+  "transport-intro": {
+    "en": "Now follow dx/dt = v*(x,t) from the selected starting center. The field re-evaluates the direction along the trajectory. It has no access to the original assignment, so its path need not follow the planned line.",
+    "ko": "이제 선택한 출발 중심에서 dx/dt = v*(x,t)를 따른다. 속도장은 이동 중 현재 위치에서 방향을 다시 계산한다. 원래 연결 정보를 입력받지 않으므로, 경로가 지정한 직선과 같을 필요는 없다."
+  },
+  "piece-transport": {
+    "en": "Tracked piece",
+    "ko": "추적할 조각"
+  },
+  "time-transport": {
+    "en": "Time t",
+    "ko": "시간 t"
+  },
+  "legend-plan": {
+    "en": "Dashed · assigned straight path",
+    "ko": "점선 · 지정한 직선 경로"
+  },
+  "legend-flow": {
+    "en": "Solid · marginal ODE path",
+    "ko": "실선 · 평균 속도장의 ODE 경로"
+  },
+  "density-hint": {
+    "en": "Background tint: exact pₜ. Small dots: 96 fixed samples transported by the ODE. The photo piece tracks one center; its identity is a passive label. Finite samples only approximate the density.",
+    "ko": "배경 농도는 정확한 pₜ, 작은 점은 ODE로 이동한 고정 표본 96개이다. 사진 조각은 중심 하나를 추적하며, 정체성은 수동적인 표식이다. 유한 표본은 분포를 근사한다."
+  },
+  "continuity-intro": {
+    "en": "The agreement is at the level of distributions. Each translated component satisfies a continuity equation. Summing them shows that the posterior-weighted velocity transports their mixture.",
+    "ko": "일치하는 것은 분포이다. 평행이동하는 각 성분은 연속방정식을 만족한다. 이를 합하면 사후확률로 가중한 속도장이 혼합분포를 운반한다는 결과를 얻는다."
+  },
+  "identity-note": {
+    "en": "With the matching initial law and a well-posed ODE, the flow reproduces pₜ. This statement does not preserve component identities. Reaching the destination distribution therefore does not guarantee that each photo piece occupies its assigned slot.",
+    "ko": "같은 초기분포와 적절한 ODE의 존재·유일성 조건에서 흐름은 pₜ를 재현한다. 이 명제는 성분의 정체성을 보존한다는 뜻이 아니다. 도착 분포에 도달해도 각 사진 조각이 지정한 칸에 들어간다고 보장되지는 않는다."
+  },
+  "transport-title": {
+    "en": "Follow the field, not the assignment",
+    "ko": "속도장이 만드는 실제 경로를 따른다"
+  },
+  "solver-intro": {
+    "en": "The exact velocity is now fixed. Only the numerical integration changes. Compare Euler and Heun with the same number of field evaluations; Heun uses two evaluations per step. The reference is a finer RK4 solve.",
+    "ko": "이제 정확한 속도장은 고정하고 수치 적분만 바꾼다. 같은 속도장 평가 횟수에서 Euler와 Heun을 비교한다. Heun은 한 단계에 두 번 평가한다. 기준 경로는 더 세밀한 RK4 계산이다."
+  },
+  "piece-solver": {
+    "en": "Tracked piece",
+    "ko": "추적할 조각"
+  },
+  "budget-label": {
+    "en": "Field evaluations per method",
+    "ko": "방법별 속도장 평가 횟수"
+  },
+  "legend-reference": {
+    "en": "Dashed · RK4 reference",
+    "ko": "점선 · RK4 기준 경로"
+  },
+  "reference-check-label": {
+    "en": "Reference refinement Δ",
+    "ko": "기준 계산 세분화 차이"
+  },
+  "solver-metric": {
+    "en": "Errors are endpoint distances from RK4 with 2,048 steps. Reference refinement compares 1,024 and 2,048 steps; it is a consistency check, not a certified bound. Curves are drawn in the same coordinates without magnifying differences.",
+    "ko": "오차는 2,048단계 RK4와의 끝점 거리이다. 기준 계산의 세분화 차이는 1,024단계와 2,048단계를 비교한 값이며 엄밀한 오차 상한은 아니다. 경로는 차이를 확대하지 않고 같은 좌표에 표시한다."
+  },
+  "solver-end": {
+    "en": "Changing the coupling changes the field and its trajectories. Changing the solver changes how that same field is approximated. A missed assigned slot and a numerical integration error are different quantities; only the latter is measured here.",
+    "ko": "결합을 바꾸면 속도장과 경로가 달라진다. 수치해법을 바꾸면 같은 속도장의 근사 방식이 달라진다. 지정한 칸과의 거리와 수치 적분 오차는 다른 양이며, 이 실험은 후자를 측정한다."
+  },
+  "solver-title": {
+    "en": "Compute the path with a finite budget",
+    "ko": "유한한 계산으로 경로를 구한다"
   },
   "notes-title": {
-    "en": "What is calculated, and what is assumed",
-    "ko": "계산한 것과 가정한 것"
+    "en": "Model & sources",
+    "ko": "모형과 출처"
   },
-  "notes-model-title": {
-    "en": "Analytic probability model",
-    "ko": "확률모델"
+  "scope": {
+    "en": "The four views share one coupling, selected piece, and clock. Twelve equally weighted components use τ = 0.16 throughout. Velocities and densities are analytic; trajectories are numerical. No network is trained. The simulation transports coordinates, not image pixels or physical interlocking pieces. The 96 transported samples use 512-step RK4; tracked center paths use 2,048 steps.",
+    "ko": "네 화면은 하나의 결합, 선택 조각, 시간을 공유한다. 동일 가중치 성분 12개와 고정 폭 τ = 0.16을 사용한다. 속도장과 밀도는 해석적으로, 궤적은 수치적으로 계산한다. 신경망 학습 없이 좌표를 운반하며, 이미지 픽셀이나 물리적으로 맞물리는 조각을 시뮬레이션하지 않는다. 표본 96개의 이동은 512단계 RK4, 추적 중심의 경로는 2,048단계 RK4로 계산한다."
   },
-  "notes-model": {
-    "en": "The covariance–Jacobian identity assumes Gaussian corruption with scalar a > 0 and finite posterior second moments. The scalar experiment uses an equally weighted two-point prior. Its mean, derivatives, conditional risks, and amplification interval are analytic; the interval probability uses 512-panel Simpson quadrature.",
-    "ko": "공분산·Jacobian 관계식은 스칼라 a > 0인 가우시안 노이즈와 유한 사후 이차 모멘트를 가정한다. 스칼라 실험은 동일 가중치의 두 점 사전분포를 사용한다. 평균, 미분, 조건부 위험과 증폭 구간은 해석식으로 계산하고, 구간 확률은 512구간 Simpson 적분으로 구한다."
+  "sources": {
+    "en": "Course: Lecture 4, slides 39–48 (couplings, conditional velocity, objective equivalence); Lecture 3 (continuity and probability flow); differential-equations appendix (numerical integration). The translated-mixture puzzle is an analytic example constructed for this project.",
+    "ko": "강의: Lecture 4의 39–48쪽(결합, 조건부 속도, 목적함수 동치), Lecture 3(연속방정식과 probability flow), 미분방정식 부록(수치 적분). 평행이동 혼합분포 퍼즐은 이 프로젝트를 위해 구성한 해석적 예제이다."
   },
-  "notes-training-title": {
-    "en": "Training and implementation",
-    "ko": "학습과 구현"
-  },
-  "notes-training": {
-    "en": "All estimators are computed analytically; no network is trained. The photographic puzzle is a separate synthetic predictor-error experiment. Local denoiser expansion does not by itself establish instability of a multi-step diffusion sampler.",
-    "ko": "추정기는 해석식으로 계산하며 신경망 학습은 수행하지 않는다. 사진 퍼즐은 별도의 모의 예측 오차 실험이다. 복원기의 국소 팽창만으로 다단계 diffusion sampler가 불안정하다고 결론 내릴 수는 없다."
-  },
-  "notes-course-title": {
-    "en": "Course connections",
-    "ko": "강의 연결"
-  },
-  "notes-course": {
-    "en": "Lecture 1 supplies noise/x prediction and conditional-mean optimality. Lecture 2 supplies Tweedie’s formula and the score/noise identity. Differentiating these identities gives the local-sensitivity analysis developed here; it is an extension, not a claim that this whole derivation appeared in the lectures.",
-    "ko": "강의 1의 노이즈·원본 예측과 조건부 평균 최적성, 강의 2의 Tweedie 공식과 score·노이즈 관계식을 출발점으로 삼는다. 이를 미분해 국소 민감도를 분석하는 부분은 여기서 확장한 내용이며, 전체 유도가 강의에 그대로 제시되었다는 뜻은 아니다."
-  },
-  "notes-reading-title": {
-    "en": "Further reading",
-    "ko": "참고문헌"
+  "photo-note": {
+    "en": "center-cropped; adaptation under the same license",
+    "ko": "중앙 크롭 · 사진 변형물에 동일 라이선스 적용"
   }
 };
-  const ui={
-  "CONTENTS": "목차",
-  "INTERACTIVE COURSE NOTES": "강의 개념을 살펴보는 수학 노트",
-  "Skip to the content": "본문으로 이동",
-  "Source ↗": "소스 ↗",
-  "On this page": "페이지 목차",
-  "Language": "언어",
-  "05 / PHOTO PUZZLE": "05 / 사진 퍼즐",
-  "Noise prediction": "노이즈 예측",
-  "Denoising score matching": "Denoising score matching",
-  "q: fixed noising": "q: 고정된 노이즈 추가",
-  "pϕ: learned reversal": "pϕ: 학습하는 역과정",
-  "Noisy density from two original values": "두 원본 값에서 출발한 관측 밀도",
-  "Exact score and rescaled optimal noise prediction": "정확한 score와 재조정한 최적 노이즈 예측",
-  "Posterior probabilities of two originals and their mean": "두 원본의 사후확률과 조건부 평균",
-  "Conditional squared error versus estimated clean value": "원본 추정값에 따른 조건부 제곱오차",
-  "Noisy puzzle positions. Click a piece or use arrow keys to select.": "노이즈가 섞인 퍼즐 위치. 클릭 또는 방향키로 조각 선택.",
-  "Estimated puzzle positions. Click a piece or use arrow keys to select.": "추정한 퍼즐 위치. 클릭 또는 방향키로 조각 선택.",
-  "Noise level versus reconstruction error amplification": "노이즈 수준에 따른 원본 추정 오차의 증폭률",
-  "04 / PREDICTOR ERROR": "04 / 예측기 오차",
-  "Denoiser response with tangent and perturbed observation": "복원 함수와 접선 및 변화한 관측점",
-  "Denoiser derivative and the region of local amplification": "복원 함수의 미분과 국소 증폭 구간"
-};
-  const requested=new URLSearchParams(location.search).get('lang');
-  let language=requested==='ko'||(requested!=='en'&&/\/Korean(?:%20| )ver\/(?:index\.html)?$/.test(location.pathname))?'ko':'en';
-  const textNodes=[],attributes=[];
-  const walker=document.createTreeWalker(document.documentElement,NodeFilter.SHOW_TEXT);
-  while(walker.nextNode()){
-    const node=walker.currentNode;
-    if(node.parentElement.closest('[data-i18n],math,script,style,.language-switch'))continue;
-    const english=node.nodeValue.trim();
-    if(Object.hasOwn(ui,english))textNodes.push({node,original:node.nodeValue,english});
-  }
-  document.querySelectorAll('[aria-label],meta[name="description"]').forEach(element=>{
-    const attribute=element.tagName==='META'?'content':'aria-label',english=element.getAttribute(attribute);
-    if(Object.hasOwn(ui,english))attributes.push({element,attribute,english});
-  });
-  function apply(){
-    document.documentElement.lang=language;
-    document.querySelectorAll('[data-i18n]').forEach(element=>{
-      const entry=prose[element.dataset.i18n];
-      if(!entry)throw new Error('Missing translation: '+element.dataset.i18n);
-      element.innerHTML=entry[language];
-    });
-    for(const {node,original,english} of textNodes)node.nodeValue=language==='ko'?original.replace(english,ui[english]):original;
-    for(const {element,attribute,english} of attributes)element.setAttribute(attribute,language==='ko'?ui[english]:english);
-    document.querySelectorAll('[data-lang]').forEach(button=>button.setAttribute('aria-pressed',button.dataset.lang===language));
-    document.documentElement.style.setProperty('--formula-scroll-label',language==='ko'?"'수식 좌우 스크롤 ↔'":"'Scroll to explore the equation ↔'");
-  }
-  function setLanguage(next){
-    if(!['en','ko'].includes(next)||next===language)return;
-    const section=[...document.querySelectorAll('.hero,.chapter')].find(el=>el.getBoundingClientRect().top<=100&&el.getBoundingClientRect().bottom>100);
-    const offset=section?scrollY-section.offsetTop:scrollY;
-    language=next;
-    const url=new URL(location.href);
-    url.pathname=url.pathname.replace(/\/(English|Korean)(?:%20| )ver\/(?:index\.html)?$/,(next==='ko'?'/Korean%20ver/':'/English%20ver/')+(url.pathname.endsWith('/index.html')?'index.html':''));
-    url.searchParams.delete('lang');
-    if(location.protocol==='file:'){url.pathname=location.pathname;url.searchParams.set('lang',next);}
-    history.replaceState(null,'',url);
-    apply();window.dispatchEvent(new Event('diffusionlanguagechange'));
-    if(section)window.scrollTo({top:section.offsetTop+Math.min(offset,section.clientHeight-100),behavior:'instant'});
-  }
-  window.DiffusionI18n={get language(){return language;},text:(en,ko)=>language==='ko'?ko:en,setLanguage};
-  document.querySelectorAll('[data-lang]').forEach(button=>button.addEventListener('click',()=>setLanguage(button.dataset.lang)));
-  apply();
+let language=document.documentElement.lang==='ko'?'ko':'en';
+function setLanguage(lang){language=lang==='ko'?'ko':'en';document.documentElement.lang=language;document.querySelectorAll('[data-i18n]').forEach(el=>{el.innerHTML=prose[el.dataset.i18n][language];});document.querySelectorAll('[data-lang]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.lang===language)));document.querySelectorAll('canvas').forEach(el=>el.setAttribute('aria-label',language==='ko'?'퍼즐 이동 실험. 조각 선택은 인접한 선택 메뉴로도 가능하다.':'Puzzle transport experiment. The adjacent selector also selects pieces.'));window.dispatchEvent(new Event('diffusionlanguagechange'));}
+document.querySelectorAll('[data-lang]').forEach(el=>el.addEventListener('click',()=>setLanguage(el.dataset.lang)));
+window.DiffusionI18n={text:(en,ko)=>language==='ko'?ko:en,setLanguage,get language(){return language;}};setLanguage(language);
 })();
