@@ -20,4 +20,3 @@
 - Use a white page, header, canvas and equation background. The English one-page Times New Roman submission PDF is stored outside the public repository in the workspace Proposal/ folder; do not publish its student identification details.
 
 - Do not label concepts by lecture/chapter numbers; those numbers were personal file labels. Use concept names in both languages. Use 1., 2., 3., 4. for visible section numbering. Apply content feedback to both language versions together.
-- Present mathematical concepts alongside the manipulation, visualization, and expected observation. Use compact definition lists and bullets for explanatory structure; preserve substantive equations and derivations instead of replacing them with captions.
