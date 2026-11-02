@@ -9,3 +9,9 @@
 
 /* Keep the reading surface white, including browser light/dark preferences. */
 .page,main,.hero,.chapter,.contents,.topbar,.experiment,.equation,.derivation,.table-scroll,footer{background-color:#ffffff}
+
+/* Connect each formula to its experiment through a compact reading guide. */
+.experiment-guide{display:grid;grid-template-columns:115px minmax(0,1fr);gap:9px 18px;padding:16px 0;margin:16px 0 22px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:12px;background:#fff}
+.experiment-guide dt{font-weight:600;color:var(--ink)}.experiment-guide dd{margin:0;color:var(--muted);line-height:1.8}
+.concept-points{padding-left:18px;margin:14px 0 20px;font-size:12px;color:var(--muted);line-height:1.85;max-width:88ch}.concept-points li{padding-left:3px;margin:5px 0}.concept-points li::marker{color:#7c91a1}.notes .concept-points{font-size:11px}
+@media(max-width:700px){.experiment-guide{grid-template-columns:76px minmax(0,1fr);gap:8px 12px}.concept-points{padding-left:16px}}
