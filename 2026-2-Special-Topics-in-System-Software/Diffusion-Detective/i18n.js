@@ -12,8 +12,8 @@
     "ko": "Fourier 감쇠, 정규화, score 기반 샘플링을 연결하는 인터랙티브 실험."
   },
   "prose-02": {
-    "en": "A density on a circle connects spectral attenuation, inverse problems, and bias–variance analysis. Jigsaw positions provide a geometric extension, followed by score-based sampling.",
-    "ko": "원 위의 확률밀도로 확산의 주파수 감쇠와 역문제를 분석한다. 이어서 정규화의 편향·분산, 퍼즐의 위치 확산, score 기반 샘플링을 비교한다."
+    "en": "A density on a circle connects spectral attenuation, inverse problems, and bias–variance analysis. Rotating rings provide a geometric interpretation of angular noise, symmetry, and score-based sampling.",
+    "ko": "원 위의 확률밀도로 주파수 감쇠, 역문제, 편향·분산을 분석한다. 회전 원판은 각도 잡음과 대칭, score 기반 샘플링의 기하학적 해석을 제공한다."
   },
   "prose-03": {
     "en": "Start with a probability density wrapped around a circle, with 0 and 2π meeting at the same point. Brownian motion spreads its mass. The evolving density follows the <strong>heat equation</strong>.",
@@ -56,12 +56,12 @@
     "ko": "기대 RMSE는 √𝔼‖p̂ − p₀‖²이다. 점선은 현재 잡음 실현값의 복원 오차를 나타낸다. 알려진 원본을 기준으로 기대 오차와 실제 오차를 비교한다."
   },
   "prose-13": {
-    "en": "A jigsaw represents a structured position space. Each piece has a two-dimensional position, and a grid graph connects neighbouring pieces. Gaussian diffusion perturbs the positions; an exact score guides the reverse process.",
-    "ko": "퍼즐 조각의 2차원 위치를 확률변수로 두고, 이웃 조각을 격자 그래프로 연결한다. 위치에 가우시안 잡음을 추가한 뒤 정확한 score를 이용해 역과정을 계산한다."
+    "en": "Each ring carries an m-fold symmetric pattern. Random angular displacements interrupt the alignment. The reverse process samples orientations consistent with the pattern, using an analytic score on the circle.",
+    "ko": "각 원판은 m회 회전 대칭을 갖는 무늬를 담는다. 무작위 각도 변화가 무늬의 정렬을 흐트러뜨린다. 역과정은 원 위의 해석적 score를 이용해 무늬와 일치하는 각도를 샘플링한다."
   },
   "prose-14": {
-    "en": "The reference layout μ and its graph define the prior. This experiment isolates the geometry of diffusion using a known layout; it does not infer an unknown solution from image content. Its parameters are independent of the Fourier experiments above.",
-    "ko": "기준 배치 μ와 격자 그래프가 사전분포를 결정한다. 알려진 배치에서 확산의 기하학을 분석하는 모델이며, 이미지 내용으로 미지의 정답을 추론하지 않는다. 위의 Fourier 실험과는 독립적인 매개변수를 사용한다."
+    "en": "The angular prior is a mixture of m equally weighted wrapped Gaussians. Ring angles are independent; the pattern defines the prior rather than a learned image model. Rotation history is not stored or reversed. Controls in this section are independent of the Fourier experiments above.",
+    "ko": "각도의 사전분포는 동일한 가중치의 wrapped Gaussian m개로 구성된다. 원판의 각도는 독립적이며, 사전분포는 학습된 이미지 모델 대신 무늬의 대칭으로 정의된다. 회전 기록을 저장하거나 되감지는 않는다. 이 절의 조절값은 앞의 Fourier 실험과 독립적이다."
   },
   "prose-15": {
     "en": "So far, the unknown was a density recovered from its measured coefficients. Score-based generation starts with samples instead. The <strong>score sₜ(θ) = ∂θ log pₜ(θ)</strong> guides particles through a prescribed family of densities. Here it follows directly from the Fourier expansion.",
@@ -96,8 +96,8 @@
     "ko": "정확한 score와 연속시간에서 두 과정의 주변분포는 동일하다. 개별 샘플의 경로는 서로 다르다."
   },
   "prose-23": {
-    "en": "Fourier evolution, inverse filters, expected error, and the jigsaw score are analytic. Initial Fourier coefficients are bounded to ensure positive densities.",
-    "ko": "Fourier 시간 변화, 복원 필터, 기대 오차와 퍼즐 모델의 score를 해석적으로 계산한다. Fourier 초기 계수는 밀도의 양수성을 보장하는 범위로 제한한다."
+    "en": "Fourier evolution, inverse filters, expected error, and wrapped-Gaussian scores are analytic. Initial Fourier coefficients ensure positive densities; circular Gaussian sums use a nine-standard-deviation tail cutoff.",
+    "ko": "Fourier 시간 변화, 복원 필터, 기대 오차와 wrapped-Gaussian score는 해석식으로 계산한다. 초기 Fourier 계수는 밀도의 양수성을 보장하며, 주기적 가우시안 합은 표준편차의 9배를 넘는 꼬리를 절단한다."
   },
   "prose-24": {
     "en": "Coefficient measurement noise and Brownian sampling noise are separate. Reconstructions retain negative values. Particle generation uses numerical integration, 512 samples, and 32 histogram bins.",
@@ -106,138 +106,6 @@
   "prose-25": {
     "en": "Lecture 2: scores and denoising. Lecture 3: forward SDEs, Fokker–Planck, reverse SDEs, and probability flow ODEs. Lecture A: Euler and Euler–Maruyama.",
     "ko": "Lecture 2: score와 denoising. Lecture 3: forward SDE, Fokker–Planck, reverse SDE, probability flow ODE. Lecture A: Euler와 Euler–Maruyama."
-  },
-  "jig-scatter-title": {
-    "en": "Position diffusion",
-    "ko": "조각의 위치 확산"
-  },
-  "jig-scatter-desc": {
-    "en": "Diffusion increases the variance of each piece’s position. Dragging a piece changes the initial condition.",
-    "ko": "확산 시간에 따라 각 조각의 위치 분산이 증가한다. 조각을 드래그하면 초기조건이 변경된다."
-  },
-  "jig-drag-help": {
-    "en": "Drag to move · arrows to nudge",
-    "ko": "드래그로 이동 · 방향키로 미세 조절"
-  },
-  "jig-reset": {
-    "en": "Reset pieces",
-    "ko": "배치 초기화"
-  },
-  "jig-pieces": {
-    "en": "Pieces",
-    "ko": "조각 수"
-  },
-  "jig-seed": {
-    "en": "Noise seed",
-    "ko": "잡음 시드"
-  },
-  "jig-time": {
-    "en": "Diffusion time",
-    "ko": "확산 시간"
-  },
-  "jig-intact": {
-    "en": "Together",
-    "ko": "맞춰진 배치"
-  },
-  "jig-scattered": {
-    "en": "Scattered",
-    "ko": "흩어진 배치"
-  },
-  "jig-scatter-play": {
-    "en": "Play diffusion",
-    "ko": "확산 재생"
-  },
-  "jig-forward-caption": {
-    "en": "Positions diffuse; the image stays fixed. Scrubbing t reuses ε to compare marginal distributions.",
-    "ko": "이미지는 고정하고 위치만 확산한다. 시간 조절 시 ε를 고정하여 주변분포의 변화를 비교한다."
-  },
-  "jig-assemble-title": {
-    "en": "Reverse-time assembly",
-    "ko": "역과정에 따른 조립"
-  },
-  "jig-assemble-desc": {
-    "en": "Both methods use the same initial positions and score. The ODE is deterministic; the SDE includes Brownian increments.",
-    "ko": "동일한 초기 배치와 score를 사용한다. ODE는 결정론적 경로를, SDE는 잡음이 포함된 경로를 생성한다."
-  },
-  "jig-assemble-play": {
-    "en": "Reassemble",
-    "ko": "다시 맞추기"
-  },
-  "jig-reverse-time": {
-    "en": "Sampling progress",
-    "ko": "샘플링 진행"
-  },
-  "jig-solver": {
-    "en": "Integrator",
-    "ko": "적분 방법"
-  },
-  "jig-steps": {
-    "en": "Steps",
-    "ko": "적분 횟수"
-  },
-  "jig-solver-exact": {
-    "en": "Exact Gaussian",
-    "ko": "가우시안 정확 전이"
-  },
-  "jig-solver-euler": {
-    "en": "Euler / Euler–Maruyama",
-    "ko": "Euler / Euler–Maruyama 근사"
-  },
-  "jig-tag-ode": {
-    "en": "Deterministic",
-    "ko": "결정론적"
-  },
-  "jig-tag-sde": {
-    "en": "Stochastic",
-    "ko": "확률적"
-  },
-  "jig-trace": {
-    "en": "SELECTED PIECE · PATH",
-    "ko": "선택한 조각 · 이동 경로"
-  },
-  "jig-arrow-note": {
-    "en": "Arrow on each puzzle = score direction",
-    "ko": "퍼즐 위 화살표 = score 방향"
-  },
-  "jig-marginal-note": {
-    "en": "Exact score + an initial draw from p<sub>T</sub> give the same marginals in continuous time. Dragging pieces instead tests a chosen initial condition.",
-    "ko": "정확한 score와 p<sub>T</sub> 표본에서 출발하면 연속시간의 두 과정은 같은 주변분포를 갖는다. 직접 수정한 배치는 지정된 초기조건에서의 경로 비교에 해당한다."
-  },
-  "jig-step-note": {
-    "en": "zₖ = uₖᵀ(x − μ), ξ ∼ 𝒩(0,1); v′ₖ is the next-step variance. Steps follow log variance. Both views share an auto-fitting camera.",
-    "ko": "zₖ = uₖᵀ(x − μ), ξ ∼ 𝒩(0,1)이며 v′ₖ는 다음 단계의 분산이다. 시간 간격은 로그 분산에 따라 정해진다. 두 화면은 동일한 자동 줌을 사용한다."
-  },
-  "jig-geometry-title": {
-    "en": "Neighbour structure and eigenmodes",
-    "ko": "이웃 관계와 고유모드"
-  },
-  "jig-geometry-desc": {
-    "en": "Grid eigenmodes distinguish collective displacement from local deformation. Coupling γ penalizes relative displacement between neighbours.",
-    "ko": "격자 그래프의 고유모드는 전체 이동과 국소적인 변형을 구분한다. 연결 강도 γ는 이웃 간 변위 차이에 대한 벌점을 조절한다."
-  },
-  "jig-mode": {
-    "en": "Mode",
-    "ko": "고유모드"
-  },
-  "jig-deform": {
-    "en": "Mode displacement",
-    "ko": "모드 변위"
-  },
-  "jig-mode-note": {
-    "en": "This view isolates one eigenmode. The two samplers above use all modes.",
-    "ko": "선택한 고유모드의 변위를 표시한다. 역과정 계산에는 모든 모드가 사용된다."
-  },
-  "jig-coupling": {
-    "en": "Neighbour coupling",
-    "ko": "이웃 연결 강도"
-  },
-  "jig-energy-note": {
-    "en": "The first term anchors each piece. The second penalizes disagreements between neighbours. Increasing γ suppresses high-frequency deformation.",
-    "ko": "첫 항은 기준 위치에서의 이탈을, 두 번째 항은 이웃 간 변위 차이를 제어한다. γ가 증가하면 고주파 변형의 사전분산이 감소한다."
-  },
-  "jig-no-snap": {
-    "en": "Small gaps remain because the target covariance Σ₀ is nonzero. Pieces are never snapped into place.",
-    "ko": "목표 공분산 Σ₀가 0이 아니므로 최종 배치에도 작은 틈이 남는다. 조각의 좌표는 정답 위치로 강제 보정하지 않는다."
   },
   "link-forward-title": {
     "en": "Selected Fourier mode",
@@ -270,6 +138,102 @@
   "derive-step-text": {
     "en": "With reverse step Δr = T/N, Euler evaluates the score at the current position and time. Euler–Maruyama adds an independent standard normal increment ξₙ. Reducing Δr improves time resolution; finite-sample fluctuations remain.",
     "ko": "역방향 시간 간격은 Δr = T/N이다. Euler는 현재 위치와 시점의 score를 사용하며, Euler–Maruyama는 독립적인 표준정규 난수 ξₙ을 추가한다. Δr의 감소는 시간 해상도를 높이지만 유한 표본의 변동을 제거하지는 않는다."
+  },
+  "dial-drag": {
+    "en": "Drag to rotate · ← → for fine control",
+    "ko": "드래그로 회전 · ← → 미세 조절"
+  },
+  "dial-symmetry": {
+    "en": "Symmetry m",
+    "ko": "회전 대칭 m"
+  },
+  "dial-seed": {
+    "en": "Random seed",
+    "ko": "난수 시드"
+  },
+  "dial-time": {
+    "en": "Diffusion time",
+    "ko": "확산 시간"
+  },
+  "dial-sigma": {
+    "en": "Target spread",
+    "ko": "목표 각도 분산의 제곱근"
+  },
+  "dial-angle": {
+    "en": "Selected ring angle",
+    "ko": "선택한 원판 각도"
+  },
+  "dial-scatter": {
+    "en": "Diffuse",
+    "ko": "확산 재생"
+  },
+  "dial-reset": {
+    "en": "Reset sample",
+    "ko": "표본 초기화"
+  },
+  "dial-forward-note": {
+    "en": "Each time-slider frame has the correct forward marginal, with the same ε reused for comparison. It is not a recorded Brownian trajectory. Ring angles are continuous and are not snapped to an aligned position.",
+    "ko": "시간 슬라이더의 각 프레임은 순방향 주변분포를 따르며, 비교를 위해 동일한 ε를 사용한다. 기록된 Brownian 궤적을 재생하는 방식은 아니다. 원판 각도는 연속값이며 정렬 위치로 강제 보정하지 않는다."
+  },
+  "dial-prior-title": {
+    "en": "A periodic prior and its spectrum",
+    "ko": "주기적 사전분포와 주파수 표현"
+  },
+  "dial-prior-text": {
+    "en": "Wᵥ is a wrapped Gaussian with variance v. Densities use dθ/(2π), matching section 01. Symmetry cancels frequencies not divisible by m; surviving frequencies decay by exp(−k²t). The displayed curves use wrapped-image sums with negligible tail truncation.",
+    "ko": "Wᵥ는 분산 v인 wrapped Gaussian이며, 밀도의 기준 측도는 1절과 같은 dθ/(2π)이다. 대칭에 의해 m의 배수가 아닌 주파수는 소거되고, 남은 성분은 exp(−k²t)만큼 감쇠한다. 표시된 곡선은 꼬리 오차가 무시할 만큼 작은 주기적 가우시안 합으로 계산한다."
+  },
+  "dial-density": {
+    "en": "DENSITY · SELECTED RING",
+    "ko": "밀도 · 선택한 원판"
+  },
+  "dial-score": {
+    "en": "SCORE · ROTATION DIRECTION",
+    "ko": "SCORE · 회전 방향"
+  },
+  "dial-reverse-title": {
+    "en": "Reverse SDE and probability flow ODE",
+    "ko": "역 SDE와 probability flow ODE"
+  },
+  "dial-reverse-text": {
+    "en": "Both methods start from the same rotated rings. The ODE follows a deterministic score field; the SDE adds independent Brownian increments.",
+    "ko": "두 방법은 동일한 회전 상태에서 출발한다. ODE는 결정론적인 score 흐름을 따르고, SDE는 독립적인 Brownian 잡음을 추가한다."
+  },
+  "dial-play": {
+    "en": "Run reverse process",
+    "ko": "역과정 재생"
+  },
+  "dial-progress": {
+    "en": "Integration progress",
+    "ko": "적분 진행"
+  },
+  "dial-solver": {
+    "en": "ODE solver",
+    "ko": "ODE 적분법"
+  },
+  "dial-steps": {
+    "en": "Steps",
+    "ko": "적분 횟수"
+  },
+  "dial-paths": {
+    "en": "SELECTED RING · ANGULAR PATH",
+    "ko": "선택한 원판 · 각도 경로"
+  },
+  "dial-numerics": {
+    "en": "Time steps are spaced uniformly in log v(t). The ODE uses Euler or Heun; the SDE uses Euler–Maruyama. The reported ODE error is measured against a 4096-step Heun reference, not an exact solution.",
+    "ko": "시간 간격은 log v(t)에 균일하게 배치된다. ODE에는 Euler 또는 Heun을, SDE에는 Euler–Maruyama를 사용한다. ODE 오차는 정확해가 아닌 4096단계 Heun 기준해와 비교한 값이다."
+  },
+  "dial-boundary-title": {
+    "en": "Symmetry does not determine a unique direction",
+    "ko": "대칭 경계에서의 방향 선택"
+  },
+  "dial-boundary-text": {
+    "en": "At θ = π/m, the symmetric density has a local minimum and score zero. The exact ODE remains at this stationary point. Brownian noise lets the SDE leave it. This deliberately chosen initial condition is not a sample from pₜ, so equal-marginal claims do not apply to this comparison.",
+    "ko": "θ = π/m에서는 대칭인 밀도가 국소 최솟값을 가지며 score가 0이다. 정확한 ODE는 이 정지점에 머무르지만, SDE는 Brownian 잡음에 의해 경계를 벗어난다. 의도적으로 지정한 초기조건이므로 이 비교에는 동일한 주변분포라는 결론을 적용하지 않는다."
+  },
+  "dial-boundary-button": {
+    "en": "Place selected ring at π/m",
+    "ko": "선택 원판을 π/m에 배치"
   }
 };
   const ui={
@@ -366,10 +330,16 @@
   "Bias–variance decomposition": "편향·분산 분해",
   "Initial conditions and diffusion time": "초기조건과 확산 시간",
   "Equality of the density equations": "두 밀도 방정식의 동치",
-  "Jigsaw position diffusion": "퍼즐의 위치 확산",
-  "Diffusion on a jigsaw graph": "퍼즐 그래프에서의 확산",
-  "04 / JIGSAW POSITION DIFFUSION": "04 / 퍼즐의 위치 확산",
-  "Five experiments, two analytic models": "다섯 가지 실험, 두 해석적 모델"
+  "Five experiments, two analytic models": "다섯 가지 실험, 두 해석적 모델",
+  "Rotational diffusion": "회전 각도의 확산",
+  "Circular diffusion through rotating rings": "회전 원판으로 보는 확산",
+  "04 / CIRCULAR DIFFUSION": "04 / 원 위의 확산",
+  "Rotating rings. Drag a ring or use left and right arrow keys to rotate the selected ring.": "회전 원판. 드래그 또는 좌우 방향키로 선택한 원판 회전. 상하 방향키로 원판 선택.",
+  "Prior and diffused angular density": "사전분포와 확산된 각도 밀도",
+  "Angular score and selected ring angle": "각도의 score와 선택한 원판 각도",
+  "PROBABILITY FLOW ODE rotating rings": "Probability flow ODE에 따른 원판 회전",
+  "REVERSE SDE rotating rings": "역 SDE에 따른 원판 회전",
+  "Selected ring angular trajectories": "선택한 원판의 각도 궤적"
 };
   const requested=new URLSearchParams(location.search).get('lang');
   let language=requested==='ko'||(requested!=='en'&&/\/Korean(?:%20| )ver\/(?:index\.html)?$/.test(location.pathname))?'ko':'en';

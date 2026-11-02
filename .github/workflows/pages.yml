@@ -33,10 +33,10 @@ jobs:
           node --check app.js
           node --check i18n.js
           node --check math.js
-          node --check puzzle.js
-          node --check puzzle-math.js
+          node --check dial.js
+          node --check dial-math.js
           node --check equations.js
-          node --test math.test.cjs puzzle.test.cjs
+          node --test math.test.cjs dial.test.cjs
       - name: Assemble website and preserve previous links
         run: |
           site_project="_site/2026-2-Special-Topics-in-System-Software/Diffusion-Detective"
@@ -46,9 +46,9 @@ jobs:
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/i18n.js "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/math.js "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/style.css "$site_project/"
-          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/puzzle.css "$site_project/"
-          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/puzzle.js "$site_project/"
-          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/puzzle-math.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/dial.css "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/dial.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/dial-math.js "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/equations.js "$site_project/"
           cp -R "2026-2-Special-Topics-in-System-Software/Diffusion-Detective/English ver" "$site_project/"
           cp -R "2026-2-Special-Topics-in-System-Software/Diffusion-Detective/Korean ver" "$site_project/"
@@ -68,7 +68,7 @@ jobs:
           for folder in ['English ver', 'Korean ver']:
               page = project / folder / 'index.html'
               html = page.read_text()
-              for filename in ['app.js', 'math.js', 'i18n.js', 'style.css', 'puzzle.css', 'puzzle.js', 'puzzle-math.js', 'equations.js']:
+              for filename in ['app.js', 'math.js', 'i18n.js', 'style.css', 'dial.css', 'dial.js', 'dial-math.js', 'equations.js']:
                   digest = sha256((project / filename).read_bytes()).hexdigest()[:12]
                   html = html.replace('"../' + filename + '"', '"../' + filename + '?v=' + digest + '"')
               page.write_text(html)
