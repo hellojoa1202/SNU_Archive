@@ -1,9 +1,9 @@
-/* Shared bilingual jigsaw interaction. No snapping, image recognition, or stored-noise replay. */
+/* One-step noise prediction experiment. Shared bilingual state and rendering. */
 (function(){
 'use strict';
 const M=PuzzleMath,$=id=>document.getElementById('jig-'+id),t=(en,ko)=>DiffusionI18n.text(en,ko);
 const blue='#375f87',orange='#bc8056';
-let model,start,sim,paths=[],selected=8,edited=false,extent=1.15,animation=null,active='time';
+let model,result,paths=[],selected=8,extent=1.15,active='sigma';
 const num=id=>Number($(id).value),fmt=(v,n=3)=>Number(v).toFixed(n);
 const art=new Image();art.src=new URL('assets/cat-photo.jpg',document.currentScript.src).href;
 function drawArt(c,x,y,w,h){const sw=Math.min(art.naturalWidth,art.naturalHeight*1.5),sh=sw/1.5;c.drawImage(art,(art.naturalWidth-sw)/2,(art.naturalHeight-sh)/2,sw,sh,x,y,w,h);}
@@ -28,62 +28,34 @@ function drawPuzzle(id,positions,score=null,colour=blue,viewExtent=extent){
  c.restore();
 }
 
+
 function highlight(key){active=key;document.querySelectorAll('[data-puzzle-term]').forEach(el=>el.classList.toggle('active',el.dataset.puzzleTerm.split(' ').includes(key)));}
-function frameIndex(){const n=sim.times.length-1;return Math.min(n,Math.round(num('progress')/1000*n));}
-function setExtent(){extent=1.05;for(let i=0;i<model.n;i++)extent=Math.max(extent,Math.abs(start[2*i])+.16,(Math.abs(start[2*i+1])+.15)/.7);}
-function build(){const dims={24:[6,4],60:[10,6],150:[15,10]}[num('pieces')];model=M.create(...dims);selected=Math.min(selected,model.n-1);paths=Array.from({length:model.n},(_,i)=>piecePath(i));reset();}
-function reset(){edited=false;start=M.forward(model,num('time'),num('seed'));setExtent();$('progress').value=0;resimulate();}
-function resimulate(){sim=M.simulate(model,start,num('time'),num('steps'),num('seed'),$('solver').value);render();}
+function build(){const dims={24:[6,4],60:[10,6],150:[15,10]}[num('pieces')];model=M.create(...dims);selected=Math.min(selected,model.n-1);paths=Array.from({length:model.n},(_,i)=>piecePath(i));update();}
+function update(){result=M.evaluate(model,num('sigma'),num('error'),num('seed'));extent=1.04;for(const positions of [result.observed,result.estimate])for(let i=0;i<model.n;i++)extent=Math.max(extent,Math.abs(positions[2*i])+.15,(Math.abs(positions[2*i+1])+.15)/.7);render();}
 function copy(){
- const j=frameIndex(),time=sim.times[j];
- $('time-out').textContent=fmt(num('time'),2);$('progress-out').textContent=Math.round(num('progress')/10)+'%';
- $('piece-status').textContent=t('Piece ','조각 ')+(selected+1)+' / '+model.n;
- $('start-status').textContent=edited?t('Position edited','위치 수정됨'):t('Position noise','위치 노이즈');
- $('live-note').textContent=active==='position'?t('The blue arrow shows the direction toward a more likely position.','파란 화살표는 더 가능성 높은 위치로 향하는 방향을 나타낸다.'):t('Noise scale = '+fmt(Math.sqrt(2*M.D*num('time')))+'. Increasing T spreads the pieces further.','노이즈 크기 = '+fmt(Math.sqrt(2*M.D*num('time')))+'. T가 커질수록 조각이 더 넓게 흩어진다.');
- $('reverse-note').textContent=t('Remaining time t = '+fmt(time,5)+'. Blue: deterministic path. Orange: a path with fresh noise.','남은 시간 t = '+fmt(time,5)+'. 파랑: 정해진 경로. 주황: 새로운 잡음이 더해지는 경로.');
- $('steps-out').textContent='Δt₀ = '+(sim.times[0]-sim.times[1]).toExponential(2);
- $('ode-error').textContent=M.rms(sim.ode[j],M.exactODE(model,start,time,num('time'))).toExponential(2);
- $('play').textContent=animation?t('Pause','일시정지'):t('Reassemble','다시 맞추기');
- $('ode-caption').textContent=$('solver').value==='exact'?t('Exact ODE steps','정확한 ODE 이동'):t('Euler steps','Euler 근사');
- $('sde-caption').textContent=$('solver').value==='exact'?t('Exact reverse transitions','정확한 역방향 전이'):t('Euler–Maruyama steps','Euler–Maruyama 근사');
+ $('sigma-out').textContent=fmt(result.sigma,2);$('error-out').textContent=fmt(num('error'),2);
+ $('signal-value').textContent=fmt(result.a);$('gain-value').textContent=fmt(result.gain);$('snr-value').textContent=Number.isFinite(result.snr)?fmt(result.snr,2):'∞';
+ $('noise-error').textContent=fmt(result.noiseError,4);$('position-error').textContent=fmt(result.positionError,4);
+ $('piece-status').textContent=t('Selected piece ','선택한 조각 ')+(selected+1)+' / '+model.n;
+ const i=2*selected;
+ $('live-note').textContent=result.sigma===0?t('σ = 0: no noise is added, so the estimate equals the original regardless of the noise prediction.','σ = 0: 노이즈가 없으므로 노이즈 예측값과 관계없이 원본 위치가 유지된다.'):num('error')===0?t('Zero prediction error: the algebra recovers every original position. This is the reference case with known noise.','예측 오차 0: 수식으로 원본 위치가 복원된다. 실제 노이즈를 아는 경우의 기준 결과이다.'):t('Prediction RMS '+fmt(result.noiseError,4)+' × amplification '+fmt(result.gain)+' = position RMS '+fmt(result.positionError,4)+'.','예측 RMS '+fmt(result.noiseError,4)+' × 증폭률 '+fmt(result.gain)+' = 위치 RMS '+fmt(result.positionError,4)+'.');
+ $('piece-values').textContent='xₜ = ('+fmt(result.observed[i])+', '+fmt(result.observed[i+1])+') → x̂₀ = ('+fmt(result.estimate[i])+', '+fmt(result.estimate[i+1])+')';
+ $('piece-error').textContent='δ = ('+fmt(result.delta[i])+', '+fmt(result.delta[i+1])+') → x̂₀ − x₀ = ('+fmt(result.estimate[i]-model.mu[i])+', '+fmt(result.estimate[i+1]-model.mu[i+1])+')';
  highlight(active);
 }
-function trajectory(j){
- const tracks=[sim.ode,sim.sde].map(xs=>xs.map(x=>[x[2*selected],x[2*selected+1]]));
- const all=tracks.flat(),xs=all.map(p=>p[0]),ys=all.map(p=>p[1]),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
- const scale=Math.min(390/Math.max(.03,xmax-xmin),120/Math.max(.03,ymax-ymin)),point=p=>[230+(p[0]-(xmin+xmax)/2)*scale,85+(p[1]-(ymin+ymax)/2)*scale];
- let out='';tracks.forEach((track,k)=>{const pts=track.map(point),color=k?orange:blue,path=ps=>ps.map((p,i)=>(i?'L':'M')+p.map(v=>v.toFixed(2)).join(',')).join(' ');out+='<path d="'+path(pts)+'" fill="none" stroke="'+color+'" opacity=".15"/><path d="'+path(pts.slice(0,j+1))+'" fill="none" stroke="'+color+'" stroke-width="2"/><circle cx="'+pts[j][0]+'" cy="'+pts[j][1]+'" r="3.5" fill="'+color+'"/>';});$('trajectory').innerHTML=out;
+function drawGain(){const svg=$('gain'),X=s=>45+s/.98*380,Y=g=>175-g/5*145;let d='';for(let j=0;j<=196;j++){const s=j*.005;d+=(j?'L':'M')+X(s).toFixed(2)+','+Y(M.coefficients(s).gain).toFixed(2);}let out='';for(const g of [0,1,2,3,4,5])out+='<path d="M45 '+Y(g)+'H425" stroke="#e1e6eb"/><text x="34" y="'+(Y(g)+3)+'" text-anchor="end">'+g+'</text>';for(const s of [0,.25,.5,.75,.98])out+='<text x="'+X(s)+'" y="195" text-anchor="middle">'+s+'</text>';out+='<path d="'+d+'" fill="none" stroke="'+blue+'" stroke-width="2"/><path d="M'+X(result.sigma)+' 175V'+Y(result.gain)+'" stroke="'+orange+'" stroke-dasharray="3 3"/><circle cx="'+X(result.sigma)+'" cy="'+Y(result.gain)+'" r="4" fill="'+orange+'"/><text x="45" y="16">σ / a</text><text x="425" y="214" text-anchor="end">σ</text>';svg.innerHTML=out;}
+function render(){if(!result)return;drawPuzzle('observed',result.observed,null,blue,extent);drawPuzzle('estimate',result.estimate,null,orange,extent);drawGain();copy();}
+for(const id of ['sigma','error','seed'])$(id).addEventListener('input',()=>{if(id==='seed')$('seed').value=Math.max(1,Math.min(9999,num('seed')||1));highlight(id);update();});
+$('pieces').addEventListener('input',()=>{highlight('position');build();});
+$('shuffle').addEventListener('click',()=>{$('seed').value=num('seed')%9999+1;highlight('seed');update();});
+$('perfect').addEventListener('click',()=>{$('error').value=0;highlight('error');update();});
+for(const id of ['observed','estimate']){
+ const canvas=$(id);
+ canvas.addEventListener('pointerdown',e=>{const positions=id==='observed'?result.observed:result.estimate,rect=canvas.getBoundingClientRect(),scale=Math.min((rect.width-30)/(2*extent),(rect.height-28)/(2*extent*.7)),x=(e.clientX-rect.left-rect.width/2)/scale,y=(e.clientY-rect.top-rect.height/2)/scale,ctx=canvas.getContext('2d');let found=-1;const order=Array.from({length:model.n},(_,i)=>i).filter(i=>i!==selected);order.push(selected);ctx.save();ctx.setTransform(1,0,0,1,0,0);for(const i of order)if(ctx.isPointInPath(paths[i],x-positions[2*i],y-positions[2*i+1]))found=i;ctx.restore();if(found<0)return;selected=found;canvas.focus({preventScroll:true});highlight('position');render();});
+ canvas.addEventListener('keydown',e=>{const d={ArrowLeft:-1,ArrowRight:1,ArrowUp:-model.cols,ArrowDown:model.cols}[e.key];if(d===undefined)return;e.preventDefault();selected=(selected+d+model.n)%model.n;highlight('position');render();});
 }
-function render(){
- if(!sim)return;const j=frameIndex(),time=sim.times[j];
- drawPuzzle('forward',start,M.score(model,start,num('time')),blue,extent);
- // Fixed shared scale preserves the visible motion and makes methods comparable.
- drawPuzzle('ode',sim.ode[j],null,blue,extent);drawPuzzle('sde',sim.sde[j],null,orange,extent);
- trajectory(j);copy();
-}
-function stop(){if(animation)cancelAnimationFrame(animation);animation=null;if(sim)copy();}
-$('play').addEventListener('click',()=>{
- if(animation){stop();return;}if(num('progress')>=1000)$('progress').value=0;
- const initial=num('progress'),begin=performance.now();
- function tick(now){const f=Math.min(1000,initial+(now-begin)/6500*1000);$('progress').value=Math.round(f);highlight('progress');render();if(f<1000)animation=requestAnimationFrame(tick);else{animation=null;copy();}}
- animation=requestAnimationFrame(tick);copy();
-});
-$('reset').addEventListener('click',()=>{stop();$('time').value=0;highlight('time');reset();});
-$('shuffle').addEventListener('click',()=>{stop();$('seed').value=num('seed')%9999+1;highlight('seed');reset();});
-$('pieces').addEventListener('input',()=>{stop();highlight('position');build();});
-$('time').addEventListener('input',()=>{stop();highlight('time');reset();});
-for(const id of ['steps','solver'])$(id).addEventListener('input',()=>{stop();highlight('steps');resimulate();});
-$('progress').addEventListener('input',()=>{stop();highlight('progress');render();});
-$('seed').addEventListener('input',()=>{stop();$('seed').value=Math.max(1,Math.min(9999,num('seed')||1));highlight('seed');reset();});
-let drag=null;const canvas=$('forward');
-function world(e){const rect=canvas.getBoundingClientRect(),scale=Math.min((rect.width-30)/(2*extent),(rect.height-28)/(2*extent*.7));return[(e.clientX-rect.left-rect.width/2)/scale,(e.clientY-rect.top-rect.height/2)/scale];}
-canvas.addEventListener('pointerdown',e=>{const [x,y]=world(e);let found=-1;const order=Array.from({length:model.n},(_,i)=>i).filter(i=>i!==selected);order.push(selected);const ctx=canvas.getContext('2d');ctx.save();ctx.setTransform(1,0,0,1,0,0);for(const i of order)if(ctx.isPointInPath(paths[i],x-start[2*i],y-start[2*i+1]))found=i;ctx.restore();if(found<0)return;stop();selected=found;drag={dx:x-start[2*selected],dy:y-start[2*selected+1]};canvas.setPointerCapture(e.pointerId);canvas.focus({preventScroll:true});highlight('position');render();});
-canvas.addEventListener('pointermove',e=>{if(!drag)return;const[x,y]=world(e);start[2*selected]=Math.max(-extent+.1,Math.min(extent-.1,x-drag.dx));start[2*selected+1]=Math.max(-extent*.7+.1,Math.min(extent*.7-.1,y-drag.dy));edited=true;$('progress').value=0;resimulate();});
-canvas.addEventListener('pointerup',()=>{drag=null;});canvas.addEventListener('pointercancel',()=>{drag=null;});
-canvas.addEventListener('keydown',e=>{const d={ArrowLeft:[-.015,0],ArrowRight:[.015,0],ArrowUp:[0,-.015],ArrowDown:[0,.015]}[e.key];if(!d)return;e.preventDefault();stop();edited=true;start[2*selected]+=d[0];start[2*selected+1]+=d[1];$('progress').value=0;setExtent();highlight('position');resimulate();});
-document.querySelectorAll('[data-puzzle-term]').forEach(el=>el.addEventListener('pointerenter',()=>{highlight(el.dataset.puzzleTerm.split(' ')[0]);copy();}));
+document.querySelectorAll('[data-puzzle-term]').forEach(el=>el.addEventListener('pointerenter',()=>highlight(el.dataset.puzzleTerm.split(' ')[0])));
 art.onload=render;art.onerror=()=>{$('live-note').textContent=t('Image could not load. Reload the page.','이미지를 불러오지 못했다. 새로고침 필요.');};
-window.addEventListener('diffusionlanguagechange',render);window.addEventListener('resize',render);
-build();
-window.JigsawLab={stop,snapshot:()=>({n:model.n,selected,edited,extent,start:Array.from(start),ode:Array.from(sim.ode[frameIndex()]),sde:Array.from(sim.sde[frameIndex()]),time:sim.times[frameIndex()],active,loaded:art.complete&&art.naturalWidth>0})};
+window.addEventListener('diffusionlanguagechange',render);window.addEventListener('resize',render);build();
+window.JigsawLab={snapshot:()=>({n:model.n,selected,extent,sigma:result.sigma,error:num('error'),seed:num('seed'),observed:Array.from(result.observed),estimate:Array.from(result.estimate),noiseError:result.noiseError,positionError:result.positionError,gain:result.gain,active,loaded:art.complete&&art.naturalWidth>0})};
 })();

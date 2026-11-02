@@ -5,12 +5,12 @@
 - When the user gives feedback in Korean, update both versions together. Their experiments, equations and controls must remain equivalent.
 - Share numerical logic in math.js, interactions in app.js, translations in i18n.js and design in style.css. Do not duplicate computation by language.
 - English ver/index.html and Korean ver/index.html use the same markup except the html language. Keep both in sync. Update English prose in both HTML files and its English ver/Korean entry in i18n.js together.
-- Language changes retain slider values, random seeds, selected pieces, manually edited positions and sampling progress.
+- Language changes retain slider values, random seeds, selected pieces, noise levels, prediction error and existing sampling progress.
 - Keep the scrolling essay layout and small README text using <sub> markup.
 - The project README contains only two execution links, Korean and English. The archive root README stays a plain EWHA-style table without links. The course README is only its small course title.
 - Deploy through this repository's GitHub Pages workflow. Do not update a Sites copy unless requested.
 
-- Preserve the Fourier, inverse-filter, bias–variance and circle SDE/ODE experiments. The opening puzzle uses independent Gaussian piece positions around a known reference layout. Keep its introductory explanation simple; place derivations and numerical settings in an optional details section. Use a real photographic image, with clear interlocking jigsaw edges. No AI-generated artwork or landscapes.
+- Preserve the Fourier, inverse-filter, bias–variance and circle SDE/ODE experiments. Keep the original order: forward, inverse, regularization, puzzle, generation, notes. The section 04 puzzle illustrates the lecture 1 noise-to-x prediction identity and its error amplification, using a synthetic noise predictor with explicitly controlled error. Do not use the puzzle to compare SDE/ODE samplers. Keep its introductory explanation simple; place derivations and numerical settings in an optional details section. Use a real photographic image, with clear interlocking jigsaw edges. No AI-generated artwork or landscapes.
 - Highlight equation terms when controls change. Positions remain continuous, without grid snapping.
 
 - Use compact typography and impersonal descriptive prose in both languages. Korean uses concise declarative forms such as “감소한다”, not conversational endings or invitations. Do not replace the page structure during local revisions.

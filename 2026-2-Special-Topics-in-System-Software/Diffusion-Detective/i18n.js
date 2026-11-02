@@ -4,16 +4,16 @@
   'use strict';
   const prose={
   "prose-00": {
-    "en": "Diffusion,<br><span>piece by piece.</span>",
-    "ko": "퍼즐로 보는<br><span>확산과 역과정</span>"
+    "en": "Diffusion and inversion:<br><span>a spectral view.</span>",
+    "ko": "확산과 역과정의<br><span>주파수 해석</span>"
   },
   "prose-01": {
-    "en": "A jigsaw experiment in noise, score, and two reverse paths.",
-    "ko": "노이즈, score, 두 가지 역과정을 살펴보는 직소퍼즐 실험."
+    "en": "Interactive experiments in diffusion, inversion, and noise prediction.",
+    "ko": "확산, 역문제, 노이즈 예측을 연결하는 인터랙티브 실험."
   },
   "prose-02": {
-    "en": "How do scattered pieces come together? Start with the puzzle, then explore the equations and spectral experiments below.",
-    "ko": "흩어진 조각은 어떻게 다시 모일까? 퍼즐의 움직임에서 시작해 수식과 아래의 심화 실험으로 이어진다."
+    "en": "How does diffusion weaken a signal, and why does inversion amplify errors? Spectral experiments establish the principle; a photographic jigsaw applies it to noise prediction.",
+    "ko": "확산은 신호를 어떻게 약하게 만들고, 역산은 왜 오차를 증폭할까? 주파수 실험으로 원리를 살펴본 뒤 사진 퍼즐에서 노이즈 예측에 적용한다."
   },
   "prose-03": {
     "en": "Start with a probability density wrapped around a circle, with 0 and 2π meeting at the same point. Brownian motion spreads its mass. The evolving density follows the <strong>heat equation</strong>.",
@@ -56,12 +56,12 @@
     "ko": "기대 RMSE는 √𝔼‖p̂ − p₀‖²이다. 점선은 현재 잡음 실현값의 복원 오차를 나타낸다. 알려진 원본을 기준으로 기대 오차와 실제 오차를 비교한다."
   },
   "prose-13": {
-    "en": "Noise moves each piece away from its place. The score points toward more likely positions. Two reverse processes bring the pieces back into a coherent picture.",
-    "ko": "노이즈는 조각의 위치를 흐트러뜨린다. Score는 더 가능성 높은 위치를 가리킨다. 두 가지 역과정으로 조각이 다시 모이는 모습을 비교한다."
+    "en": "The same inversion question appears in diffusion models: how does an error in predicted noise affect the recovered signal? Here the signal is a vector of puzzle-piece positions.",
+    "ko": "앞에서 본 역산의 문제가 diffusion model에서도 나타난다. 노이즈 예측이 틀리면 복원 결과는 얼마나 달라질까? 이 실험에서는 퍼즐 조각의 위치를 신호로 사용한다."
   },
   "prose-14": {
-    "en": "This puzzle uses a known reference layout to make the score visible. The experiments below retain the spectral view of diffusion and the distinction between inversion and generation.",
-    "ko": "이 퍼즐은 알려진 완성 배치로 score의 의미를 시각화한다. 아래의 심화 실험은 주파수 관점의 확산과 역산·생성의 차이를 다룬다."
+    "en": "The connection to the earlier inverse problem is the amplification factor. A weak signal makes inversion sensitive to error. The next section returns to score-based generation as a separate experiment.",
+    "ko": "앞의 역문제와 연결되는 핵심은 오차 증폭이다. 신호가 약할수록 역산은 작은 오차에 민감해진다. 다음 절에서는 별도의 실험으로 score 기반 생성을 살펴본다."
   },
   "prose-15": {
     "en": "So far, the unknown was a density recovered from its measured coefficients. Score-based generation starts with samples instead. The <strong>score sₜ(θ) = ∂θ log pₜ(θ)</strong> guides particles through a prescribed family of densities. Here it follows directly from the Fourier expansion.",
@@ -96,16 +96,16 @@
     "ko": "정확한 score와 연속시간에서 두 과정의 주변분포는 동일하다. 개별 샘플의 경로는 서로 다르다."
   },
   "prose-23": {
-    "en": "The puzzle uses an independent Gaussian model with a known reference layout and analytic score. Fourier evolution, inverse filters, and expected error in the spectral experiments are also analytic.",
-    "ko": "퍼즐은 알려진 기준 배치와 해석적 score를 갖는 독립 가우시안 모델을 사용한다. 주파수 실험의 Fourier 시간 변화, 역산 필터와 기대 오차도 해석식으로 계산한다."
+    "en": "Fourier evolution, inverse filters, expected error, and the puzzle reconstruction identity are analytic. The puzzle uses known positions and synthetic noise predictions, with adjustable prediction error.",
+    "ko": "Fourier 시간 변화, 역산 필터, 기대 오차와 퍼즐의 추정식은 해석식으로 계산한다. 퍼즐에서는 알려진 위치와 인위적으로 구성한 노이즈 예측을 사용하며 예측 오차를 조절한다."
   },
   "prose-24": {
     "en": "Coefficient measurement noise and Brownian sampling noise are separate. Reconstructions retain negative values. Particle generation uses numerical integration, 512 samples, and 32 histogram bins.",
     "ko": "측정 오차와 Brownian 샘플링 잡음은 별개이다. 역산 결과의 음수 값도 유지한다. 원 위의 생성 실험은 표본 512개와 히스토그램 32구간을 사용한다."
   },
   "prose-25": {
-    "en": "Lecture 2: scores and denoising. Lecture 3: forward SDEs, Fokker–Planck, reverse SDEs, and probability flow ODEs. Lecture A: Euler and Euler–Maruyama.",
-    "ko": "Lecture 2: score와 denoising. Lecture 3: forward SDE, Fokker–Planck, reverse SDE, probability flow ODE. Lecture A: Euler와 Euler–Maruyama."
+    "en": "Lecture 1: noise and x-prediction parameterizations. Lecture 2: scores and denoising. Lecture 3: reverse SDEs and probability flow ODEs. Lecture A: Euler and Euler–Maruyama.",
+    "ko": "Lecture 1: 노이즈 예측과 원본 예측의 변환. Lecture 2: score와 denoising. Lecture 3: reverse SDE와 probability flow ODE. Lecture A: Euler와 Euler–Maruyama."
   },
   "link-forward-title": {
     "en": "Selected Fourier mode",
@@ -140,124 +140,92 @@
     "ko": "역방향 시간 간격은 Δr = T/N이다. Euler는 현재 위치와 시점의 score를 사용하며, Euler–Maruyama는 독립적인 표준정규 난수 ξₙ을 추가한다. Δr의 감소는 시간 해상도를 높이지만 유한 표본의 변동을 제거하지는 않는다."
   },
   "jig-title": {
-    "en": "Diffusion, one piece at a time",
-    "ko": "조각의 움직임으로 보는 확산"
+    "en": "A puzzle of noise prediction",
+    "ko": "노이즈 예측으로 복원하는 퍼즐"
   },
-  "jig-intro1": {
-    "en": "01 · Add position noise",
-    "ko": "01 · 위치에 노이즈 추가"
+  "jig-forward-copy": {
+    "en": "Noise moves the pieces; aₜ also contracts their positions toward the center. The photograph and the shapes of the pieces remain fixed.",
+    "ko": "노이즈가 조각을 흩뜨리고, aₜ는 위치를 중심 쪽으로 축소한다. 사진과 조각의 모양은 유지된다."
   },
-  "jig-intro2": {
-    "en": "02 · Follow the score",
-    "ko": "02 · Score 방향으로 이동"
+  "jig-sigma-label": {
+    "en": "Noise level σₜ",
+    "ko": "노이즈 수준 σₜ"
   },
-  "jig-intro3": {
-    "en": "03 · Compare two paths",
-    "ko": "03 · 두 경로 비교"
-  },
-  "jig-drag": {
-    "en": "Drag a piece · arrow keys to move",
-    "ko": "조각 드래그 · 방향키로 이동"
-  },
-  "jig-reference": {
-    "en": "Reference picture",
-    "ko": "완성 그림"
+  "jig-error-label": {
+    "en": "Prediction error η",
+    "ko": "예측 오차 η"
   },
   "jig-pieces-label": {
     "en": "Pieces",
     "ko": "조각 수"
   },
-  "jig-noise": {
-    "en": "Noise amount",
-    "ko": "노이즈 크기"
+  "jig-observed-title": {
+    "en": "NOISY OBSERVATION · xₜ",
+    "ko": "노이즈가 섞인 배치 · xₜ"
+  },
+  "jig-estimate-title": {
+    "en": "RECONSTRUCTED POSITIONS · x̂₀",
+    "ko": "추정한 원본 배치 · x̂₀"
   },
   "jig-shuffle": {
     "en": "New noise",
     "ko": "다른 노이즈"
   },
-  "jig-reset": {
-    "en": "Noise 0",
-    "ko": "노이즈 0"
+  "jig-perfect": {
+    "en": "Zero prediction error",
+    "ko": "예측 오차 0"
   },
-  "jig-control-note": {
-    "en": "The picture stays the same. Only the positions change.",
-    "ko": "그림은 유지되고 조각의 위치만 바뀐다."
+  "jig-denoise-copy": {
+    "en": "Subtract the predicted noise, then undo the contraction. The orange outline marks the same piece in the reconstructed picture.",
+    "ko": "예측한 노이즈를 뺀 뒤 축소된 크기를 되돌린다. 주황색 윤곽은 추정 결과에서 같은 조각을 표시한다."
   },
-  "jig-symbols": {
-    "en": "x₀: starting position · T: noise time · ε: random displacement · D = 0.03",
-    "ko": "x₀: 시작 위치 · T: 노이즈 시간 · ε: 무작위 변위 · D = 0.03"
+  "jig-predictor": {
+    "en": "The predictor is a controlled simulation: ε̂ = ε + ηz, with independent standard-normal z. The slider changes its error, not a trained network. η = 0 uses the true injected noise as an ideal reference.",
+    "ko": "추정 노이즈는 ε̂ = ε + ηz로 구성한다. z는 독립적인 표준정규 난수이고, η로 예측 오차를 조절한다. 학습된 신경망 대신 예측 오차를 가정하는 실험이다. η = 0은 실제로 더한 노이즈를 사용하는 이상적인 기준이다."
   },
-  "jig-score-title": {
-    "en": "What moves a piece?",
-    "ko": "조각은 어느 방향으로 움직일까?"
+  "jig-error-title": {
+    "en": "Why the same error matters more at high noise",
+    "ko": "같은 예측 오차가 더 크게 나타나는 이유"
   },
-  "jig-score-copy": {
-    "en": "The blue arrow is the score. In this model, it points from the current position x toward the reference position μ. As noise decreases, the same displacement produces a stronger score.",
-    "ko": "파란 화살표가 score이다. 이 모델에서는 현재 위치 x에서 기준 위치 μ를 향한다. 노이즈가 줄어들수록 같은 위치 차이에 대한 score가 커진다."
+  "jig-error-copy": {
+    "en": "If the prediction misses the noise by δ, the position error is multiplied by σₜ/aₜ. More noise means less signal, so a small prediction error can leave a visibly misaligned puzzle.",
+    "ko": "노이즈 예측이 δ만큼 틀리면 위치 오차에는 σₜ/aₜ가 곱해진다. 노이즈가 커지고 신호가 약해질수록 작은 예측 오차도 눈에 띄는 조각 어긋남으로 이어진다."
   },
-  "jig-compare": {
-    "en": "Two ways to reassemble",
-    "ko": "다시 모이는 두 가지 경로"
+  "jig-noise-rms": {
+    "en": "Noise prediction RMS",
+    "ko": "노이즈 예측 RMS"
   },
-  "jig-compare-copy": {
-    "en": "Both start from the same scattered pieces. The ODE follows a fixed path. The SDE adds fresh random motion along the way.",
-    "ko": "같은 배치에서 출발한다. ODE는 정해진 경로를 따르고, SDE는 이동 중에도 새로운 무작위 흔들림을 더한다."
+  "jig-gain-label": {
+    "en": "Amplification σₜ/aₜ",
+    "ko": "증폭률 σₜ/aₜ"
   },
-  "jig-progress-label": {
-    "en": "Reverse progress",
-    "ko": "역과정 진행률"
+  "jig-position-rms": {
+    "en": "Position RMS",
+    "ko": "위치 RMS"
   },
-  "jig-path-title": {
-    "en": "One piece, two trajectories",
-    "ko": "한 조각의 두 이동 경로"
+  "jig-detail-title": {
+    "en": "Derivation and connection to the lecture",
+    "ko": "수식 유도와 강의 내용 연결"
   },
-  "jig-path-copy": {
-    "en": "Blue: ODE · Orange: SDE. A smooth return and a noisy return can lead to the same final distribution.",
-    "ko": "파랑: ODE · 주황: SDE. 매끄러운 경로와 흔들리는 경로가 같은 최종 분포로 이어질 수 있다."
+  "jig-lecture": {
+    "en": "Lecture 1, “One model, three parameterizations” (slide 60/85), converts noise prediction into x-prediction. Here aₜ denotes the lecture’s ᾱₜ, and σₜ = √(1 − aₜ²). All formulas apply coordinate by coordinate.",
+    "ko": "강의 1의 “One model, three parameterizations”(60/85쪽)는 노이즈 예측과 원본 예측 사이의 변환을 다룬다. 여기서 aₜ는 강의의 ᾱₜ이고, σₜ = √(1 − aₜ²)이다. 모든 식은 각 좌표에 적용된다."
   },
-  "jig-math-title": {
-    "en": "Equations and numerical accuracy",
-    "ko": "수식과 수치 계산의 정확도"
+  "jig-loss": {
+    "en": "Define SNR = aₜ²/σₜ². Then the squared reconstruction error is the squared noise-prediction error divided by SNR. Equal noise-prediction error at two noise levels need not imply equal reconstruction error.",
+    "ko": "SNR = aₜ²/σₜ²로 두면 원본 추정의 제곱오차는 노이즈 예측의 제곱오차를 SNR로 나눈 값이다. 서로 다른 노이즈 수준에서 예측 오차가 같아도 원본 추정 오차는 달라질 수 있다."
   },
-  "jig-assumption": {
-    "en": "Each piece position has a Gaussian distribution around its known reference μ. Positions are independent, with σ₀ = 0.004. The model illustrates diffusion of positions; it does not infer the image or discover the solution to an unknown puzzle.",
-    "ko": "각 조각의 위치는 알려진 기준 위치 μ 주변의 가우시안 분포를 따른다. 조각의 위치는 독립이고 σ₀ = 0.004이다. 위치의 확산을 보여주는 모델이며, 그림을 인식하거나 모르는 퍼즐의 정답을 찾는 방식은 아니다."
-  },
-  "jig-derive": {
-    "en": "Differentiating log pₜ = constant − ‖x − μ‖²/(2v(t)) gives the score above. The arrow displays its direction, with length capped for readability.",
-    "ko": "log pₜ = 상수 − ‖x − μ‖²/(2v(t))를 x로 미분하면 위의 score를 얻는다. 화살표는 그 방향을 표시하며 길이는 화면에 맞게 제한한다."
-  },
-  "jig-marginals": {
-    "en": "With an exact score and initial samples from pT, both continuous-time processes have distribution pₜ at the same remaining time. Their individual paths differ. Manually moving a piece changes the initial distribution, so this equality no longer applies to that edited sample.",
-    "ko": "정확한 score를 사용하고 pT에서 출발하면 두 연속시간 과정은 같은 남은 시간에 같은 분포 pₜ를 갖는다. 개별 경로는 다르다. 조각을 직접 옮기면 초기분포가 바뀌므로 수정된 배치에 이 일치를 적용할 수 없다."
-  },
-  "jig-solver-label": {
-    "en": "Calculation",
-    "ko": "계산 방법"
-  },
-  "jig-steps-label": {
-    "en": "Steps",
-    "ko": "계산 횟수"
+  "jig-scope": {
+    "en": "A puzzle image supplies recognizable pieces; the calculation acts on their continuous positions. The known original and injected noise make the error measurable. This is a single noise level and one reconstruction identity, rather than a full generative sampler or an image-recognition puzzle solver.",
+    "ko": "사진은 조각을 구분하는 역할을 하고 계산 대상은 연속적인 조각 위치이다. 원본과 실제 노이즈를 알고 있어 오차를 측정할 수 있다. 한 노이즈 수준에서의 추정식을 다루며 전체 생성 샘플러나 그림 인식 기반 퍼즐 풀이를 구현한 것은 아니다."
   },
   "jig-seed-label": {
     "en": "Random seed",
     "ko": "난수 시드"
   },
-  "jig-error-label": {
-    "en": "ODE error against the exact solution",
-    "ko": "정확한 해 대비 ODE 오차"
-  },
-  "jig-exact": {
-    "en": "Default: exact Gaussian updates. Let z = x − μ, v = v(t), v′ = v(t − Δr), and q = v′/v. The ODE scales z by √q. The SDE draws from its exact reverse conditional distribution:",
-    "ko": "기본값은 정확한 가우시안 갱신이다. z = x − μ, v = v(t), v′ = v(t − Δr), q = v′/v로 둔다. ODE는 z를 √q배로 줄이고, SDE는 정확한 역방향 조건부분포에서 뽑는다."
-  },
-  "jig-grid": {
-    "en": "Steps are spaced uniformly in log v(t). Euler and Euler–Maruyama approximate the continuous equations; increasing the step count reduces discretization error. Slider frames reuse the same ε for comparison and are not a Brownian trajectory. A small final variance remains: no pieces are snapped to the grid.",
-    "ko": "시간 격자는 log v(t)를 균등하게 나눈다. Euler와 Euler–Maruyama는 연속 방정식을 근사하며 계산 횟수를 늘리면 이산화 오차가 줄어든다. 노이즈 슬라이더는 비교를 위해 같은 ε를 사용하며 Brownian 경로를 재생하지 않는다. 마지막에도 작은 분산이 남고, 조각을 정답 위치에 강제로 붙이지 않는다."
-  },
   "jig-credit": {
-    "en": "center-cropped for the puzzle; photo adaptation under the same license",
-    "ko": "퍼즐에 맞춰 중앙 크롭 · 사진 변형물에 동일 라이선스 적용"
+    "en": "center-cropped; photo adaptation under the same license",
+    "ko": "중앙 크롭 · 사진 변형물에 동일 라이선스 적용"
   }
 };
   const ui={
@@ -282,7 +250,7 @@
   "Five experiments, one model": "하나의 모델, 다섯 가지 실험",
   "Analytic Fourier dynamics": "해석적으로 계산하는 Fourier 모델",
   "Read, adjust, follow the change ↓": "매개변수와 수식의 실시간 연동",
-  "01 / FORWARD DIFFUSION": "01 / 순방향 확산",
+  "01 / FORWARD DIFFUSION": "01 / 정방향 확산",
   "03 / THE INVERSE PROBLEM": "03 / 역문제",
   "04 / BIAS–VARIANCE TRADEOFF": "04 / 편향과 분산",
   "05 / FROM INVERSION TO GENERATION": "05 / 복원에서 생성으로",
@@ -370,7 +338,15 @@
   "Tabby cat photograph used for the jigsaw": "직소퍼즐에 사용한 줄무늬 고양이 사진",
   "PROBABILITY FLOW ODE puzzle positions": "Probability flow ODE에 따른 퍼즐 위치",
   "REVERSE SDE puzzle positions": "역 SDE에 따른 퍼즐 위치",
-  "Selected puzzle piece trajectories": "선택한 조각의 이동 경로"
+  "Selected puzzle piece trajectories": "선택한 조각의 이동 경로",
+  "02 / THE INVERSE PROBLEM": "02 / 역문제",
+  "03 / BIAS–VARIANCE TRADEOFF": "03 / 편향과 분산",
+  "04 / NOISE PREDICTION": "04 / 노이즈 예측",
+  "Noise prediction puzzle": "노이즈 예측과 퍼즐",
+  "Five experiments, linked by noise": "노이즈로 연결되는 다섯 가지 실험",
+  "Noisy puzzle positions. Click a piece or use arrow keys to select.": "노이즈가 섞인 퍼즐 위치. 클릭 또는 방향키로 조각 선택.",
+  "Estimated puzzle positions. Click a piece or use arrow keys to select.": "추정한 퍼즐 위치. 클릭 또는 방향키로 조각 선택.",
+  "Noise level versus reconstruction error amplification": "노이즈 수준에 따른 원본 추정 오차의 증폭률"
 };
   const requested=new URLSearchParams(location.search).get('lang');
   let language=requested==='ko'||(requested!=='en'&&/\/Korean(?:%20| )ver\/(?:index\.html)?$/.test(location.pathname))?'ko':'en';
