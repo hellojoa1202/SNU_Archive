@@ -10,7 +10,7 @@
 - The project README contains only two execution links, Korean and English. The archive root README stays a plain EWHA-style table without links. The course README is only its small course title.
 - Deploy through this repository's GitHub Pages workflow. Do not update a Sites copy unless requested.
 
-- The accepted topic is now CH4 conditional flow matching: design a coupling, average conditional velocities, distinguish marginal transport from labeled assignments, and compare Euler/Heun at equal NFE. CH3 continuity supports the transport proof. Do not restore denoising/Jacobian/MAP/Fourier sections.
+- The accepted topic is conditional flow matching: design a coupling, average conditional velocities, distinguish marginal transport from labeled assignments, and compare Euler/Heun at equal NFE. The continuity equation supports the transport proof. Do not restore denoising/Jacobian/MAP/Fourier sections.
 - Four successive views share a single model, selection and clock. Preserve draggable starting centers, assignment exchange, spatial field probing and numerical solver comparison. Keep the real photo with interlocking pieces. The image is an identity marker; the model transports continuous coordinates, not image pixels or physically interlocking shapes.
 - The analytic model uses 12 translated Gaussian components of fixed tau=.16. The same Gaussian offset is carried between paired endpoints. Mixture velocities use posterior weights, not uniform averaging. Changing the permutation preserves endpoint densities, not piece identities. Do not claim exact puzzle assembly by the marginal ODE.
 - Report numerical errors against the refined RK4 reference and equal field-evaluation budgets. Do not claim the reference refinement is a certified error bound.
@@ -18,3 +18,5 @@
 
 - The proposal now requires substantial derivations, not only short captions. Keep the local conditional-risk and energy decompositions, half-plane probability flux, material acceleration and convergence discussion visible. Preserve minimum-cost assignment, editable candidate velocity, movable probability boundary and the equal-NFE convergence table.
 - Use a white page, header, canvas and equation background. The English one-page Times New Roman submission PDF is stored outside the public repository in the workspace Proposal/ folder; do not publish its student identification details.
+
+- Do not label concepts by lecture/chapter numbers; those numbers were personal file labels. Use concept names in both languages. Use 1., 2., 3., 4. for visible section numbering. Apply content feedback to both language versions together.

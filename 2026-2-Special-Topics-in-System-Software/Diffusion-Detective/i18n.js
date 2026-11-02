@@ -30,8 +30,8 @@ const prose={
     "ko": "결합은 출발점에 목적지를 지정한다. 속도장은 현재 위치와 시간으로 이동을 결정한다. 두 방식은 출발·도착 분포가 같아도 서로 다른 경로를 만들 수 있다."
   },
   "hero-meta": {
-    "en": "CH4 · Conditional Flow Matching → CH3 · continuity equation → numerical integration",
-    "ko": "CH4 · Conditional Flow Matching → CH3 · 연속방정식 → 수치 적분"
+    "en": "Conditional Flow Matching → continuity equation → numerical integration",
+    "ko": "Conditional Flow Matching → 연속방정식 → 수치 적분"
   },
   "coupling-intro": {
     "en": "Twelve photo pieces mark twelve starting centers Aᵢ. Each is paired with a destination Bπ(i). Swap two assignments: the destination set stays fixed, but the intermediate routes change.",
@@ -190,8 +190,8 @@ const prose={
     "ko": "네 화면은 하나의 결합, 선택 조각, 시간을 공유한다. 동일 가중치 성분 12개와 고정 폭 τ = 0.16을 사용한다. 속도장과 밀도는 해석적으로, 궤적은 수치적으로 계산한다. 신경망 학습 없이 좌표를 운반하며, 이미지 픽셀이나 물리적으로 맞물리는 조각을 시뮬레이션하지 않는다. 표본 96개의 이동은 512단계 RK4, 추적 중심의 경로는 2,048단계 RK4로 계산한다."
   },
   "sources": {
-    "en": "Course: Lecture 4, slides 39–48 (couplings, conditional velocity, objective equivalence); Lecture 3 (continuity and probability flow); differential-equations appendix (numerical integration). The translated-mixture puzzle is an analytic example constructed for this project.",
-    "ko": "강의: Lecture 4의 39–48쪽(결합, 조건부 속도, 목적함수 동치), Lecture 3(연속방정식과 probability flow), 미분방정식 부록(수치 적분). 평행이동 혼합분포 퍼즐은 이 프로젝트를 위해 구성한 해석적 예제이다."
+    "en": "Course connections: couplings, conditional velocity and objective equivalence; the continuity equation and probability flow; numerical integration. The translated-mixture puzzle is an analytic example constructed for this project.",
+    "ko": "강의 연계 개념: 대응 관계, 조건부 속도와 목적함수 동치; 연속방정식과 확률 흐름; 수치 적분. 평행이동 혼합분포 퍼즐은 이 프로젝트를 위해 구성한 해석적 예제이다."
   },
   "photo-note": {
     "en": "center-cropped; adaptation under the same license",
