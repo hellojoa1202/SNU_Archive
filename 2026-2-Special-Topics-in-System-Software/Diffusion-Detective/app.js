@@ -1,187 +1,54 @@
+/* Analytic visualizations shared by both languages. */
+(function(){
 'use strict';
-const M=Spectral;
-const t=DiffusionI18n.text;
-const $=id=>document.getElementById(id);
-const colors={teal:'#375f87',orange:'#b17d56',slate:'#a5b4c1',dark:'#384e5b',grid:'#eaf0f2'};
-const state={source:null,observed:null,seed:1701,simulation:null,simulationKey:''};
-
-const read=id=>Number($(id).value);
-const format=n=>n===0?'0':Math.abs(n)>=10000||Math.abs(n)<.0001?n.toExponential(1):n.toFixed(3);
-const scientific=n=>n===0?'0':n.toExponential(1);
-const width=svg=>Math.max(280,Math.min(960,svg.getBoundingClientRect().width||760));
-const values=c=>M.sample(c,257);
-function path(data,X,Y){return data.map((p,i)=>(i?'L':'M')+X(i).toFixed(2)+','+Y(p).toFixed(2)).join(' ');}
-function plot(svg,series,options={}){
-  const W=width(svg),H=options.height||220,L=45,R=14,T=20,B=30;
-  const all=series.flatMap(s=>s.data).filter(Number.isFinite);
-  const log=options.log===true;
-  let lo=options.min??Math.min(0,...all),hi=options.max??Math.max(1.65,...all);
-  if(log){lo=options.min??Math.max(1e-6,Math.min(...all.filter(v=>v>0))*.65);hi=options.max??Math.max(...all)*1.2;}
-  else {const pad=Math.max(.01,hi-lo)*.06;lo-=pad;hi+=pad;}
-  if(hi<=lo)hi=lo+1;
-  const tx=v=>log?Math.log10(Math.max(lo,v)):v;
-  const Y=v=>T+(tx(hi)-tx(v))/(tx(hi)-tx(lo))*(H-T-B);
-  const X=i=>L+i/(Math.max(2,series[0].data.length)-1)*(W-L-R);
-  let out='';
-  if(log){
-    for(let p=Math.ceil(Math.log10(lo));p<=Math.floor(Math.log10(hi));p++){
-      if(Math.floor(Math.log10(hi))-Math.ceil(Math.log10(lo))>10&&p%3!==0)continue;
-      const yy=Y(10**p);out+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="${colors.grid}"/><text x="${L-8}" y="${yy+3}" text-anchor="end">1e${p}</text>`;
-    }
-  }else{
-    for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,yy=Y(v);out+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="${colors.grid}"/><text x="${L-7}" y="${yy+3}" text-anchor="end">${Math.abs(v)>1000?v.toExponential(0):v.toFixed(1)}</text>`;}
-  }
-  const labels=options.labels||['0','π/2','π','3π/2','2π'];
-  labels.forEach((v,i)=>{out+=`<text x="${L+i/(labels.length-1)*(W-L-R)}" y="${H-8}" text-anchor="middle">${v}</text>`;});
-  for(const s of series){
-    const d=path(s.data,X,Y);
-    out+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.width||1.8}" ${s.dashed?'stroke-dasharray="4 4"':''} stroke-linejoin="round"/>`;
-  }
-  if(options.marker!==undefined){const x=L+options.marker*(W-L-R);out+=`<line x1="${x}" x2="${x}" y1="${T}" y2="${H-B}" stroke="${colors.teal}" stroke-dasharray="3 4" stroke-opacity=".6"/>`;}
-  out+=`<text x="${L}" y="11" style="font-size:8px">${options.ylabel||'p(θ)'}</text>`;
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.innerHTML=out;
+const M=DiffusionMath,$=id=>document.getElementById(id),t=(en,ko)=>DiffusionI18n.text(en,ko),blue='#375f87',orange='#bc8056';
+const state={sigma:.45,scheme:'ddpm',y:.35,u:0,seed:12,draw:0,active:'sigma'};
+const fmt=(x,n=3)=>(Math.abs(x)<5e-10?0:x).toFixed(n);
+const X=y=>48+(y+3)/6*564;
+const path=points=>points.map((p,i)=>(i?'L':'M')+p.map(x=>x.toFixed(2)).join(',')).join(' ');
+function highlight(key){state.active=key;document.querySelectorAll('[data-link]').forEach(el=>el.classList.toggle('active',el.dataset.link.split(' ').includes(key)));}
+function densityPlot(){
+ const pairs=Array.from({length:401},(_,i)=>{const y=-3+i*6/400;return[y,M.density(y,state.sigma,state.scheme)];}),top=Math.max(.7,...pairs.map(p=>p[1])),Y=v=>207-v/top*156,{a}=M.coefficients(state.sigma,state.scheme);
+ let s='<path d="M48 207H612" class="axis"/>';
+ for(const x of [-3,-2,-1,0,1,2,3])s+='<text x="'+X(x)+'" y="228" text-anchor="middle">'+x+'</text>';
+ s+='<path d="'+path(pairs.map(([x,p])=>[X(x),Y(p)]))+'L612 207H48Z" fill="'+blue+'" opacity=".08"/><path d="'+path(pairs.map(([x,p])=>[X(x),Y(p)]))+'" stroke="'+blue+'" stroke-width="2" fill="none"/>';
+ for(const x of [-a,a])s+='<path d="M'+X(x)+' 43V207" stroke="#b9c9d7" stroke-dasharray="3 4"/>';
+ const samples=M.samples(state.sigma,state.scheme,state.seed);
+ for(let i=0;i<samples.length;i++){const p=samples[i];if(p.y>=-3&&p.y<=3)s+='<circle cx="'+X(p.y)+'" cy="'+(248+i%3*5)+'" r="2" fill="'+(p.x0<0?blue:orange)+'" opacity=".65"/>';}
+ s+='<path d="M'+X(state.y)+' 29V207" stroke="'+orange+'" stroke-width="1.5"/><circle cx="'+X(state.y)+'" cy="'+Y(M.density(state.y,state.sigma,state.scheme))+'" r="4" fill="'+orange+'"/><text x="'+X(state.y)+'" y="19" text-anchor="middle">y = '+fmt(state.y,2)+'</text>';
+ $('density-plot').innerHTML=s;
+ $('sample-caption').textContent=t('80 forward samples · dashed lines: component means ±aₜ · display window [−3, 3]','정방향 표본 80개 · 점선: 성분 평균 ±aₜ · 표시 구간 [−3, 3]');
 }
-function controls(){
-  $('phase-out').textContent=read('phase')+'°';
-  $('detail-k-out').textContent=read('detail-k');
-  $('amplitude-out').textContent=read('amplitude').toFixed(3);
-  $('time-out').textContent=read('time').toFixed(3);
-  $('noise-out').textContent=read('noise').toFixed(4);
-  $('cutoff-out').textContent=read('cutoff');
-  $('lambda-out').textContent=read('lambda').toFixed(1);
-  $('risk-lambda-out').textContent=read('lambda').toFixed(1);
+function scorePlot(){const values=Array.from({length:301},(_,i)=>{const x=-2.5+i/300*5;return[x,M.posterior(x,state.sigma,state.scheme).score];}),bound=Math.max(1,...values.map(p=>Math.abs(p[1]))),X=x=>48+(x+2.5)/5*564,Y=v=>110-v/bound*75;let s='<path d="M48 110H612" class="axis"/>';
+ s+='<path d="'+path(values.map(([x,v])=>[X(x),Y(v)]))+'" stroke="'+blue+'" stroke-width="2" fill="none"/>';
+ // Values below are computed independently from the conditional noise prediction.
+ s+='<path d="'+path(values.map(([x])=>[X(x),Y(-M.posterior(x,state.sigma,state.scheme).noise/state.sigma)]))+'" stroke="'+orange+'" stroke-dasharray="5 5" stroke-width="1.4" fill="none"/>';
+ const p=M.posterior(state.y,state.sigma,state.scheme);s+='<circle cx="'+X(state.y)+'" cy="'+Y(p.score)+'" r="4" fill="'+orange+'"/><text x="42" y="38" text-anchor="end">'+fmt(bound,1)+'</text><text x="42" y="189" text-anchor="end">'+fmt(-bound,1)+'</text>';for(const x of [-2,-1,0,1,2])s+='<text x="'+X(x)+'" y="210" text-anchor="middle">'+x+'</text>';
+ $('score-plot').innerHTML=s;
 }
-function heatmap(){
-  const svg=$('heatmap'),W=width(svg),H=206,L=29,R=15,T=12,B=27,cols=40;
-  const cellW=(W-L-R)/cols,cellH=(H-T-B)/24;
-  let out='';
-  for(let k=1;k<=24;k++)for(let j=0;j<cols;j++){
-    const a=Math.exp(-k*k*(j+.5)/cols*.12);
-    out+=`<rect x="${L+j*cellW}" y="${T+(k-1)*cellH}" width="${cellW+.2}" height="${cellH+.2}" fill="${colors.teal}" opacity="${.035+.965*a}"><title>k=${k}, t=${((j+.5)/cols*.12).toFixed(3)}, h=${a.toExponential(2)}</title></rect>`;
-  }
-  const x=L+read('time')/.12*(W-L-R),k=read('detail-k');
-  out+=`<rect x="${L}" y="${T+(k-1)*cellH}" width="${W-L-R}" height="${cellH}" fill="none" stroke="${colors.orange}" stroke-width="1.2"/><line x1="${x}" x2="${x}" y1="${T}" y2="${H-B}" stroke="#3e5951" stroke-dasharray="3 3"/>`;
-  [1,6,12,18,24].forEach(k=>{out+=`<text x="${L-8}" y="${T+(k-.5)*cellH+3}" text-anchor="end">${k}</text>`;});
-  ['0','.03','.06','.09','.12'].forEach((v,j)=>{out+=`<text x="${L+j/4*(W-L-R)}" y="${H-7}" text-anchor="middle">${v}</text>`;});
-  out+=`<text x="4" y="9" style="font-size:8px">k</text>`;
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.innerHTML=out;
+function posteriorPlot(p){const X=x=>48+(x+1.5)/3*564,Y=v=>190-v*140;let s='<path d="M48 190H612" class="axis"/>';for(const[x,w,c]of[[-1,p.minus,blue],[1,p.plus,orange]])s+='<rect x="'+(X(x)-28)+'" y="'+Y(w)+'" width="56" height="'+(w*140)+'" rx="2" fill="'+c+'" opacity=".8"/><text x="'+X(x)+'" y="'+(Y(w)-10)+'" text-anchor="middle">'+fmt(w*100,1)+'%</text><text x="'+X(x)+'" y="213" text-anchor="middle">x₀ = '+x+'</text>';
+ s+='<path d="M'+X(p.mean)+' 32V190" stroke="#344a5e" stroke-dasharray="4 4"/><text x="'+X(p.mean)+'" y="20" text-anchor="middle">E[x₀ | y] = '+fmt(p.mean)+'</text>';$('posterior-plot').innerHTML=s;
 }
-function renderForward(){
-  const T=read('time'),k=read('detail-k'),h=Math.exp(-k*k*T);
-  plot($('forward-chart'),[{data:values(state.source),color:colors.orange,dashed:true},{data:values(M.forward(state.source,T)),color:colors.teal}],{height:250});
-  heatmap();
-  $('attenuation-heading').textContent=t(`${(h*100).toFixed(2)}% of mode ${k} remains`,`주파수 ${k} 성분의 잔존율 ${(h*100).toFixed(2)}%`);
-  $('attenuation-text').textContent=t(`At T = ${T.toFixed(3)}, hₖ = ${scientific(h)}. Reversing this decay multiplies measurement error in the same mode by ${format(1/h)}.`,`T = ${T.toFixed(3)}에서 hₖ = ${scientific(h)}이며, 역산 시 같은 주파수의 측정 오차는 ${format(1/h)}배 증폭된다.`);
+function riskPlot(p){const X=u=>48+(u+1.3)/2.6*564,Y=r=>205-r/6*155,points=Array.from({length:201},(_,i)=>{const u=-1.3+i/200*2.6;return[X(u),Y(M.risk(u,p))];});let s='<path d="M48 205H612" class="axis"/><path d="'+path(points)+'" fill="none" stroke="'+blue+'" stroke-width="2"/>';s+='<circle cx="'+X(p.mean)+'" cy="'+Y(p.variance)+'" r="4" fill="#344a5e"/><circle cx="'+X(state.u)+'" cy="'+Y(M.risk(state.u,p))+'" r="5" fill="'+orange+'"/>';for(const u of [-1,0,1])s+='<text x="'+X(u)+'" y="228" text-anchor="middle">'+u+'</text>';s+='<text x="48" y="20">E[(x₀ − u)² | y]</text>';$('risk-plot').innerHTML=s;}
+function copy(p){
+ $('sigma-out').textContent=fmt(state.sigma,2);$('y-out').textContent=fmt(state.y,2);$('u-out').textContent=fmt(state.u,2);
+ const values={a:fmt(p.a),sigma:fmt(state.sigma),y:fmt(state.y),mean:fmt(p.mean),noise:fmt(p.noise),score:fmt(p.score),variance:fmt(p.variance),risk:fmt(M.risk(state.u,p)),excess:fmt((state.u-p.mean)**2),plus:fmt(p.plus*100,1)+'%',minus:fmt(p.minus*100,1)+'%'};
+ document.querySelectorAll('[data-value]').forEach(el=>{if(Object.hasOwn(values,el.dataset.value))el.textContent=values[el.dataset.value];});
+ $('forward-live').textContent=t('aₜ = '+fmt(p.a)+', σₜ = '+fmt(state.sigma)+'. '+(state.scheme==='ddpm'?'DDPM scales the signal as noise increases.':'The NCSN corruption keeps the signal scale at 1.'),'aₜ = '+fmt(p.a)+', σₜ = '+fmt(state.sigma)+'. '+(state.scheme==='ddpm'?'DDPM에서는 노이즈가 증가하면 신호의 크기가 줄어든다.':'NCSN의 노이즈 추가에서는 신호의 크기 1을 유지한다.'));
+ $('prediction-live').textContent='−ε*(y)/σₜ = '+fmt(-p.noise/state.sigma)+' = s*(y)';
+ $('mean-live').textContent=t('Conditional mean '+fmt(p.mean)+' · minimum conditional MSE '+fmt(p.variance)+'.','조건부 평균 '+fmt(p.mean)+' · 최소 조건부 MSE '+fmt(p.variance)+'.');
+ $('sample-result').textContent=state.draw?t('One posterior draw: x₀ = ','조건부분포에서 뽑은 한 후보: x₀ = ')+M.conditionalSample(p,state.seed+state.draw*7919):t('A posterior draw selects −1 or +1; the conditional mean may lie between them.','조건부분포에서 뽑은 값은 −1 또는 +1이고, 조건부 평균은 그 사이에 놓일 수 있다.');
+ highlight(state.active);
 }
-function spectrum(restored){
-  const svg=$('spectrum'),W=width(svg),H=205,L=38,R=12,T=15,B=30;
-  const amplitudes=Array.from({length:24},(_,i)=>Math.hypot(state.observed.a[i+1],state.observed.b[i+1]));
-  const recovered=Array.from({length:24},(_,i)=>Math.hypot(restored.a[i+1],restored.b[i+1]));
-  const min=1e-6,max=Math.max(1,...amplitudes,...recovered),hi=Math.ceil(Math.log10(max));
-  const Y=v=>T+(hi-Math.log10(Math.max(min,v)))/(hi+6)*(H-T-B);
-  let out='';
-  for(let p=-6;p<=hi;p++){const yy=Y(10**p);out+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="${colors.grid}"/><text x="${L-6}" y="${yy+3}" text-anchor="end" style="font-size:8px">1e${p}</text>`;}
-  const cell=(W-L-R)/24,bw=Math.max(2,cell*.2);
-  for(let i=0;i<24;i++){
-    const xx=L+(i+.5)*cell;
-    out+=`<rect x="${xx-bw-1}" y="${Y(amplitudes[i])}" width="${bw}" height="${Math.max(0,H-B-Y(amplitudes[i]))}" rx="1" fill="${colors.slate}"><title>k=${i+1} ${t('observed','관측')} ${scientific(amplitudes[i])}</title></rect><rect x="${xx+1}" y="${Y(recovered[i])}" width="${bw}" height="${Math.max(0,H-B-Y(recovered[i]))}" rx="1" fill="${colors.teal}"><title>k=${i+1} ${t('recovered','복원')} ${scientific(recovered[i])}</title></rect>`;
-    if(W>550||i%2===1)out+=`<text x="${xx}" y="${H-10}" text-anchor="middle" style="font-size:8px">${i+1}</text>`;
-  }
-  if(read('noise')>0){const yy=Y(Math.SQRT2*read('noise'));out+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="${colors.orange}" stroke-dasharray="4 4"/>`;}
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.innerHTML=out;
-}
-function renderInverse(){
-  const T=read('time'),lambda=10**read('lambda'),K=read('cutoff');
-  const configs=[['raw',t('Direct inverse','단순 역산'),t('All 24 modes','24개 모드 전체'),24,0,'cutoff'],['cut',t('Spectral cutoff','주파수 제한'),t(`Modes k ≤ ${K}`,`k ≤ ${K} 모드 유지`),K,0,'cutoff'],['tik','Tikhonov',t(`λ = ${scientific(lambda)} · all 24 modes`,`λ = ${scientific(lambda)} · 24개 모드 전체`),24,lambda,'tikhonov']];
-  let tik;
-  for(const [id,title,description,k,lam,method] of configs){
-    const c=M.restore(state.observed,T,k,lam,method),samples=values(c),min=Math.min(...samples),maxgain=Math.max(...Array.from({length:24},(_,j)=>M.gain(j+1,T,k,lam,method)));
-    if(id==='tik')tik=c;
-    $(`method-${id}-description`).textContent=description;
-    plot($(`method-${id}`),[{data:values(state.source),color:colors.orange,dashed:true},{data:samples,color:colors.teal}],{height:185});
-    $(`method-${id}-error`).textContent=format(M.error(c,state.source));
-    $(`method-${id}-gain`).textContent=format(maxgain)+'×';
-    $(`method-${id}-min`).textContent=format(min);
-    $(`method-${id}-min`).classList.toggle('danger',min<0);
-  }
-  spectrum(tik);
-  $('inverse-note').textContent=t(`At λ = ${scientific(lambda)}, the Tikhonov L² error is ${format(M.error(tik,state.source))}. Each panel keeps its own vertical scale, including any negative values or amplified oscillations.`,`λ = ${scientific(lambda)}에서 Tikhonov의 L² 오차는 ${format(M.error(tik,state.source))}이다. 각 패널은 독립적인 세로축을 사용하며, 음수 값과 증폭된 진동을 포함한다.`);
-}
-function renderRisk(){
-  const T=read('time'),eps=read('noise'),lambda=10**read('lambda');
-  const rows=Array.from({length:81},(_,i)=>{const lam=10**(-8+i/10),r=M.risk(state.source,T,eps,24,lam,'tikhonov');return {bias:Math.sqrt(r.bias2),noise:Math.sqrt(r.variance),expected:r.rmse,actual:M.error(M.restore(state.observed,T,24,lam,'tikhonov'),state.source)};});
-  plot($('risk-chart'),[{data:rows.map(r=>r.expected),color:colors.teal,width:2.3},{data:rows.map(r=>r.bias),color:colors.orange},{data:rows.map(r=>r.noise),color:colors.slate},{data:rows.map(r=>r.actual),color:colors.dark,dashed:true}],{log:true,min:1e-5,height:255,labels:['−8','−6','−4','−2','0'],ylabel:t('L² error · log scale','L² 오차 · 로그 축'),marker:(read('lambda')+8)/8});
-  const r=M.risk(state.source,T,eps,24,lambda,'tikhonov');
-  const stats=[[t('Expected RMSE','기대 RMSE'),r.rmse],[t('Bias','편향'),Math.sqrt(r.bias2)],[t('Noise RMS','노이즈 RMS'),Math.sqrt(r.variance)],[t('Realized error','현재 실제 오차'),M.error(M.restore(state.observed,T,24,lambda,'tikhonov'),state.source)]];
-  $('risk-metrics').innerHTML=stats.map(([name,v])=>`<div><span>${name}</span><strong>${format(v)}</strong></div>`).join('');
-}
-function densityHistogram(svg,xs,target){
-  const W=width(svg),H=220,L=37,R=12,T=17,B=30,bins=32,hist=M.histogram(xs,bins),truth=values(target),max=Math.max(2,...hist,...truth)*1.08;
-  const X=x=>L+x/M.TAU*(W-L-R),Y=v=>T+(max-v)/max*(H-T-B);
-  let out='';
-  for(let i=0;i<=3;i++){const v=max*i/3;out+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${colors.grid}"/><text x="${L-6}" y="${Y(v)+3}" text-anchor="end">${v.toFixed(1)}</text>`;}
-  hist.forEach((v,i)=>{out+=`<rect x="${X(i/bins*M.TAU)+1}" y="${Y(v)}" width="${(W-L-R)/bins-1.5}" height="${H-B-Y(v)}" fill="${colors.teal}" opacity=".28" rx="1"/>`;});
-  out+=`<path d="${path(truth,i=>X(i/256*M.TAU),Y)}" fill="none" stroke="${colors.orange}" stroke-width="1.7"/>`;
-  ['0','π','2π'].forEach((v,i)=>{out+=`<text x="${X(i/2*M.TAU)}" y="${H-8}" text-anchor="middle">${v}</text>`;});
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.innerHTML=out;
-}
-function trajectories(svg,snapshots,step){
-  const W=width(svg),H=145,L=37,R=12,T=17,B=25,total=snapshots.length-1;
-  const X=j=>L+j/total*(W-L-R),Y=x=>T+(1-x/M.TAU)*(H-T-B);
-  let out='';
-  [0,Math.PI,M.TAU].forEach(v=>{out+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${colors.grid}"/><text x="${L-6}" y="${Y(v)+3}" text-anchor="end">${v===0?'0':v===Math.PI?'π':'2π'}</text>`;});
-  for(let i=0;i<16;i++){
-    let d='';for(let j=0;j<=step;j++){const x=snapshots[j][i],jump=j>0&&Math.abs(x-snapshots[j-1][i])>Math.PI;d+=(j===0||jump?'M':'L')+X(j).toFixed(2)+','+Y(x).toFixed(2);}
-    out+=`<path d="${d}" fill="none" stroke="${colors.teal}" stroke-width=".9" opacity=".43"/>`;
-  }
-  out+=`<text x="${L}" y="${H-6}" style="font-size:8px">r = 0</text><text x="${W-R}" y="${H-6}" text-anchor="end" style="font-size:8px">r = T</text><text x="${L}" y="9" style="font-size:8px">${t('16 sample paths · θ','입자 16개 궤적 · θ')}</text>`;
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.innerHTML=out;
-}
-function renderGeneration(){
-  const T=read('time'),steps=read('steps'),seed=read('sample-seed');
-  const key=[$('preset').value,read('phase'),read('detail-k'),read('amplitude'),T,steps,seed].join('|');
-  if(state.simulationKey!==key){state.simulation=M.simulate(state.source,T,steps,seed);state.simulationKey=key;}
-  const step=Math.round(read('reverse-progress')/100*steps),target=M.forward(state.source,T*(1-step/steps));
-  $('progress-out').textContent=read('reverse-progress')+'%';$('steps-out').textContent=steps;$('seed-out').textContent=seed;
-  for(const type of ['sde','ode']){
-    const samples=state.simulation[type][step];
-    densityHistogram($(`${type}-chart`),samples,target);
-    trajectories($(`${type}-paths`),state.simulation[type],step);
-    $(`${type}-metric`).textContent=t(`Moment error Δ₆ = ${M.momentError(samples,target).toFixed(3)} · target time t = ${(T*(1-step/steps)).toFixed(4)}`,`모멘트 오차 Δ₆ = ${M.momentError(samples,target).toFixed(3)} · 목표 시점 t = ${(T*(1-step/steps)).toFixed(4)}`);
-  }
-}
-let generationTimer;
-function refreshSource(){
-  state.source=M.initial($('preset').value,read('detail-k'),read('amplitude'),read('phase')/360*M.TAU);
-  state.observed=M.observe(state.source,read('time'),read('noise'),state.seed);
-  controls();renderForward();renderInverse();renderRisk();
-  clearTimeout(generationTimer);generationTimer=setTimeout(renderGeneration,100);
-}
-function refreshInverse(){state.observed=M.observe(state.source,read('time'),read('noise'),state.seed);controls();renderInverse();renderRisk();}
-function hero(){
-  let out='';for(let layer=0;layer<4;layer++){
-    const data=Array.from({length:300},(_,i)=>{const x=i/299,a=.4*(1-x)+.03;return 60+22*Math.sin(x*15)+22*a*Math.sin(x*70+layer*.5);});
-    out+=`<path d="${path(data,i=>i/299*900,v=>v+layer*5)}" fill="none" stroke="${layer===0?colors.teal:'#b4c3c7'}" opacity="${layer===0?1:.35}" stroke-width="${layer===0?1.8:1}"/>`;
-  }$('hero-art').innerHTML=out;
-}
-function buildMethods(){
-$('methods').innerHTML=[['raw',t('Direct inverse','단순 역산')],['cut',t('Spectral cutoff','주파수 제한')],['tik','Tikhonov']].map(([id,title])=>`<div class="method-card"><h4>${title}</h4><p class="method-description" id="method-${id}-description"></p><svg id="method-${id}" class="plot" role="img" aria-label="${t(`${title} reconstruction and source`,`${title} 복원과 원본`)}"></svg><div class="metric"><span>${t('L² error','L² 오차')}</span><strong id="method-${id}-error"></strong></div><div class="metric"><span>${t('Max. gain','최대 이득')}</span><strong id="method-${id}-gain"></strong></div><div class="metric"><span>${t('Min. density','최소 밀도')}</span><strong id="method-${id}-min"></strong></div></div>`).join('');
-}
-buildMethods();
-['preset','phase','detail-k','amplitude','time'].forEach(id=>$(id).addEventListener('input',refreshSource));
-['noise','cutoff','lambda'].forEach(id=>$(id).addEventListener('input',()=>{$('risk-lambda').value=$('lambda').value;refreshInverse();}));
-$('risk-lambda').addEventListener('input',()=>{$('lambda').value=$('risk-lambda').value;refreshInverse();});
-['reverse-progress','steps','sample-seed'].forEach(id=>$(id).addEventListener('input',renderGeneration));
-const observer=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){document.querySelectorAll('.contents a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+entry.target.id));}},{rootMargin:'-10% 0px -65% 0px',threshold:0});
-document.querySelectorAll('.chapter').forEach(s=>observer.observe(s));
-window.addEventListener('scroll',()=>{const available=document.documentElement.scrollHeight-innerHeight;$('reading-progress').style.width=(available>0?scrollY/available*100:0)+'%';},{passive:true});
-let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderForward();renderInverse();renderRisk();renderGeneration();},100);});
-hero();refreshSource();renderGeneration();
-
-// Indicate scrollable formulas on narrow screens without hiding their content.
-function markOverflow(){document.querySelectorAll('.equation').forEach(el=>{const overflow=el.scrollWidth>el.clientWidth+2;el.classList.toggle('scrollable-formula',overflow);if(overflow){el.setAttribute('tabindex','0');el.setAttribute('aria-label',t('Equation. Scroll horizontally to read the full expression.','수식. 좌우 스크롤로 전체 식 확인.'));}else{el.removeAttribute('tabindex');el.removeAttribute('aria-label');}});}
-markOverflow();window.addEventListener('resize',markOverflow);
-
-window.addEventListener('diffusionlanguagechange',()=>{
-  buildMethods();refreshSource();renderGeneration();markOverflow();
-});
+function render(){const p=M.posterior(state.y,state.sigma,state.scheme);densityPlot();scorePlot();posteriorPlot(p);riskPlot(p);copy(p);}
+for(const id of ['sigma','y','u'])$(id).addEventListener('input',()=>{state[id]=Number($(id).value);if(id!=='u')state.draw=0;highlight(id);render();});
+$('scheme').addEventListener('change',()=>{state.scheme=$('scheme').value;state.draw=0;highlight('scheme');render();});
+$('new-samples').addEventListener('click',()=>{state.seed++;highlight('seed');render();});
+$('ambiguous').addEventListener('click',()=>{state.y=0;$('y').value=0;state.draw=0;highlight('y');render();});
+$('optimal').addEventListener('click',()=>{state.u=M.posterior(state.y,state.sigma,state.scheme).mean;$('u').value=state.u;highlight('u');render();});
+$('posterior-sample').addEventListener('click',()=>{state.draw++;render();});
+window.addEventListener('diffusionlanguagechange',render);
+const observer=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){document.querySelectorAll('.contents a').forEach(a=>a.classList.toggle('active',a.hash==='#'+e.target.id));}},{rootMargin:'-15% 0px -60% 0px'});document.querySelectorAll('.chapter').forEach(el=>observer.observe(el));
+window.addEventListener('scroll',()=>{const height=document.documentElement.scrollHeight-innerHeight;$('reading-progress').style.width=(height>0?scrollY/height*100:0)+'%';},{passive:true});
+window.CourseLab={snapshot:()=>({...state,...M.posterior(state.y,state.sigma,state.scheme)})};render();
+})();
