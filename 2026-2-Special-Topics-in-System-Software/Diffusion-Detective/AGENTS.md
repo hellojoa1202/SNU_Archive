@@ -15,3 +15,6 @@
 - The analytic model uses 12 translated Gaussian components of fixed tau=.16. The same Gaussian offset is carried between paired endpoints. Mixture velocities use posterior weights, not uniform averaging. Changing the permutation preserves endpoint densities, not piece identities. Do not claim exact puzzle assembly by the marginal ODE.
 - Report numerical errors against the refined RK4 reference and equal field-evaluation budgets. Do not claim the reference refinement is a certified error bound.
 - Highlight equation terms on control changes. Keep concise declarative prose, compact typography and the scrolling layout.
+
+- The proposal now requires substantial derivations, not only short captions. Keep the local conditional-risk and energy decompositions, half-plane probability flux, material acceleration and convergence discussion visible. Preserve minimum-cost assignment, editable candidate velocity, movable probability boundary and the equal-NFE convergence table.
+- Use a white page, header, canvas and equation background. The English one-page Times New Roman submission PDF is stored outside the public repository in the workspace Proposal/ folder; do not publish its student identification details.

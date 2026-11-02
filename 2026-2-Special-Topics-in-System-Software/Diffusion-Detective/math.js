@@ -34,6 +34,19 @@ function at(path,t){const s=Math.max(0,Math.min(1,t))*(path.length-1),i=Math.min
 function rng(seed){let s=seed>>>0;return()=>((s=(Math.imul(s,1664525)+1013904223)>>>0)+.5)/4294967296;}
 function samples(m,count=96,seed=17){const r=rng(seed),normal=()=>Math.sqrt(-2*Math.log(r()))*Math.cos(2*Math.PI*r());return Array.from({length:count},(_,i)=>m.a[i%m.a.length].map(x=>x+m.tau*normal()));}
 function conditionalRisk(m,x,t,pred){const f=field(m,x,t,true);let irreducible=0,total=0;for(let i=0;i<f.weights.length;i++)for(let j=0;j<2;j++){irreducible+=f.weights[i]*(f.components[i][j]-f.v[j])**2;total+=f.weights[i]*(f.components[i][j]-pred[j])**2;}return{total,irreducible,excess:(pred[0]-f.v[0])**2+(pred[1]-f.v[1])**2};}
-const api={create,component,field,density,swap,integrate,at,samples,conditionalRisk};
+// Exact quadratic assignment on the twelve centers, using subset dynamic programming.
+function assignmentCost(m,pi=m.pi){return m.a.reduce((sum,a,i)=>sum+(m.b[pi[i]][0]-a[0])**2+(m.b[pi[i]][1]-a[1])**2,0)/m.a.length;}
+function minimumAssignment(m){
+ const n=m.a.length,size=1<<n,cost=new Float64Array(size),parent=new Int16Array(size);cost.fill(Infinity);cost[0]=0;parent.fill(-1);
+ const counts=new Uint8Array(size);for(let mask=1;mask<size;mask++)counts[mask]=counts[mask>>1]+(mask&1);
+ for(let mask=0;mask<size-1;mask++){const i=counts[mask];for(let j=0;j<n;j++)if(!(mask&(1<<j))){const next=mask|(1<<j),d=(m.a[i][0]-m.b[j][0])**2+(m.a[i][1]-m.b[j][1])**2,v=cost[mask]+d;if(v<cost[next]){cost[next]=v;parent[next]=j;}}}
+ const pi=new Array(n);let mask=size-1;for(let i=n-1;i>=0;i--){const j=parent[mask];pi[i]=j;mask^=1<<j;}return{pi,cost:cost[size-1]/n};
+}
+// Normal CDF, max absolute approximation error about 7.5e-8.
+function normalCDF(x){const z=Math.abs(x)/Math.SQRT2,t=1/(1+.3275911*z),erf=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-z*z);return .5*(1+(x<0?-erf:erf));}
+function regionMass(m,t,cut){return m.a.reduce((sum,_,i)=>sum+normalCDF((cut-component(m,i,t).mu[0])/m.tau),0)/m.a.length;}
+function regionRate(m,t,cut){return m.a.reduce((sum,_,i)=>{const {mu,u}=component(m,i,t),z=(cut-mu[0])/m.tau;return sum-u[0]*Math.exp(-z*z/2)/(m.tau*Math.sqrt(2*Math.PI));},0)/m.a.length;}
+function velocityEnergy(m,x,t){const f=field(m,x,t,true),conditional=f.weights.reduce((sum,w,i)=>sum+w*(f.components[i][0]**2+f.components[i][1]**2),0),marginal=f.v[0]**2+f.v[1]**2;return{conditional,marginal,variance:conditionalRisk(m,x,t,f.v).irreducible};}
+const api={create,component,field,density,swap,integrate,at,samples,conditionalRisk,assignmentCost,minimumAssignment,normalCDF,regionMass,regionRate,velocityEnergy};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FlowMath=api;
 })(globalThis);

@@ -196,6 +196,150 @@ const prose={
   "photo-note": {
     "en": "center-cropped; adaptation under the same license",
     "ko": "중앙 크롭 · 사진 변형물에 동일 라이선스 적용"
+  },
+  "research-scope": {
+    "en": "A coupling determines conditional paths; conditional expectation turns those paths into a marginal velocity; the continuity equation identifies the transported law; a numerical solver approximates the resulting trajectories. The same twelve-component model makes each link explicit.",
+    "ko": "결합은 조건부 경로를 정하고, 조건부 평균은 이를 전체 속도장으로 바꾼다. 연속방정식은 운반되는 분포를 설명하고, 수치해법은 그 궤적을 근사한다. 동일한 12성분 모형에서 이 연결을 단계별로 확인한다."
+  },
+  "minimum-pairing": {
+    "en": "Use minimum-cost pairing",
+    "ko": "최소 비용 연결 적용"
+  },
+  "current-cost": {
+    "en": "Current assignment cost",
+    "ko": "현재 연결 비용"
+  },
+  "minimum-cost": {
+    "en": "Minimum permutation cost",
+    "ko": "순열 중 최소 비용"
+  },
+  "cost-gap": {
+    "en": "Cost above minimum",
+    "ko": "최소값과의 차이"
+  },
+  "coupling-measure": {
+    "en": "More precisely, the coupling is the joint law of (Aᵢ + τZ, Bπ(i) + τZ), averaged over i. Keeping the offset shared makes every component translate without changing its width. It also gives a closed-form velocity target for every sampled pair.",
+    "ko": "정확히는 각 i에 대한 (Aᵢ + τZ, Bπ(i) + τZ)의 결합분포를 평균한 모형이다. 같은 오프셋을 공유하므로 각 성분은 폭을 유지하며 평행이동한다. 표본 쌍마다 속도 목표값도 직접 계산할 수 있다."
+  },
+  "cost-title": {
+    "en": "What changing the coupling actually changes",
+    "ko": "연결을 바꿀 때 달라지는 것"
+  },
+  "cost-explain": {
+    "en": "The comparison button minimizes this quadratic cost over all permutations of the twelve destinations. It changes the assignment while retaining the current source centers. The objective is the mean squared speed of the conditional paths; it is not the kinetic energy of the marginal ODE. Those quantities differ whenever conditional directions disagree.",
+    "ko": "비교 버튼은 도착점 12개의 모든 순열 중 이 제곱 비용을 최소화한다. 현재 출발 중심은 유지하고 연결만 바꾼다. 이 목적함수는 조건부 경로의 평균 제곱 속도이다. 조건부 방향들이 서로 다르면, 평균 속도장의 ODE가 갖는 운동에너지와는 차이가 생긴다."
+  },
+  "cost-observe": {
+    "en": "Compare the original pairing with the minimum-cost pairing at t ≈ 0.5. Inspect how the intermediate density and local directions change. Lower assignment cost alone does not guarantee lower error for every finite-budget solver.",
+    "ko": "t ≈ 0.5에서 원래 연결과 최소 비용 연결을 비교하면 중간 분포와 국소 방향의 변화가 드러난다. 연결 비용이 낮다는 사실만으로 모든 유한 계산량의 수치 오차가 작아진다고 보장되지는 않는다."
+  },
+  "field-mode": {
+    "en": "Canvas interaction",
+    "ko": "화면 조작"
+  },
+  "prediction-label": {
+    "en": "Candidate velocity f",
+    "ko": "후보 속도 f"
+  },
+  "use-mean": {
+    "en": "Set f to the conditional mean",
+    "ko": "f를 조건부 평균으로 설정"
+  },
+  "prediction-hint": {
+    "en": "In “Edit prediction” mode, drag to set the purple candidate vector from the probe. Arrow keys adjust it. The vector is limited to ±2.5 per coordinate. The candidate changes the regression error; it does not replace the exact field used by the transport experiment.",
+    "ko": "“후보 속도 수정” 모드에서 드래그하면 관측 위치에서 시작하는 보라색 후보 벡터를 정한다. 방향키로도 조절할 수 있다. 각 좌표는 ±2.5로 제한된다. 후보는 회귀 오차를 바꾸며, 이동 실험에 사용하는 정확한 속도장을 대체하지 않는다."
+  },
+  "risk-total": {
+    "en": "Conditional MSE",
+    "ko": "조건부 MSE"
+  },
+  "risk-excess": {
+    "en": "Excess error ‖f − v*‖²",
+    "ko": "초과 오차 ‖f − v*‖²"
+  },
+  "risk-variance": {
+    "en": "Velocity variance C(x,t)",
+    "ko": "속도 분산 C(x,t)"
+  },
+  "risk-explain": {
+    "en": "At a fixed probe, the first term is controllable by the candidate f. The second is the conditional variance of the hidden velocity target. Setting f = v* removes the excess error but leaves C(x,t). A nonzero training loss can therefore coexist with the correct marginal velocity.",
+    "ko": "관측 위치를 고정하면 첫 항은 후보 f로 조절할 수 있다. 둘째 항은 숨겨진 속도 목표값의 조건부 분산이다. f = v*로 두면 초과 오차는 사라지지만 C(x,t)는 남는다. 따라서 학습 손실이 0이 아니어도 전체 속도장은 정확할 수 있다."
+  },
+  "energy-title": {
+    "en": "Direction cancellation connects the loss to the coupling",
+    "ko": "방향 상쇄가 손실과 연결 비용을 잇는다"
+  },
+  "energy-copy": {
+    "en": "The identity follows from the same orthogonal decomposition, now with f = 0. Opposing conditional velocities can have large individual magnitudes and a small average. The conditional variance measures the lost squared magnitude. The global identity holds at each fixed t in this translation model because the distribution of U is time-independent.",
+    "ko": "같은 직교 분해에 f = 0을 대입하면 얻는 등식이다. 반대 방향의 조건부 속도들은 각각 크더라도 평균은 작을 수 있다. 사라진 제곱 크기는 조건부 분산에 해당한다. 이 평행이동 모형에서는 U의 분포가 시간에 무관하므로, 전체 기대값의 등식은 고정된 각 t에서 성립한다."
+  },
+  "energy-observe": {
+    "en": "Change a pairing, return to the same probe and time, and compare the variance. The cost K(π) describes the entire coupling; C(x,t) describes one local ambiguity. Neither should be read as a standalone guarantee of sampler accuracy.",
+    "ko": "연결을 바꾼 뒤 같은 위치와 시간에서 분산을 비교한다. K(π)는 전체 결합의 비용이고, C(x,t)는 한 위치에서의 불확실성이다. 어느 하나만으로 샘플러의 정확도가 보장되지는 않는다."
+  },
+  "mass-cut-label": {
+    "en": "Vertical boundary c · probability on its left",
+    "ko": "수직 경계 c · 왼쪽 영역의 확률"
+  },
+  "mass-model": {
+    "en": "Model probability Pₜ(X₁ ≤ c)",
+    "ko": "모형 확률 Pₜ(X₁ ≤ c)"
+  },
+  "mass-samples": {
+    "en": "Transported sample fraction",
+    "ko": "이동 표본의 비율"
+  },
+  "mass-rate": {
+    "en": "Probability change dPₜ/dt",
+    "ko": "확률 변화율 dPₜ/dt"
+  },
+  "mass-instruction": {
+    "en": "Drag the dashed vertical boundary horizontally to measure the region. The sample fraction fluctuates around the model probability; 96 samples are a visual check, not a proof of equality. X₁ here denotes the first spatial coordinate, not the terminal time.",
+    "ko": "수직 점선 경계를 좌우로 드래그해 영역을 측정한다. 표본 비율은 모형 확률 주변에서 달라지며, 표본 96개는 시각적 확인 수단으로 분포 일치의 증명은 아니다. 여기서 X₁은 최종 시간이 아니라 첫 번째 공간 좌표이다."
+  },
+  "continuity-proof": {
+    "en": "Since uᵢ is constant in space and time, differentiating qᵢ,t(x) = qᵢ,0(x − tuᵢ) gives ∂ₜqᵢ,t = −uᵢ · ∇qᵢ,t. The divergence of uᵢ vanishes. Multiplying the posterior mean by pₜ cancels the normalization in rᵢ, leaving exactly the component probability fluxes.",
+    "ko": "uᵢ는 공간과 시간에 대해 상수이다. qᵢ,t(x) = qᵢ,0(x − tuᵢ)를 미분하면 ∂ₜqᵢ,t = −uᵢ · ∇qᵢ,t를 얻고, uᵢ의 발산은 0이다. 사후 평균에 pₜ를 곱하면 rᵢ의 정규화 항이 소거되어 성분별 확률 유량의 합이 남는다."
+  },
+  "mass-title": {
+    "en": "Conservation can be checked on a region",
+    "ko": "영역의 확률로 보존 법칙을 확인한다"
+  },
+  "mass-proof": {
+    "en": "Φ and φ are the standard-normal CDF and density. Integrating the continuity equation over the half-plane turns a change in its probability into flux across its boundary. Positive dPₜ/dt means net mass enters the left region; a fixed target density at t = 1 does not make this intermediate flux independent of the coupling.",
+    "ko": "Φ와 φ는 표준정규분포의 누적분포함수와 밀도이다. 반평면에서 연속방정식을 적분하면 영역의 확률 변화가 경계를 지나는 유량으로 바뀐다. dPₜ/dt가 양수이면 왼쪽 영역으로 질량이 순유입된다. t = 1의 분포가 같아도 중간 유량은 결합에 따라 달라질 수 있다."
+  },
+  "joint-title": {
+    "en": "Why an assigned path can cross while an ODE path cannot",
+    "ko": "지정한 경로의 교차와 ODE의 유일성"
+  },
+  "joint-copy": {
+    "en": "Different conditional components may occupy the same location at the same time while carrying different velocities. They retain their component identity. A well-posed marginal ODE assigns one velocity to each (x,t); uniqueness prevents distinct solutions from meeting at the same space-time point and then separating. Thus it transports the marginals without generally preserving the endpoint pairing. Paths may still cross geometrically at different times.",
+    "ko": "서로 다른 조건부 성분은 같은 시각의 같은 위치에서 다른 속도를 가질 수 있다. 성분의 정체성을 유지하기 때문이다. 적절한 유일성 조건을 만족하는 전체 ODE는 (x,t)마다 하나의 속도를 정한다. 서로 다른 해가 같은 시공간 점에서 만난 뒤 다시 갈라지는 것은 유일성과 양립하지 않는다. 따라서 주변분포를 운반하면서도 원래 끝점 연결을 일반적으로 보존하지 않는다. 서로 다른 시각의 궤적은 기하학적으로 교차할 수 있다."
+  },
+  "solver-acceleration": {
+    "en": "Along a trajectory, velocity changes both because time advances and because the particle enters a different part of the field. This material acceleration determines the first term missed by Euler.",
+    "ko": "궤적을 따라 속도는 시간의 진행과 입자의 위치 이동 때문에 변한다. 이 물질 가속도는 Euler가 생략하는 첫 항을 결정한다."
+  },
+  "solver-order": {
+    "en": "Euler retains only the first-order term. Heun averages the initial velocity and a predicted endpoint velocity, recovering the second-order term. Under sufficient smoothness, their global errors scale as O(h) and O(h²), respectively. The comparison below uses the same field throughout.",
+    "ko": "Euler는 1차 항까지 사용한다. Heun은 시작 속도와 예측 끝점의 속도를 평균해 2차 항을 반영한다. 충분한 매끄러움 조건에서 전역 오차는 각각 O(h), O(h²)이다. 아래 비교에서는 같은 속도장을 사용한다."
+  },
+  "convergence-title": {
+    "en": "Endpoint error across evaluation budgets",
+    "ko": "평가 횟수에 따른 끝점 오차"
+  },
+  "convergence-note": {
+    "en": "Observed order p = log₂(e(B/2)/e(B)) compares adjacent rows. As the step size becomes small, values may approach 1 for Euler and 2 for Heun. Non-asymptotic behavior, cancellation and reference precision can disturb this pattern.",
+    "ko": "관측 차수 p = log₂(e(B/2)/e(B))는 인접한 행을 비교한다. 간격이 충분히 작아지면 Euler는 1, Heun은 2에 가까워질 수 있다. 아직 점근 구간이 아닌 경우, 오차 상쇄, 기준 계산의 정밀도는 이 패턴에 영향을 준다."
+  },
+  "solver-budget": {
+    "en": "Equal steps would give Heun twice as many field evaluations. Equal NFE makes the computational comparison explicit, but the constants in the error estimates still depend on the field and the chosen trajectory. A lower assignment cost is not a proof that one method will win at a particular budget.",
+    "ko": "단계 수를 같게 두면 Heun은 속도장을 두 배 더 평가한다. 같은 NFE 비교는 계산량을 명시하지만, 오차 추정의 상수는 속도장과 선택한 궤적에 여전히 의존한다. 연결 비용이 작다는 사실은 특정 계산량에서 어느 방법이 우세하다는 증명이 아니다."
+  },
+  "validation": {
+    "en": "Checks cover: permutation invariance of p₀ and p₁; normalization of posterior weights; conditional loss and energy decompositions; finite-difference residuals of the continuity equation; half-plane probability flux; and Euler/Heun convergence. The minimum-cost assignment is exact over permutations of the twelve centers. Region probabilities use a normal-CDF approximation with absolute error below 10⁻⁷.",
+    "ko": "검증 항목은 순열 변경에 대한 p₀·p₁ 불변성, 사후 가중치 정규화, 조건부 손실·에너지 분해, 연속방정식의 유한차분 잔차, 반평면 확률 유량, Euler·Heun 수렴이다. 최소 비용 연결은 중심 12개의 순열에 대해 정확히 계산한다. 영역 확률에는 절대 오차 10⁻⁷ 미만인 정규 누적분포함수 근사를 사용한다."
   }
 };
 let language=document.documentElement.lang==='ko'?'ko':'en';
