@@ -1,0 +1,65 @@
+{
+  "interpolant": {
+    "html": "x<sub>t</sub> = <span data-link=\"time\">a<sub>t</sub></span><span data-link=\"connection\">x<sub>0</sub></span> + <span data-link=\"time\">b<sub>t</sub></span><span data-link=\"connection\">x<sub>T</sub></span><br>a<sub>0</sub> = b<sub>T</sub> = 1,　a<sub>T</sub> = b<sub>0</sub> = 0",
+    "file": "lec04-flow-based.pdf",
+    "pdf_page": 43,
+    "slide_title": "Condition on the endpoint pair"
+  },
+  "conditional": {
+    "html": "u<sub>t</sub>(x<sub>t</sub>; x<sub>0</sub>, x<sub>T</sub>) := ẋ<sub>t</sub> = <span data-link=\"connection\">ȧ<sub>t</sub>x<sub>0</sub> + ḃ<sub>t</sub>x<sub>T</sub></span>",
+    "file": "lec04-flow-based.pdf",
+    "pdf_page": 46,
+    "slide_title": "The conditional velocity"
+  },
+  "marginal": {
+    "html": "v<sub>t</sub>(x) := <span data-link=\"probe\">E[ẋ<sub>t</sub> | x<sub>t</sub> = x]</span> = E[ȧ<sub>t</sub>x<sub>0</sub> + ḃ<sub>t</sub>x<sub>T</sub> | x<sub>t</sub> = x]",
+    "file": "lec04-flow-based.pdf",
+    "pdf_page": 47,
+    "slide_title": "The velocity that generates the family"
+  },
+  "fm": {
+    "html": "L<sub>FM</sub>(ϕ) = E<sub>t, xₜ∼pₜ</sub> ‖<span data-link=\"prediction\">v<sub>ϕ</sub>(x<sub>t</sub>,t)</span> − v<sub>t</sub>(x<sub>t</sub>)‖²",
+    "file": "lec04-flow-based.pdf",
+    "pdf_page": 39,
+    "slide_title": "Regress the velocity instead"
+  },
+  "cfm": {
+    "html": "L<sub>CFM</sub>(ϕ) = E<sub>t, (x₀,xT)∼π</sub> ‖<span data-link=\"prediction\">v<sub>ϕ</sub>(x<sub>t</sub>,t)</span> − u<sub>t</sub>(x<sub>t</sub>;x<sub>0</sub>,x<sub>T</sub>)‖²",
+    "file": "lec04-flow-based.pdf",
+    "pdf_page": 50,
+    "slide_title": "Certified, and out of reach"
+  },
+  "loss": {
+    "html": "L<sub>CFM</sub>(ϕ) = <span data-link=\"prediction\">L<sub>FM</sub>(ϕ)</span> + <span data-link=\"variance\">C</span>",
+    "file": "lec04-flow-based.pdf",
+    "pdf_page": 52,
+    "slide_title": "The minimizer is the marginal velocity"
+  },
+  "continuity": {
+    "html": "<span data-link=\"time\">∂<sub>t</sub>p<sub>t</sub></span> + <span data-link=\"region\">∇·(p<sub>t</sub>v<sub>t</sub>)</span> = 0",
+    "file": "lec04-flow-based.pdf",
+    "pdf_page": 47,
+    "slide_title": "The velocity that generates the family"
+  },
+  "flux": {
+    "html": "J := <span data-link=\"region\">ρv</span><br>∂<sub>t</sub>ρ = −∇·J = −∇·(ρv)",
+    "file": "lec03-score-sde.pdf",
+    "pdf_page": 48,
+    "slide_title": "The continuity equation (flux defined on PDF p. 45)",
+    "additional_pdf_pages": [
+      45
+    ]
+  },
+  "euler": {
+    "html": "x<sub>n+1</sub> = x<sub>n</sub> + <span data-link=\"euler\">h v(x<sub>n</sub>,t<sub>n</sub>)</span>,　t<sub>n+1</sub> = t<sub>n</sub> + h",
+    "file": "lecA-differential-equations.pdf",
+    "pdf_page": 15,
+    "slide_title": "Euler’s method"
+  },
+  "heun": {
+    "html": "x<sub>pred</sub> = x<sub>n</sub> + <span data-link=\"predict\">h v(x<sub>n</sub>,t<sub>n</sub>)</span><br>x<sub>n+1</sub> = x<sub>n</sub> + <span data-link=\"correct\">(h/2)[v(x<sub>n</sub>,t<sub>n</sub>) + v(x<sub>pred</sub>,t<sub>n</sub> + h)]</span>",
+    "file": "lecA-differential-equations.pdf",
+    "pdf_page": 16,
+    "slide_title": "Heun’s method"
+  }
+}

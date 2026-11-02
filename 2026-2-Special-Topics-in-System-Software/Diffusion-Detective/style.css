@@ -9,3 +9,11 @@
 
 /* Keep the reading surface white, including browser light/dark preferences. */
 .page,main,.hero,.chapter,.contents,.topbar,.experiment,.equation,.derivation,.table-scroll,footer{background-color:#ffffff}
+/* Compact reading guides and linked automatic demonstrations. */
+.experiment-guide{display:grid;grid-template-columns:125px minmax(0,1fr);gap:9px 18px;padding:15px 0;margin:16px 0 22px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:12px;background:#fff}
+.experiment-guide dt{font-weight:600;color:var(--ink)}.experiment-guide dd{margin:0;color:var(--muted);line-height:1.8}
+.concept-points{padding-left:18px;margin:14px 0 20px;font-size:12px;color:var(--muted);line-height:1.85;max-width:88ch}.concept-points li{padding-left:3px;margin:7px 0}.concept-points li::marker{color:#7c91a1}.notes .concept-points{font-size:11px}
+.playback{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:17px 0;border-top:1px solid var(--line);margin-top:24px}.playback label{min-width:90px}.playback select{margin-top:4px}.check-label{display:flex;align-items:center;gap:6px}.playback input[type=checkbox]{accent-color:var(--blue)}.equation-source{margin-top:-6px}.chart{height:260px!important}#loss-canvas{cursor:crosshair;touch-action:pan-y}#step-canvas{height:300px!important}.metric-grid output{overflow-wrap:anywhere}
+@media(max-width:700px){.experiment-guide{grid-template-columns:80px minmax(0,1fr);gap:8px 12px}.concept-points{padding-left:16px}.playback .check-label{flex-basis:100%}.chart{height:240px!important}}
+
+.motion-toggle{min-width:29px;padding:3px 7px;font-size:12px;background:#fff;line-height:1.5}
