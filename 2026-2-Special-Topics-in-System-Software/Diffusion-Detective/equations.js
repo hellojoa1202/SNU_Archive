@@ -2,6 +2,8 @@
 (function(){
 for(const e of document.querySelectorAll('.time-control'))e.addEventListener('focus',()=>FlowLab.highlight('time'));
 for(const e of document.querySelectorAll('.piece-select,#destination,#pairing,#initial'))e.addEventListener('focus',()=>FlowLab.highlight('connection'));
+document.getElementById('candidate-offset').addEventListener('focus',()=>FlowLab.highlight('prediction'));
+document.getElementById('coordinate').addEventListener('focus',()=>FlowLab.highlight('integral'));
 document.getElementById('budget').addEventListener('focus',()=>FlowLab.highlight('euler'));
 document.getElementById('mass-cut').addEventListener('focus',()=>FlowLab.highlight('region'));
 document.getElementById('use-mean').addEventListener('focus',()=>FlowLab.highlight('prediction'));

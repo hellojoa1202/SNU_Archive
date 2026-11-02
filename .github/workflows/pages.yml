@@ -33,6 +33,7 @@ jobs:
           node --check app.js
           node --check i18n.js
           node --check math.js
+          node --check studio.js
           node --check puzzle.js
           node --check equations.js
           node --test math.test.cjs
@@ -43,6 +44,7 @@ jobs:
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/index.html "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/app.js "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/i18n.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/studio.js "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/math.js "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/style.css "$site_project/"
           cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/puzzle.css "$site_project/"
@@ -67,7 +69,7 @@ jobs:
           for folder in ['English ver', 'Korean ver']:
               page = project / folder / 'index.html'
               html = page.read_text()
-              for filename in ['app.js', 'math.js', 'i18n.js', 'style.css', 'puzzle.css', 'puzzle.js', 'equations.js']:
+              for filename in ['studio.js', 'app.js', 'math.js', 'i18n.js', 'style.css', 'puzzle.css', 'puzzle.js', 'equations.js']:
                   digest = sha256((project / filename).read_bytes()).hexdigest()[:12]
                   html = html.replace('"../' + filename + '"', '"../' + filename + '?v=' + digest + '"')
               page.write_text(html)

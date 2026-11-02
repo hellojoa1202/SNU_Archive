@@ -22,3 +22,23 @@ test('Displayed equations match the audited lecture-only catalog',()=>{
  assert.equal((html.match(/role="math"/g)||[]).length,equations.length);
  assert.ok(!/RK4|minimum-cost|material acceleration|velocityEnergy/.test(html));
 });
+
+test('Signed velocity areas reproduce numerical displacement for both coordinates and solvers',()=>{
+ for(const axis of [0,1])for(const method of ['euler','heun'])for(const n of [8,32,128])for(const i of [0,5,11]){
+  const m=M.create();M.swap(m,2,8);const q=M.quadrature(m,m.a[i],method,n,axis);
+  near(q.area,q.displacement,2e-14);near(q.area,q.path.at(-1)[axis]-q.path[0][axis],2e-14);
+  assert.equal(q.nfe,n*(method==='heun'?2:1));assert.equal(q.segments.length,n);
+  for(let k=0;k<n;k++)near(q.segments[k].area,q.path[k+1][axis]-q.path[k][axis],2e-14);
+ }
+});
+test('Gate ledger counts repeated crossings and agrees with particle positions',()=>{
+ const paths=[[[-1,0],[1,0],[-1,0],[1,0]]];const history=M.boundaryHistory(paths,0);
+ assert.deepEqual(M.boundaryCounts(history,1),{initial:1,entered:1,left:2,current:0});
+ assert.equal(M.boundaryCounts(history,1/6).current,1);
+ assert.equal(M.boundaryCounts(history,.5).current,1);
+ const m=M.create(),cloud=M.samples(m,24).map(x=>M.integrate(m,x,'heun',128).path);
+ for(const cut of [-.6,0,.4]){const h=M.boundaryHistory(cloud,cut);for(let k=0;k<=100;k++){
+  const t=k/100,count=M.boundaryCounts(h,t);assert.equal(count.current,cloud.filter(path=>M.at(path,t)[0]<=cut).length);
+  assert.equal(count.current,count.initial+count.entered-count.left);
+ }}
+});

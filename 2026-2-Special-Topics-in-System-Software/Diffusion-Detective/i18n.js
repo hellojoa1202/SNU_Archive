@@ -2,32 +2,32 @@
 (function(){'use strict';
 const prose={
   "nav-coupling": {
-    "en": "Paired paths",
-    "ko": "끝점과 경로"
+    "en": "Motion score",
+    "ko": "경로 악보"
   },
   "nav-velocity": {
-    "en": "Conditional mean",
-    "ko": "속도의 평균"
+    "en": "Layered plans",
+    "ko": "겹친 이동 계획"
   },
   "nav-transport": {
-    "en": "Probability transport",
-    "ko": "확률의 이동"
+    "en": "Probability gate",
+    "ko": "확률 출입문"
   },
   "nav-solver": {
-    "en": "Numerical steps",
-    "ko": "수치적분 단계"
+    "en": "Displacement by area",
+    "ko": "면적으로 만드는 이동"
   },
   "hero-title": {
-    "en": "Paths. Velocities.<br><span>Probability in motion.</span>",
-    "ko": "경로에서 속도로.<br><span>속도에서 확률의 이동으로.</span>"
+    "en": "Flow Matching.<br><span>Paths, means, conservation, integration.</span>",
+    "ko": "Flow Matching.<br><span>경로 · 평균 · 보존 · 적분</span>"
   },
   "hero-lead": {
-    "en": "An endpoint pairing defines a path. Conditional averaging gives a field. A solver turns the field into motion.",
-    "ko": "끝점 대응으로 경로를 정하고, 조건부 평균으로 속도장을 만든다. 수치해법으로 그 흐름을 따라간다."
+    "en": "Write the paths, inspect the shared direction, count probability crossing a gate, and build displacement from area.",
+    "ko": "경로를 직접 정하고, 평균 방향을 조사하고, 출입하는 확률을 센 뒤, 면적을 쌓아 이동을 계산한다."
   },
   "hero-scope": {
-    "en": "Four connected views, using the equations in the course notes. A small Gaussian-mixture example supplies the pictures and numerical values.",
-    "ko": "강의자료의 수식으로 연결한 네 가지 시각화. 그림과 수치는 소규모 가우시안 혼합분포 예제로 구성한다."
+    "en": "Three manual experiments and one automatic probability-flow scene. Every displayed equation comes from the supplied course notes.",
+    "ko": "세 가지 수동 실험과 하나의 자동 확률 흐름. 표시 수식은 제공된 강의자료에서만 사용한다."
   },
   "replay": {
     "en": "Replay",
@@ -37,21 +37,13 @@ const prose={
     "en": "Playback speed",
     "ko": "재생 속도"
   },
-  "auto-demo": {
-    "en": "Automatic probe and budget sweep",
-    "ko": "관측점·평가 횟수 자동 변화"
-  },
-  "play-hint": {
-    "en": "Playback starts automatically. Scroll to follow the same clock across the four views; pause to inspect any state.",
-    "ko": "자동 재생으로 시작한다. 스크롤하며 같은 시간의 네 시각화를 보고, 일시정지하여 원하는 상태를 확인한다."
-  },
   "coupling-title": {
-    "en": "One pair, one prescribed path",
-    "ko": "끝점 한 쌍으로 정하는 경로"
+    "en": "A motion score you can rewrite",
+    "ko": "직접 바꾸는 경로 악보"
   },
   "coupling-guide": {
-    "en": "<dt>Concept</dt><dd>Choose a joint law for the two endpoints, then prescribe an interpolation.</dd><dt>Animation</dt><dd>Watch photo markers follow their assigned paths; switch pairings while keeping both endpoint sets fixed.</dd><dt>Read the equation</dt><dd>The schedules weight the source and destination. Their derivatives determine the conditional velocity.</dd>",
-    "ko": "<dt>개념</dt><dd>두 끝점의 결합분포를 정하고 그 사이의 보간 경로를 지정.</dd><dt>자동 시각화</dt><dd>사진 표식의 이동을 자동 재생. 출발·도착 중심은 유지한 채 대응 프리셋 변경.</dd><dt>수식 연결</dt><dd>스케줄은 끝점의 가중치를, 스케줄의 미분은 조건부 속도를 결정.</dd>"
+    "en": "<dt>Concept</dt><dd>Each pair carries one prescribed trajectory.</dd><dt>Interaction</dt><dd>Change a pairing; drag the time ruler to slice the threads. The photo board and time-space view stay synchronized.</dd><dt>Equation</dt><dd>The highlighted thread is one interpolant. Its tangent follows the conditional velocity.</dd>",
+    "ko": "<dt>개념</dt><dd>끝점 한 쌍이 하나의 지정 경로를 구성.</dd><dt>조작</dt><dd>대응 관계를 바꾸고 시간자를 드래그해 실처럼 펼친 경로를 자르기. 사진판과 시간·공간 장면은 동기화.</dd><dt>수식 연결</dt><dd>강조한 실은 하나의 보간 경로. 그 접선이 조건부 속도에 대응.</dd>"
   },
   "pairing": {
     "en": "Pairing preset",
@@ -74,20 +66,20 @@ const prose={
     "ko": "<li><b>관찰:</b> 대응을 바꾸면 양 끝의 분포는 유지되지만 중간 경로·밀도는 변화. 초기 배치 변경은 출발 분포 자체를 변경.</li><li><b>구현용 예제:</b> 동일 가중치의 가우시안 성분 12개. 대응 끝점에 같은 오프셋을 적용하고 단위 시간 구간에서 선형 보간.</li><li><b>사진의 역할:</b> 중심의 식별 표시. 주변 ODE가 사진을 완성한다는 의미는 아님. 시작 시점에 멈추면 출발점을 직접 이동 가능.</li>"
   },
   "velocity-title": {
-    "en": "Many possible directions, one field",
-    "ko": "여러 조건부 방향에서 하나의 속도장으로"
+    "en": "Layer the plans, then inspect the common direction",
+    "ko": "이동 계획을 겹쳐 평균 방향을 읽는다"
   },
   "velocity-guide": {
-    "en": "<dt>Concept</dt><dd>Average the possible conditional velocities given the current position.</dd><dt>Animation</dt><dd>An automatic probe reveals weighted arrows and posterior probabilities. A second view sweeps a candidate velocity over the loss surface.</dd><dt>Read the equation</dt><dd>The conditional expectation selects the mean. The loss identity explains why conditional targets can recover that mean.</dd>",
-    "ko": "<dt>개념</dt><dd>현재 위치에서 가능한 조건부 속도를 평균.</dd><dt>자동 시각화</dt><dd>관측점을 자동 이동하며 가중 화살표와 사후확률 표시. 별도 손실 곡면에서 후보 속도를 자동 이동.</dd><dt>수식 연결</dt><dd>조건부기댓값이 평균 방향을 선택. 손실의 동치로 조건부 목표를 사용해도 그 평균을 학습하는 이유 설명.</dd>"
+    "en": "<dt>Concept</dt><dd>A location can be explained by several endpoint pairs.</dd><dt>Interaction</dt><dd>Choose a location manually. Transparent cards expose possible directions; their weighted contributions form the mean.</dd><dt>Equation</dt><dd>The conditional-expectation term becomes a visible accumulation. The loss curves share a minimizer but differ in height.</dd>",
+    "ko": "<dt>개념</dt><dd>한 위치에 도달할 수 있는 끝점 쌍은 여러 개.</dd><dt>조작</dt><dd>위치를 직접 선택. 투명 카드로 가능한 방향을 펼치고 가중 기여를 누적해 평균 구성.</dd><dt>수식 연결</dt><dd>조건부기댓값은 눈에 보이는 방향의 누적. 손실 곡선은 높이가 달라도 최솟값 위치가 같음.</dd>"
   },
   "field-hint": {
-    "en": "Thin arrows: the field. Colored arrows: the three largest weighted contributions. Dark arrow: the mean over all components. Click a location to stop the automatic probe.",
-    "ko": "가는 화살표는 속도장, 색 화살표는 기여도가 큰 세 성분, 진한 화살표는 전체 평균. 위치를 클릭하면 자동 관측을 멈추고 해당 지점을 조사한다."
+    "en": "Click the field to choose a location. The three cards show the most likely components; the accumulation below includes all twelve. Card opacity follows posterior probability.",
+    "ko": "속도장을 클릭해 위치 선택. 세 카드는 확률이 큰 성분이며, 아래 누적에는 12개 전체를 포함. 카드의 투명도는 사후확률에 대응."
   },
   "loss-title": {
-    "en": "The local squared-error landscape",
-    "ko": "한 위치에서 보는 제곱오차 곡면"
+    "en": "Same minimum, different height",
+    "ko": "같은 최솟값 위치, 다른 높이"
   },
   "total-label": {
     "en": "Conditional squared error",
@@ -102,8 +94,8 @@ const prose={
     "ko": "조건부 분산"
   },
   "loss-hint": {
-    "en": "Dark marker: the conditional mean. Purple marker: the candidate velocity. Color shows conditional squared error; darker is lower. Click to inspect a candidate.",
-    "ko": "진한 표식은 조건부 평균, 보라색 표식은 후보 속도. 색은 조건부 제곱오차이며 진할수록 작다. 클릭하면 해당 후보를 조사한다."
+    "en": "Slide the candidate horizontally; its vertical velocity stays at the conditional mean. Upper curve: conditional squared error. Lower curve: error from the mean. The shaded gap is independent of the candidate at this fixed probe. These are local slices, not the full training losses.",
+    "ko": "후보의 가로속도를 조절하고 세로속도는 조건부 평균에 고정. 위 곡선은 조건부 제곱오차, 아래는 평균과의 오차. 음영의 높이 차이는 고정한 관측점에서 후보와 무관. 전체 학습 손실이 아닌 국소 단면."
   },
   "use-mean": {
     "en": "Set candidate to the mean",
@@ -114,12 +106,12 @@ const prose={
     "ko": "<li><b>고정되는 값:</b> 위치·시간을 고정하면 조건부 분산은 후보 속도와 무관. 후보를 바꾸면 평균과의 오차만 변화.</li><li><b>국소와 전체:</b> 화면은 한 위치·시간에서의 조건부 단면. 위 학습 목적함수는 시간·표본에도 평균하며, 상수항은 모델 파라미터와 무관.</li><li><b>학습과의 연결:</b> 목적함수 동치가 최적화의 성공을 보장하지는 않음. 여기서는 평균을 해석적으로 계산하며 신경망은 학습하지 않음.</li>"
   },
   "transport-title": {
-    "en": "Count what enters and leaves",
-    "ko": "들어오고 나가는 확률을 관찰한다"
+    "en": "A gate that keeps a probability ledger",
+    "ko": "확률의 출입을 기록하는 문"
   },
   "transport-guide": {
-    "en": "<dt>Concept</dt><dd>The continuity equation balances density change with probability flux.</dd><dt>Animation</dt><dd>Particles move through a marked region. Its model probability and sample fraction are traced over time.</dd><dt>Read the equation</dt><dd>Follow the density-change term and flux term together; they describe the same conservation law.</dd>",
-    "ko": "<dt>개념</dt><dd>연속방정식은 밀도 변화와 확률 흐름의 균형.</dd><dt>자동 시각화</dt><dd>지정 영역을 지나는 입자와 시간별 모델 확률·표본 비율을 자동 추적.</dd><dt>수식 연결</dt><dd>밀도 변화 항과 확률 흐름 항을 연결해 같은 보존 법칙을 관찰.</dd>"
+    "en": "<dt>Concept</dt><dd>Flux counts what crosses a boundary; continuity balances what remains.</dd><dt>Interaction</dt><dd>This scene plays automatically. Move the gate manually to define a new fixed observation region; playback pauses for inspection.</dd><dt>Equation</dt><dd>Entering and leaving particles change the ledger. The density-change and flux terms describe this same balance.</dd>",
+    "ko": "<dt>개념</dt><dd>경계를 통과하는 흐름과 영역에 남는 확률의 보존.</dd><dt>조작</dt><dd>이 장면은 자동 재생. 출입문을 옮겨 고정 관측 영역을 다시 지정하면 일시정지.</dd><dt>수식 연결</dt><dd>입자의 유입·유출이 장부를 변경. 밀도 변화 항과 흐름 항은 같은 균형을 표현.</dd>"
   },
   "mass-cut": {
     "en": "Region boundary",
@@ -138,24 +130,20 @@ const prose={
     "ko": "시간당 확률 변화"
   },
   "mass-hint": {
-    "en": "Blue curve: model probability to the left of the boundary. Gray curve: transported sample fraction. The vertical line marks the shared time. Green/orange particles have recently entered/left the region.",
-    "ko": "파란 곡선은 경계 왼쪽의 모델 확률, 회색은 이동 표본의 비율. 수직선은 현재 시간. 초록·주황 입자는 최근 영역으로 들어오거나 나간 표본."
+    "en": "Blue: model probability inside the gate. Gray: sample fraction. The ledger counts every crossing since the start, including repeated entries and exits, for the currently selected fixed boundary.",
+    "ko": "파란색은 문 안쪽의 모델 확률, 회색은 표본 비율. 장부는 현재 선택한 고정 경계에서 시작 이후의 모든 출입을 집계하며 재진입·재유출도 포함."
   },
   "transport-notes": {
     "en": "<li><b>Paths:</b> the orange assigned line and blue marginal trajectory need not agree. Under the stated regularity, the velocity reproduces the densities without generally preserving the original endpoint pairing.</li><li><b>Finite samples:</b> the model probability is smooth, while the fraction of 96 particles changes in small jumps. These sampling differences are separate from numerical integration error.</li>",
     "ko": "<li><b>경로:</b> 주황색 지정 경로와 파란색 주변 궤적은 다를 수 있음. 정칙성 가정 아래 속도장은 분포를 재현하지만 원래 끝점 대응을 일반적으로 보존하지 않음.</li><li><b>유한 표본:</b> 모델 확률은 매끄럽고 96개 표본의 비율은 계단 형태로 변화. 표본에 따른 차이와 수치적분 오차는 구분.</li>"
   },
   "solver-title": {
-    "en": "Watch the update, then compare the error",
-    "ko": "갱신 과정을 보고 오차를 비교한다"
+    "en": "Build displacement out of signed area",
+    "ko": "부호 있는 면적을 쌓아 이동을 만든다"
   },
   "solver-guide": {
-    "en": "<dt>Concept</dt><dd>Euler follows the initial velocity; Heun also evaluates a predicted endpoint.</dd><dt>Animation</dt><dd>Animate the two stages, then sweep equal evaluation budgets on the same field.</dd><dt>Read the equation</dt><dd>Highlight the velocity used at each stage and compare first- and second-order global errors.</dd>",
-    "ko": "<dt>개념</dt><dd>Euler는 시작 속도, Heun은 예측 끝점의 속도까지 평가.</dd><dt>자동 시각화</dt><dd>한 단계의 계산을 자동 재생하고 동일 평가 횟수에서 두 해법 비교.</dd><dt>수식 연결</dt><dd>각 단계에서 사용하는 속도 항을 강조하고 전역 오차의 1차·2차 수렴 비교.</dd>"
-  },
-  "step-note": {
-    "en": "Local step, magnified equally for both methods. The animation uses an eight-step grid to make prediction and correction visible; the budget comparison below is separate.",
-    "ko": "두 방법을 같은 배율로 확대한 국소 단계. 예측·보정을 보기 위해 8단계 격자를 사용하며, 아래의 평가 횟수 비교와 구분한다."
+    "en": "<dt>Concept</dt><dd>The solution integrates velocity along its own trajectory.</dd><dt>Interaction</dt><dd>Select a coordinate and an evaluation budget manually. Hover over a time interval to connect its colored area to the update.</dd><dt>Equation</dt><dd>Euler contributes rectangles; Heun contributes trapezoids built from its stage evaluations. Their total signed area equals each method’s displacement.</dd>",
+    "ko": "<dt>개념</dt><dd>해는 자신의 궤적을 따라 속도를 적분한 결과.</dd><dt>조작</dt><dd>좌표와 평가 횟수를 직접 선택. 시간 구간을 가리켜 색 면적과 갱신식 연결.</dd><dt>수식 연결</dt><dd>Euler는 직사각형, Heun은 단계 평가로 만든 사다리꼴. 부호 있는 면적의 합은 각 방법의 변위와 일치.</dd>"
   },
   "piece-solver": {
     "en": "Tracked starting point",
@@ -190,8 +178,76 @@ const prose={
     "ko": "<li><b>강의 수식:</b> 표시한 식은 제공된 강의자료에서 옮김. 각 식 아래에 원래 슬라이드 제목과 PDF 페이지 표기. 추가 에너지식·대응 비용식·확률의 닫힌 형태는 도입하지 않음.</li><li><b>수치 예제:</b> 동일 가중치, 고정 폭 0.16의 평행이동 가우시안 성분. 대응 끝점에 같은 오프셋 적용. 해석 가능한 이 예제와 인터페이스는 프로젝트용으로 구성.</li><li><b>계산:</b> 밀도·조건부 평균·조건부 손실은 직접 계산. 입자 궤적은 Heun 1,024단계, 추적 기준해는 4,096단계 사용. 신경망 학습은 하지 않음.</li>"
   },
   "sources": {
-    "en": "Flow-based notes: “Condition on the endpoint pair,” “The conditional velocity,” “The velocity that generates the family,” and “The minimizer is the marginal velocity.” Score-SDE notes: “Flux” and “The continuity equation.” Differential-equations appendix: “Euler’s method,” “Heun’s method,” and “What a step costs.”",
-    "ko": "Flow-based 자료: 끝점 대응·조건부 속도·주변 속도·목적함수 동치. Score-SDE 자료: 확률 흐름과 연속방정식. 미분방정식 부록: Euler·Heun 방법과 단계당 평가 횟수."
+    "en": "Flow-based notes: “Condition on the endpoint pair,” “The conditional velocity,” “The velocity that generates the family,” and “The minimizer is the marginal velocity.” Score-SDE notes: “Flux” and “The continuity equation.” Differential-equations appendix: “From a continuous trajectory to numerical updates,” “Euler’s method,” “Heun’s method,” and “What a step costs.”",
+    "ko": "Flow-based 자료: 끝점 대응·조건부 속도·주변 속도·목적함수 동치. Score-SDE 자료: 확률 흐름과 연속방정식. 미분방정식 부록: 궤적의 적분식, Euler·Heun 방법과 단계당 평가 횟수."
+  },
+  "board-title": {
+    "en": "Position on the photo board",
+    "ko": "사진판 위의 위치"
+  },
+  "score-title": {
+    "en": "The same paths, unfolded through time",
+    "ko": "같은 경로를 시간축으로 펼치면"
+  },
+  "score-note": {
+    "en": "The tilted sheets are spatial planes; vertical height encodes time. Drag the ruler on the right or use arrow keys. Crossing threads are conditional paths, not marginal ODE trajectories.",
+    "ko": "기울어진 판은 공간, 세로 높이는 시간. 오른쪽 시간자를 드래그하거나 방향키로 이동. 교차하는 실은 조건부 경로이며 주변 ODE 궤적과 구분."
+  },
+  "probe-title": {
+    "en": "Choose the observation point",
+    "ko": "관측 위치 선택"
+  },
+  "layers-title": {
+    "en": "Unfold the possible plans",
+    "ko": "가능한 계획 펼치기"
+  },
+  "candidate-offset": {
+    "en": "Horizontal candidate offset from the mean",
+    "ko": "평균에서 후보 가로속도의 차이"
+  },
+  "gate-initial": {
+    "en": "Initially inside",
+    "ko": "처음 안에 있던 수"
+  },
+  "gate-entered": {
+    "en": "Entered",
+    "ko": "들어온 수"
+  },
+  "gate-left": {
+    "en": "Left",
+    "ko": "나간 수"
+  },
+  "gate-current": {
+    "en": "Currently inside",
+    "ko": "지금 안에 있는 수"
+  },
+  "mass-details": {
+    "en": "Compare model probability and finite samples",
+    "ko": "모델 확률과 유한 표본 비교"
+  },
+  "coordinate": {
+    "en": "Coordinate to integrate",
+    "ko": "적분할 좌표"
+  },
+  "area-e-label": {
+    "en": "signed area",
+    "ko": "부호 있는 면적"
+  },
+  "area-h-label": {
+    "en": "signed area",
+    "ko": "부호 있는 면적"
+  },
+  "area-ref-label": {
+    "en": "Reference displacement",
+    "ko": "기준 변위"
+  },
+  "quadrature-note": {
+    "en": "Above/below the zero line means positive/negative displacement. Each method evaluates velocity at its own numerical states; the gray curve follows the refined reference trajectory. Hover or use arrow keys to inspect an interval.",
+    "ko": "0 기준선 위·아래는 양·음의 변위. 각 방법은 자체 수치 상태에서 속도를 평가하고, 회색 곡선은 세밀한 기준 궤적을 따름. 마우스나 방향키로 시간 구간 조사."
+  },
+  "solver-details": {
+    "en": "Inspect trajectories and convergence",
+    "ko": "궤적과 수렴 오차 비교"
   }
 };
 let language=document.documentElement.lang==='ko'?'ko':'en';

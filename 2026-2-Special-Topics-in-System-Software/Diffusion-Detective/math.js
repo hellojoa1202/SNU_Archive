@@ -38,6 +38,25 @@ function conditionalRisk(m,x,t,pred){const f=field(m,x,t,true);let irreducible=0
 function normalCDF(x){const z=Math.abs(x)/Math.SQRT2,t=1/(1+.3275911*z),erf=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-z*z);return .5*(1+(x<0?-erf:erf));}
 function regionMass(m,t,cut){return m.a.reduce((sum,_,i)=>sum+normalCDF((cut-component(m,i,t).mu[0])/m.tau),0)/m.a.length;}
 function regionRate(m,t,cut){return m.a.reduce((sum,_,i)=>{const {mu,u}=component(m,i,t),z=(cut-mu[0])/m.tau;return sum-u[0]*Math.exp(-z*z/2)/(m.tau*Math.sqrt(2*Math.PI));},0)/m.a.length;}
-const api={create,component,field,density,swap,integrate,at,samples,conditionalRisk,normalCDF,regionMass,regionRate};
+// Stage values expose the lecture update as signed velocity area.
+function quadrature(m,start,method,steps,axis=0){
+ if(![0,1].includes(axis))throw new RangeError('Invalid coordinate');
+ const solve=integrate(m,start,method,steps),h=1/steps,segments=[];
+ for(let k=0;k<steps;k++){const x=solve.path[k],t=k*h,v=field(m,x,t),predict=x.map((a,j)=>a+h*v[j]);
+  const v0=v[axis],v1=method==='euler'?v0:field(m,predict,t+h)[axis];
+  segments.push({t0:t,t1:t+h,v0,v1,area:h*(v0+v1)/2});
+ }
+ return{segments,area:segments.reduce((sum,s)=>sum+s.area,0),displacement:solve.end[axis]-start[axis],nfe:solve.nfe,path:solve.path};
+}
+// Count crossings of the piecewise-linear numerical trajectories, including re-entry.
+function boundaryHistory(paths,cut){
+ const initialInside=paths.filter(p=>p[0][0]<=cut).length,events=[];
+ paths.forEach((path,index)=>{const n=path.length-1;for(let k=0;k<n;k++){
+  const a=path[k],b=path[k+1],was=a[0]<=cut,is=b[0]<=cut;if(was===is)continue;
+  const fraction=(cut-a[0])/(b[0]-a[0]);events.push({time:(k+fraction)/n,enter:is,index,y:a[1]+fraction*(b[1]-a[1])});
+ }});events.sort((a,b)=>a.time-b.time);return{initialInside,events};
+}
+function boundaryCounts(history,t){let entered=0,left=0;for(const e of history.events){if(e.time>t)break;if(e.time===t&&!e.enter)continue;e.enter?entered++:left++;}return{initial:history.initialInside,entered,left,current:history.initialInside+entered-left};}
+const api={create,component,field,density,swap,integrate,at,samples,conditionalRisk,normalCDF,regionMass,regionRate,quadrature,boundaryHistory,boundaryCounts};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FlowMath=api;
 })(globalThis);

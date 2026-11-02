@@ -61,5 +61,11 @@
     "file": "lecA-differential-equations.pdf",
     "pdf_page": 16,
     "slide_title": "Heun’s method"
+  },
+  "integral": {
+    "html": "x(t) = x(0) + <span data-link=\"integral\">∫<sub>0</sub><sup>t</sup> v(x(τ),τ) dτ</span>",
+    "file": "lecA-differential-equations.pdf",
+    "pdf_page": 14,
+    "slide_title": "From a continuous trajectory to numerical updates"
   }
 }
