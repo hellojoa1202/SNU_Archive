@@ -10,8 +10,8 @@
 - The project README contains only two execution links, Korean and English. The archive root README stays a plain EWHA-style table without links. The course README is only its small course title.
 - Deploy through this repository's GitHub Pages workflow. Do not update a Sites copy unless requested.
 
-- The user explicitly replaced the frequency/inverse-filter focus with the course flow: reconstruction and VAE → DDPM/NCSN corruption → noise prediction and score → conditional mean and uncertainty → photographic puzzle → references. Do not restore the old Fourier material or move the puzzle to the top.
-- Sections 02–04 share an exact two-point data model with Gaussian corruption. Clearly distinguish conditional noise prediction from the individual injected noise. The puzzle is a separate controlled prediction-error experiment; no network is trained. Keep the real photo and interlocking edges. No AI-generated artwork or landscapes.
+- The user removed introductory encoder/decoder and Gaussian-density walkthroughs. Start directly from the lecture’s denoising identities and investigate posterior covariance, the denoiser Jacobian, local versus finite perturbations, Bayes risk versus sample validity, and predictor error. Distinguish material derived here from material explicitly covered in lectures. Do not restore Fourier analysis or introductory noising lessons.
+- Keep the photo puzzle late in the essay. It separately illustrates pointwise predictor error, not SDE/ODE paths or the Jacobian of a learned model. Keep the real photo and interlocking edges. No AI-generated artwork or landscapes.
 - Highlight equation terms when controls change. Positions remain continuous, without grid snapping.
 
 - Use compact typography and impersonal descriptive prose in both languages. Korean uses concise declarative forms such as “감소한다”, not conversational endings or invitations. Do not replace the page structure during local revisions.

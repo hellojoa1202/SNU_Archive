@@ -2,13 +2,225 @@
 (function(){
 'use strict';
   const prose={
+  "nav-geometry": {
+    "en": "Covariance & Jacobian",
+    "ko": "공분산과 Jacobian"
+  },
+  "nav-sensitivity": {
+    "en": "Local sensitivity",
+    "ko": "국소 민감도"
+  },
+  "nav-posterior": {
+    "en": "Optimality & validity",
+    "ko": "최적성과 샘플 타당성"
+  },
+  "nav-puzzle": {
+    "en": "Predictor error · puzzle",
+    "ko": "예측기 오차와 퍼즐"
+  },
+  "nav-notes": {
+    "en": "Scope & references",
+    "ko": "범위와 참고문헌"
+  },
+  "hero-title": {
+    "en": "When optimal denoising<br><span>amplifies perturbations.</span>",
+    "ko": "최적의 복원은<br><span>언제 변화를 증폭할까?</span>"
+  },
+  "hero-lead": {
+    "en": "Posterior covariance, denoiser Jacobians, and the limits of minimum-MSE reconstruction.",
+    "ko": "사후 공분산, 복원 함수의 Jacobian, 최소 MSE 복원의 한계."
+  },
+  "hero-question": {
+    "en": "A Bayes-optimal denoiser minimizes reconstruction error. Does it also suppress small changes in the observation? The answer is controlled by posterior uncertainty.",
+    "ko": "Bayes 최적 복원기는 복원 오차를 최소화한다. 관측값의 작은 변화도 항상 억제할까? 그 답은 사후 불확실성에 의해 결정된다."
+  },
+  "hero-meta": {
+    "en": "Starting point: DDPM/NCSN prediction identities · extension: local sensitivity",
+    "ko": "출발점: DDPM·NCSN 예측 관계식 · 확장: 국소 민감도"
+  },
+  "geometry-number": {
+    "en": "01 / ESTIMATOR GEOMETRY",
+    "ko": "01 / 복원 함수의 기하"
+  },
+  "geometry-title": {
+    "en": "From Tweedie’s identity to a covariance Jacobian",
+    "ko": "Tweedie 공식에서 공분산 Jacobian으로"
+  },
+  "geometry-start": {
+    "en": "Fix a noise level: y = ax₀ + σε with a > 0 and ε ∼ 𝒩(0, I). Write D(y) = E[x₀ | y], ε*(y) = E[ε | y], and s*(y) = ∇ log p(y). Starting from the lecture’s prediction identities, differentiate D with respect to its observation.",
+    "ko": "한 노이즈 수준에서 y = ax₀ + σε, a > 0, ε ∼ 𝒩(0, I)로 둔다. D(y) = E[x₀ | y], ε*(y) = E[ε | y], s*(y) = ∇ log p(y)로 쓴다. 강의의 예측 관계식을 출발점으로 D를 관측값에 대해 미분한다."
+  },
+  "geometry-theorem": {
+    "en": "The local response of the optimal denoiser is determined by its posterior covariance:",
+    "ko": "최적 복원기의 국소 반응은 사후 공분산으로 결정된다."
+  },
+  "geometry-meaning": {
+    "en": "For a unit direction v, the directional gain vᵀJ_Dv equals (a/σ²) Var(vᵀx₀ | y). An unresolved direction in the posterior can therefore become an amplified direction in the output. Minimum MSE does not imply a contraction.",
+    "ko": "단위 방향 v의 증폭률 vᵀJ_Dv는 (a/σ²) Var(vᵀx₀ | y)이다. 사후분포에서 결정되지 않은 방향은 출력 변화가 증폭되는 방향이 될 수 있다. 최소 MSE라는 성질만으로 수축성이 보장되지는 않는다."
+  },
+  "geometry-proof-title": {
+    "en": "Derivation from the posterior score",
+    "ko": "사후분포의 score를 이용한 유도"
+  },
+  "geometry-proof-text": {
+    "en": "Differentiate under the posterior integral. Gaussian smoothing and finite conditional second moments justify the identity under the usual integrability conditions. The result applies to a general prior; the next experiment uses a finite prior so every term can be checked exactly.",
+    "ko": "사후분포 적분을 미분하면 위 관계를 얻는다. 가우시안 평활화와 유한 조건부 이차 모멘트 아래에서 통상적인 적분 가능 조건을 가정한다. 관계식은 일반 사전분포에 적용되며, 다음 실험에서는 각 항을 정확히 확인할 수 있는 유한 사전분포를 사용한다."
+  },
+  "geometry-credit": {
+    "en": "Extension of lecture 2’s Tweedie formula; derivative identity:",
+    "ko": "강의 2의 Tweedie 공식에서 확장한 분석 · 미분 관계식:"
+  },
+  "sensitivity-number": {
+    "en": "02 / LOCAL SENSITIVITY",
+    "ko": "02 / 국소 민감도"
+  },
+  "sensitivity-title": {
+    "en": "Measure the response to an observation perturbation",
+    "ko": "관측값의 작은 변화가 출력에 미치는 영향"
+  },
+  "sensitivity-model": {
+    "en": "Use the symmetric prior P(x₀ = ±1) = 1/2 as an exact stress test. Its posterior mean and derivative are available in closed form:",
+    "ko": "대칭 사전분포 P(x₀ = ±1) = 1/2로 민감도를 정확히 분석한다. 사후평균과 미분은 다음과 같다."
+  },
+  "scheme-label": {
+    "en": "Amplitude convention",
+    "ko": "신호 진폭 설정"
+  },
+  "sigma-label": {
+    "en": "Noise level σ",
+    "ko": "노이즈 수준 σ"
+  },
+  "y-label": {
+    "en": "Base observation y",
+    "ko": "기준 관측값 y"
+  },
+  "h-label": {
+    "en": "Observation perturbation h",
+    "ko": "관측 변화 h"
+  },
+  "curve-caption": {
+    "en": "Solid: D(y). Dashed: tangent at the selected observation. Dots: y and y+h.",
+    "ko": "실선: D(y). 점선: 선택한 관측점의 접선. 두 점: y와 y+h."
+  },
+  "gain-caption": {
+    "en": "The shaded interval has D′(y) > 1. The scale follows the peak derivative.",
+    "ko": "음영 구간은 D′(y) > 1인 영역이다. 세로 눈금은 미분의 최댓값에 맞춘다."
+  },
+  "gain-metric": {
+    "en": "Local gain D′(y)",
+    "ko": "국소 증폭률 D′(y)"
+  },
+  "variance-metric": {
+    "en": "Posterior variance",
+    "ko": "사후분산"
+  },
+  "curvature-metric": {
+    "en": "Score derivative s′(y)",
+    "ko": "Score의 미분 s′(y)"
+  },
+  "actual-change": {
+    "en": "Actual output change",
+    "ko": "실제 출력 변화"
+  },
+  "linear-change": {
+    "en": "Linear prediction D′(y)h",
+    "ko": "선형 예측 D′(y)h"
+  },
+  "linear-remainder": {
+    "en": "Linearization residual",
+    "ko": "선형 근사 잔차"
+  },
+  "finite-step-note": {
+    "en": "D′ is a local quantity. A finite h can cross the steep transition region, so its secant gain need not equal D′(y). Reducing h tests the linear approximation directly.",
+    "ko": "D′는 국소적인 양이다. 유한한 h는 급격한 전이 구간을 가로지를 수 있어 실제 증폭률이 D′(y)와 다를 수 있다. h를 줄이면 선형 근사의 정확도를 직접 확인할 수 있다."
+  },
+  "rare-event-title": {
+    "en": "Large local gain can be a rare event",
+    "ko": "큰 국소 증폭이 드문 사건일 수 있다"
+  },
+  "rare-event-copy": {
+    "en": "At y = 0, D′(0) = a/σ² grows as noise decreases. But y = 0 also lies between the clean modes and can become extremely unlikely. A large worst-case derivative is not the same as a large average reconstruction error.",
+    "ko": "y = 0에서 D′(0) = a/σ²는 노이즈가 줄어들수록 커진다. 반면 y = 0은 두 원본 모드 사이에 있어 매우 드문 관측이 될 수 있다. 최악의 국소 민감도와 평균적인 복원 오차는 같은 지표가 아니다."
+  },
+  "region-mass": {
+    "en": "P(D′(Y) > 1), integrated under p(y):",
+    "ko": "관측분포로 적분한 P(D′(Y) > 1):"
+  },
+  "posterior-number": {
+    "en": "03 / OPTIMALITY & VALIDITY",
+    "ko": "03 / 최적성과 타당한 샘플"
+  },
+  "posterior-title": {
+    "en": "Bayes optimality, stability, and valid samples are different",
+    "ko": "Bayes 최적성·안정성·샘플의 타당성은 다르다"
+  },
+  "posterior-intro": {
+    "en": "For the same posterior, compare three decisions: the conditional mean, a MAP estimate, and an independent posterior draw. They optimize different criteria. At the symmetric boundary, the mean is unsupported even though it has the smallest conditional MSE.",
+    "ko": "같은 사후분포에서 조건부 평균, MAP 추정, 독립적인 사후 샘플을 비교한다. 각 선택은 서로 다른 기준을 따른다. 대칭 경계에서는 평균이 데이터 지지집합에 없더라도 조건부 MSE가 가장 작다."
+  },
+  "posterior-shared": {
+    "en": "Uses the same σ and y as the sensitivity experiment",
+    "ko": "민감도 실험과 같은 σ, y 사용"
+  },
+  "ambiguous-label": {
+    "en": "Set y = 0",
+    "ko": "y = 0으로 설정"
+  },
+  "posterior-sample-label": {
+    "en": "Draw one candidate",
+    "ko": "후보 하나 뽑기"
+  },
+  "risk-intro": {
+    "en": "A candidate estimate u has two costs: its distance from the conditional mean, and the uncertainty that remains after observing y. Only the first can be reduced by choosing u.",
+    "ko": "추정값 u의 오차는 조건부 평균에서 벗어난 정도와 관측 후에도 남은 불확실성으로 나뉜다. u를 바꿔 줄일 수 있는 것은 첫 항이다."
+  },
+  "estimate-label": {
+    "en": "Candidate estimate u",
+    "ko": "추정값 u"
+  },
+  "risk-total": {
+    "en": "Conditional MSE",
+    "ko": "조건부 MSE"
+  },
+  "risk-excess": {
+    "en": "Distance penalty",
+    "ko": "평균과의 거리 비용"
+  },
+  "risk-floor": {
+    "en": "Remaining uncertainty",
+    "ko": "남은 불확실성"
+  },
+  "optimal-label": {
+    "en": "Use the conditional mean",
+    "ko": "조건부 평균으로 설정"
+  },
+  "mean-derive-title": {
+    "en": "Why the conditional mean minimizes MSE",
+    "ko": "조건부 평균이 MSE를 최소화하는 이유"
+  },
+  "mean-derive-text": {
+    "en": "The conditional mean has risk Var(x₀|y). For an independent posterior draw X̃₀, averaging over both X₀ and X̃₀ doubles that variance. For this binary prior the MAP risk is 2(1 − |D(y)|). A supported output and minimum MSE are distinct goals.",
+    "ko": "조건부 평균의 위험은 Var(x₀|y)이다. 사후분포에서 독립적으로 뽑은 X̃₀는 X₀와 X̃₀ 모두에 대해 평균하면 위험이 그 분산의 두 배가 된다. 이 이진 사전분포에서 MAP의 위험은 2(1 − |D(y)|)이다. 지지집합에 속하는 출력과 최소 MSE는 서로 다른 목표이다."
+  },
+  "mean-decision": {
+    "en": "Mean: conditional risk",
+    "ko": "평균의 조건부 위험"
+  },
+  "sample-decision": {
+    "en": "Posterior draw: expected risk",
+    "ko": "사후 샘플의 기대 위험"
+  },
+  "map-decision": {
+    "en": "MAP: conditional risk",
+    "ko": "MAP의 조건부 위험"
+  },
   "jig-title": {
     "en": "A puzzle of noise prediction",
     "ko": "노이즈 예측으로 복원하는 퍼즐"
   },
   "prose-13": {
-    "en": "The previous experiments use optimal conditional predictions. This puzzle isolates a different question: how does a specified error in noise prediction affect the reconstructed positions?",
-    "ko": "앞의 실험은 최적의 조건부 예측을 다뤘다. 사진 퍼즐에서는 노이즈 예측에 주어진 오차가 있을 때 원본 위치 추정이 얼마나 달라지는지 확인한다."
+    "en": "Observation sensitivity and predictor error are separate mechanisms. The experiments above differentiate the exact estimator with respect to y. This photographic puzzle holds an observation fixed and changes the error in its predicted noise.",
+    "ko": "관측값에 대한 민감도와 예측기 오차는 별개이다. 앞에서는 정확한 복원기를 y에 대해 미분했다. 사진 퍼즐에서는 관측을 고정한 채 예측한 노이즈의 오차를 바꾼다."
   },
   "jig-forward-copy": {
     "en": "Noise moves the pieces; aₜ also contracts their positions toward the center. The photograph and the shapes of the pieces remain fixed.",
@@ -91,228 +303,24 @@
     "ko": "난수 시드"
   },
   "prose-14": {
-    "en": "Conditional uncertainty and prediction error are different. Even an optimal predictor can leave uncertainty about the original; this puzzle separately measures the effect of an imposed error in the predicted noise.",
-    "ko": "조건부 불확실성과 예측 오차는 서로 다르다. 최적 예측에도 원본에 대한 불확실성은 남을 수 있다. 이 퍼즐은 노이즈 예측에 인위적으로 더한 오차의 영향을 따로 측정한다."
+    "en": "A small pointwise prediction error does not control the derivative of that error. The puzzle measures pointwise reconstruction error; the preceding Jacobian experiment measures response to observation perturbations.",
+    "ko": "한 점에서 예측 오차가 작다고 그 오차의 미분까지 작다는 보장은 없다. 퍼즐은 점별 원본 추정 오차를 측정하고, 앞의 Jacobian 실험은 관측 변화에 대한 반응을 측정한다."
   },
   "jig-credit": {
     "en": "center-cropped; photo adaptation under the same license",
     "ko": "중앙 크롭 · 사진 변형물에 동일 라이선스 적용"
   },
-  "nav-reconstruction": {
-    "en": "Reconstruction & generation",
-    "ko": "복원과 생성"
+  "learned-title": {
+    "en": "Extending the identity to an imperfect score",
+    "ko": "불완전한 score로의 확장"
   },
-  "nav-forward": {
-    "en": "Adding noise",
-    "ko": "노이즈 추가"
-  },
-  "nav-prediction": {
-    "en": "Noise prediction & score",
-    "ko": "노이즈 예측과 score"
-  },
-  "nav-posterior": {
-    "en": "Mean & uncertainty",
-    "ko": "조건부 평균과 불확실성"
-  },
-  "nav-puzzle": {
-    "en": "Photo puzzle",
-    "ko": "사진 퍼즐"
-  },
-  "nav-notes": {
-    "en": "Model & references",
-    "ko": "모델과 참고문헌"
-  },
-  "hero-title": {
-    "en": "What does a<br><span>denoiser predict?</span>",
-    "ko": "복원 모델은<br><span>무엇을 예측할까?</span>"
-  },
-  "hero-lead": {
-    "en": "From encoder–decoder reconstruction to DDPM, NCSN, and the conditional mean.",
-    "ko": "Encoder·decoder의 복원에서 DDPM, NCSN, 조건부 평균으로 이어지는 실험."
-  },
-  "hero-question": {
-    "en": "A noisy observation may have more than one possible source. These experiments connect the training objective, the predicted noise, and the reconstructed result.",
-    "ko": "노이즈가 섞인 관측에는 여러 원본 후보가 있을 수 있다. 학습 목적함수, 예측한 노이즈, 복원 결과가 어떻게 연결되는지 살펴본다."
-  },
-  "hero-meta": {
-    "en": "Lectures 1–2 · exact toy model · linked equations",
-    "ko": "강의 1–2 중심 · 정확히 계산하는 예제 · 수식과 조작의 연결"
-  },
-  "reconstruction-number": {
-    "en": "01 / RECONSTRUCTION & GENERATION",
-    "ko": "01 / 복원과 생성"
-  },
-  "reconstruction-title": {
-    "en": "Reconstruction begins with a representation",
-    "ko": "표현을 거쳐 원본을 복원한다"
-  },
-  "recon-intro": {
-    "en": "An autoencoder compresses x into a representation z and decodes it back. A VAE gives this representation a probability model, allowing new latent samples to be decoded into data.",
-    "ko": "Autoencoder는 x를 표현 z로 압축한 뒤 다시 복원한다. VAE는 이 표현에 확률모델을 부여해 새로운 잠재변수에서도 데이터를 생성할 수 있게 한다."
-  },
-  "flow-data": {
-    "en": "data",
-    "ko": "데이터"
-  },
-  "flow-encoder": {
-    "en": "encoder",
-    "ko": "인코더"
-  },
-  "flow-latent": {
-    "en": "latent variable",
-    "ko": "잠재변수"
-  },
-  "flow-decoder": {
-    "en": "decoder",
-    "ko": "디코더"
-  },
-  "recon-elbo": {
-    "en": "The first term rewards reconstruction; the KL term controls how the encoded distribution differs from the latent prior. With a Gaussian decoder of fixed variance, the reconstruction term becomes a squared-error objective up to scaling and constants.",
-    "ko": "첫 항은 복원 성능을, KL 항은 인코딩된 분포와 잠재 사전분포의 차이를 다룬다. 분산이 고정된 가우시안 디코더에서는 복원 항이 상수와 배율을 제외하면 제곱오차 목적함수가 된다."
-  },
-  "recon-ddpm": {
-    "en": "DDPM fixes the forward encoder to a Gaussian noising chain and learns the reverse process. Its prediction target can be the added noise, the clean signal, or an equivalent parameterization.",
-    "ko": "DDPM은 정방향 인코더를 가우시안 노이즈를 더하는 과정으로 고정하고 역과정을 학습한다. 예측 대상은 더해진 노이즈, 원본 신호 또는 이와 동등한 표현으로 둘 수 있다."
-  },
-  "recon-bridge": {
-    "en": "The shared question is what a squared-error predictor returns when several originals could explain the same representation. Sections 02–04 make that question exactly computable.",
-    "ko": "서로 다른 원본이 같은 표현을 설명할 수 있을 때, 제곱오차로 학습한 모델은 무엇을 반환할까? 다음 실험에서는 그 답을 정확히 계산한다."
-  },
-  "forward-number": {
-    "en": "02 / FORWARD NOISING",
-    "ko": "02 / 정방향 노이즈 추가"
-  },
-  "forward-title": {
-    "en": "Two possible originals, one noisy observation",
-    "ko": "두 원본 후보와 하나의 관측"
-  },
-  "forward-intro": {
-    "en": "Use a small data distribution: x₀ = −1 or +1, each with probability 1/2. Adding Gaussian noise turns these two points into overlapping distributions.",
-    "ko": "작은 데이터 분포를 사용한다. x₀는 각각 확률 1/2로 −1 또는 +1이다. 가우시안 노이즈를 더하면 두 점에서 출발한 분포가 서로 겹친다."
-  },
-  "scheme-label": {
-    "en": "Corruption model",
-    "ko": "노이즈를 더하는 방식"
-  },
-  "sigma-label": {
-    "en": "Noise level σₜ",
-    "ko": "노이즈 수준 σₜ"
-  },
-  "new-samples-label": {
-    "en": "Resample forward points",
-    "ko": "정방향 표본 다시 뽑기"
-  },
-  "forward-notation": {
-    "en": "Notation follows lecture 1: aₜ is its ᾱₜ, the signal amplitude. In DDPM, σₜ = √(1 − aₜ²). NCSN keeps aₜ = 1 and conditions its score network on the noise level. Here both can be inspected over the same σ range.",
-    "ko": "강의 1의 표기에 맞춰 aₜ를 신호 진폭 ᾱₜ로 둔다. DDPM에서는 σₜ = √(1 − aₜ²)이다. NCSN은 aₜ = 1을 유지하며 노이즈 수준을 score network의 조건으로 사용한다. 여기서는 같은 σ 범위에서 두 방식을 관찰한다."
-  },
-  "prediction-number": {
-    "en": "03 / NOISE PREDICTION & SCORE",
-    "ko": "03 / 노이즈 예측과 SCORE"
-  },
-  "prediction-title": {
-    "en": "Two predictions of the same conditional information",
-    "ko": "같은 조건부 정보를 다르게 표현한다"
-  },
-  "prediction-intro": {
-    "en": "DDPM trains a noise predictor. NCSN trains a noise-conditional score. For a fixed Gaussian corruption, their optimal predictions are related by a known scale factor.",
-    "ko": "DDPM은 노이즈 예측을, NCSN은 노이즈 수준에 따른 score를 학습한다. 같은 가우시안 노이즈 모델에서 두 최적 예측값은 알려진 배율로 연결된다."
-  },
-  "observation-label": {
-    "en": "Observed value y",
-    "ko": "관측값 y"
-  },
-  "metric-eps": {
-    "en": "Optimal noise prediction ε*",
-    "ko": "최적 노이즈 예측 ε*"
-  },
-  "metric-score": {
-    "en": "Marginal score s*",
-    "ko": "관측 분포의 score s*"
-  },
-  "metric-mean": {
-    "en": "Clean estimate E[x₀ | y]",
-    "ko": "원본 추정 E[x₀ | y]"
-  },
-  "score-legend": {
-    "en": "Solid and dashed curves coincide.",
-    "ko": "실선과 점선이 일치한다."
-  },
-  "prediction-meaning": {
-    "en": "The optimum predicts the conditional average of the injected noise, not necessarily the particular noise that produced one observation. The reconstructed output is consequently a conditional mean.",
-    "ko": "최적 예측은 관측값에 대한 노이즈의 조건부 평균이다. 특정 관측을 만들었던 개별 노이즈와 항상 같지는 않다. 따라서 복원 결과도 원본의 조건부 평균이 된다."
-  },
-  "score-derive-text": {
-    "en": "Differentiating the Gaussian likelihood gives its conditional score. Averaging it under p(x₀ | y) yields the marginal score. Rearranging E[ε | y] = (y − aₜE[x₀ | y])/σₜ gives the clean estimate, also known as Tweedie’s formula for scaled Gaussian corruption.",
-    "ko": "가우시안 우도를 미분하면 조건부 score를 얻는다. 이를 p(x₀ | y)로 평균하면 관측 분포의 score가 된다. E[ε | y] = (y − aₜE[x₀ | y])/σₜ를 정리하면 원본 추정식을 얻으며, 이는 스케일을 포함한 가우시안 노이즈의 Tweedie 공식이다."
-  },
-  "score-derive-title": {
-    "en": "Derive the noise–score identity",
-    "ko": "노이즈와 score의 관계 유도"
-  },
-  "prediction-distinction": {
-    "en": "This identity connects prediction targets at the same corruption level. DDPM and NCSN still differ in their noise schedules, training weights, and sampling algorithms; NCSN originally uses annealed Langevin dynamics.",
-    "ko": "이 관계는 같은 노이즈 수준의 예측 대상을 연결한다. DDPM과 NCSN은 노이즈 스케줄, 학습 가중치, 샘플링 알고리즘에서 차이가 있으며, 원래 NCSN은 annealed Langevin dynamics를 사용한다."
-  },
-  "posterior-number": {
-    "en": "04 / CONDITIONAL MEAN",
-    "ko": "04 / 조건부 평균"
-  },
-  "posterior-title": {
-    "en": "The best reconstruction may be an average",
-    "ko": "최적의 복원이 평균일 수 있다"
-  },
-  "posterior-intro": {
-    "en": "At y = 0, the two originals are equally plausible. Their conditional mean is 0, even though 0 never appears in the clean data. A squared-error optimum need not be a valid data sample.",
-    "ko": "y = 0에서는 두 원본의 가능성이 같다. 깨끗한 데이터에 0이 없어도 조건부 평균은 0이다. 제곱오차를 최소화한 값이 실제 데이터의 한 후보와 반드시 일치하지는 않는다."
-  },
-  "posterior-shared": {
-    "en": "Uses the noise level and observation above",
-    "ko": "위의 노이즈 수준과 관측값 사용"
-  },
-  "ambiguous-label": {
-    "en": "Set y = 0",
-    "ko": "y = 0으로 설정"
-  },
-  "posterior-sample-label": {
-    "en": "Draw one candidate",
-    "ko": "후보 하나 뽑기"
-  },
-  "risk-intro": {
-    "en": "A candidate estimate u has two costs: its distance from the conditional mean, and the uncertainty that remains after observing y. Only the first can be reduced by choosing u.",
-    "ko": "추정값 u의 오차는 조건부 평균에서 벗어난 정도와 관측 후에도 남은 불확실성으로 나뉜다. u를 바꿔 줄일 수 있는 것은 첫 항이다."
-  },
-  "estimate-label": {
-    "en": "Candidate estimate u",
-    "ko": "추정값 u"
-  },
-  "risk-total": {
-    "en": "Conditional MSE",
-    "ko": "조건부 MSE"
-  },
-  "risk-excess": {
-    "en": "Distance penalty",
-    "ko": "평균과의 거리 비용"
-  },
-  "risk-floor": {
-    "en": "Remaining uncertainty",
-    "ko": "남은 불확실성"
-  },
-  "optimal-label": {
-    "en": "Use the conditional mean",
-    "ko": "조건부 평균으로 설정"
-  },
-  "mean-derive-text": {
-    "en": "The cross term vanishes because m is the conditional mean. The remaining variance is independent of u. This is the same least-squares argument behind the Gaussian VAE decoder and the optimal noise predictor.",
-    "ko": "m이 조건부 평균이므로 교차항은 0이다. 남은 분산 항은 u와 독립이다. 가우시안 VAE 디코더와 최적 노이즈 예측에도 같은 최소제곱 논리가 적용된다."
-  },
-  "mean-derive-title": {
-    "en": "Why the conditional mean minimizes MSE",
-    "ko": "조건부 평균이 MSE를 최소화하는 이유"
+  "learned-copy": {
+    "en": "A predictor can be accurate at a point but vary rapidly nearby. Controlling reconstruction error and controlling local sensitivity therefore require different information. The puzzle does not assume or measure a learned J_e.",
+    "ko": "예측기는 한 점에서 정확해도 그 주변에서 급격하게 변할 수 있다. 복원 오차와 국소 민감도를 제어하려면 서로 다른 정보가 필요하다. 이 퍼즐은 학습된 J_e를 가정하거나 측정하지 않는다."
   },
   "notes-number": {
-    "en": "06 / MODEL & REFERENCES",
-    "ko": "06 / 모델과 참고문헌"
+    "en": "05 / SCOPE & REFERENCES",
+    "ko": "05 / 범위와 참고문헌"
   },
   "notes-title": {
     "en": "What is calculated, and what is assumed",
@@ -323,36 +331,28 @@
     "ko": "확률모델"
   },
   "notes-model": {
-    "en": "Sections 02–04 use P(x₀ = ±1) = 1/2 and Gaussian corruption. Densities, posterior probabilities, conditional means, and scores are calculated exactly. The sample strip uses 80 seeded draws; its finite counts need not equal the analytic density.",
-    "ko": "02–04절은 P(x₀ = ±1) = 1/2와 가우시안 노이즈를 사용한다. 밀도, 사후확률, 조건부 평균, score를 정확히 계산한다. 표본 표시는 고정 시드의 80개 추출을 사용하며 유한 표본의 빈도는 정확한 밀도와 차이가 날 수 있다."
+    "en": "The covariance–Jacobian identity assumes Gaussian corruption with scalar a > 0 and finite posterior second moments. The scalar experiment uses an equally weighted two-point prior. Its mean, derivatives, conditional risks, and amplification interval are analytic; the interval probability uses 512-panel Simpson quadrature.",
+    "ko": "공분산·Jacobian 관계식은 스칼라 a > 0인 가우시안 노이즈와 유한 사후 이차 모멘트를 가정한다. 스칼라 실험은 동일 가중치의 두 점 사전분포를 사용한다. 평균, 미분, 조건부 위험과 증폭 구간은 해석식으로 계산하고, 구간 확률은 512구간 Simpson 적분으로 구한다."
   },
   "notes-training-title": {
     "en": "Training and implementation",
     "ko": "학습과 구현"
   },
   "notes-training": {
-    "en": "No neural network is trained. Exact optima make the equations inspectable in the browser. The photo puzzle uses a separate, explicitly simulated noise predictor. Its image is fixed; only piece positions enter the calculation.",
-    "ko": "신경망 학습 없이 정확한 최적값을 계산해 브라우저에서 수식을 확인한다. 사진 퍼즐은 별도로 명시한 모의 노이즈 예측을 사용한다. 사진은 고정되고 조각 위치만 계산 대상이 된다."
+    "en": "All estimators are computed analytically; no network is trained. The photographic puzzle is a separate synthetic predictor-error experiment. Local denoiser expansion does not by itself establish instability of a multi-step diffusion sampler.",
+    "ko": "추정기는 해석식으로 계산하며 신경망 학습은 수행하지 않는다. 사진 퍼즐은 별도의 모의 예측 오차 실험이다. 복원기의 국소 팽창만으로 다단계 diffusion sampler가 불안정하다고 결론 내릴 수는 없다."
   },
   "notes-course-title": {
     "en": "Course connections",
     "ko": "강의 연결"
   },
   "notes-course": {
-    "en": "Lecture 1: autoencoders, VAE ELBO, conditional-mean decoding, DDPM, and noise/x parameterizations. Lecture 2: denoising score matching, Tweedie’s formula, NCSN, and the score–noise relation.",
-    "ko": "강의 1: autoencoder, VAE ELBO, 조건부 평균 디코딩, DDPM, 노이즈·원본 예측 변환. 강의 2: denoising score matching, Tweedie 공식, NCSN, score와 노이즈의 관계."
+    "en": "Lecture 1 supplies noise/x prediction and conditional-mean optimality. Lecture 2 supplies Tweedie’s formula and the score/noise identity. Differentiating these identities gives the local-sensitivity analysis developed here; it is an extension, not a claim that this whole derivation appeared in the lectures.",
+    "ko": "강의 1의 노이즈·원본 예측과 조건부 평균 최적성, 강의 2의 Tweedie 공식과 score·노이즈 관계식을 출발점으로 삼는다. 이를 미분해 국소 민감도를 분석하는 부분은 여기서 확장한 내용이며, 전체 유도가 강의에 그대로 제시되었다는 뜻은 아니다."
   },
   "notes-reading-title": {
     "en": "Further reading",
     "ko": "참고문헌"
-  },
-  "flow-output": {
-    "en": "output",
-    "ko": "출력"
-  },
-  "reversal-label": {
-    "en": "learned reversal",
-    "ko": "학습하는 역과정"
   }
 };
   const ui={
@@ -373,7 +373,10 @@
   "Conditional squared error versus estimated clean value": "원본 추정값에 따른 조건부 제곱오차",
   "Noisy puzzle positions. Click a piece or use arrow keys to select.": "노이즈가 섞인 퍼즐 위치. 클릭 또는 방향키로 조각 선택.",
   "Estimated puzzle positions. Click a piece or use arrow keys to select.": "추정한 퍼즐 위치. 클릭 또는 방향키로 조각 선택.",
-  "Noise level versus reconstruction error amplification": "노이즈 수준에 따른 원본 추정 오차의 증폭률"
+  "Noise level versus reconstruction error amplification": "노이즈 수준에 따른 원본 추정 오차의 증폭률",
+  "04 / PREDICTOR ERROR": "04 / 예측기 오차",
+  "Denoiser response with tangent and perturbed observation": "복원 함수와 접선 및 변화한 관측점",
+  "Denoiser derivative and the region of local amplification": "복원 함수의 미분과 국소 증폭 구간"
 };
   const requested=new URLSearchParams(location.search).get('lang');
   let language=requested==='ko'||(requested!=='en'&&/\/Korean(?:%20| )ver\/(?:index\.html)?$/.test(location.pathname))?'ko':'en';
