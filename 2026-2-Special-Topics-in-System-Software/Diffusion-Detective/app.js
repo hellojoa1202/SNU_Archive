@@ -51,14 +51,14 @@ function cnf(){
  const all=Array.from({length:101},(_,k)=>{const t=k/100;return[t,M.scalarAt(trc.logp,t),M.logDensity(model,M.at(trc.path,t),t)];});
  const values=all.flatMap(p=>p.slice(1)),lo=Math.min(...values),hi=Math.max(...values),pad=Math.max(.08,(hi-lo)*.12),low=lo-pad,high=hi+pad;
  const points=all.filter(p=>p[0]<state.time);points.push([state.time,r.integrated,r.direct]);
- chart('density-chart',[{points:all.map(p=>[p[0],p[1]]),color:'#cbd8ee',width:1,dash:[2,4]},{points:points.map(p=>[p[0],p[1]]),color:V.blue,width:2.6},{points:points.map(p=>[p[0],p[2]]),color:V.orange,width:1.2,dash:[4,4]}],{ylim:[low,high],yticks:[low,(low+high)/2,high],yformat:x=>fmt(x,2),ylabel:tr('Log density along the trajectory','궤적을 따른 로그밀도'),mark:state.time,endpoints:true});
+ chart('density-chart',[{points:all.map(p=>[p[0],p[1]]),color:'#d0d9e2',width:1,dash:[2,4]},{points:points.map(p=>[p[0],p[1]]),color:V.blue,width:2.6},{points:points.map(p=>[p[0],p[2]]),color:V.red,width:1.2,dash:[4,4]}],{ylim:[low,high],yticks:[low,(low+high)/2,high],yformat:x=>fmt(x,2),ylabel:tr('Log density along the trajectory','궤적을 따른 로그밀도'),mark:state.time,endpoints:true});
 }
 function fm(){S.regression(model,{...state,revision});S.velocityLoss(model,state);$('fm-error').textContent=fmt(M.conditionalRisk(model,state.probe,state.time,state.prediction).excess,4);}
 function cfm(){
  S.pairboard(model,state);
  const fieldFrame=V.frame($('field-canvas'));V.heat(fieldFrame,model,state.time,revision);
  for(let y=-.65;y<=.65;y+=.26)for(let x=-1.15;x<=1.15;x+=.28)V.arrow(fieldFrame,[x,y],M.field(model,[x,y],state.time),'#cad6df',.6,.22);
- const info=M.field(model,state.probe,state.time,true),rank=info.weights.map((w,i)=>({i,w})).sort((a,b)=>b.w-a.w),colors=['#df6843','#32877b','#9b73a9'];
+ const info=M.field(model,state.probe,state.time,true),rank=info.weights.map((w,i)=>({i,w})).sort((a,b)=>b.w-a.w),colors=['#ae4c54','#32877b','#9b73a9'];
  for(let j=2;j>=0;j--){const{i,w}=rank[j];V.arrow(fieldFrame,state.probe,info.components[i].map(v=>v*w),colors[j],2.2,.44);}V.arrow(fieldFrame,state.probe,info.v,V.blue,2.8,.44);V.dot(fieldFrame,state.probe,V.ink,4);
  $('weights').innerHTML=rank.slice(0,3).map(({i,w},j)=>'<div><span style="color:'+colors[j]+'">'+tr('Pair ','끝점 쌍 ')+(i+1)+'</span><span class="weight-track"><span style="width:'+(w*100)+'%;background:'+colors[j]+'"></span></span><output>'+fmt(w*100,1)+'%</output></div>').join('');
  $('field-live').textContent=tr('Probability in remaining pairs: ','나머지 끝점 쌍의 확률: ')+fmt(Math.max(0,1-rank.slice(0,3).reduce((a,b)=>a+b.w,0))*100,1)+'%';
@@ -67,10 +67,10 @@ function cfm(){
 function solver(){
  if(!$('solver-details').open)return;
  const f=V.frame($('solver-canvas')),ref=reference(),rows=comparison().rows,{e,h}=rows.find(r=>r.budget===state.budget);
- V.line(f,ref.fine.path,'#9ba8b2',1.5,[4,4]);V.line(f,e.path,V.orange,1.8);V.line(f,h.path,V.blue,1.8);for(const p of e.path)V.dot(f,p,V.orange,1.5);for(const p of h.path)V.dot(f,p,V.blue,1.5);V.dot(f,model.a[state.selected],V.ink,4);V.dot(f,e.end,V.orange,4);V.dot(f,h.end,V.blue,4);
+ V.line(f,ref.fine.path,'#9ba8b2',1.5,[4,4]);V.line(f,e.path,V.red,1.8);V.line(f,h.path,V.blue,1.8);for(const p of e.path)V.dot(f,p,V.red,1.5);for(const p of h.path)V.dot(f,p,V.blue,1.5);V.dot(f,model.a[state.selected],V.ink,4);V.dot(f,e.end,V.red,4);V.dot(f,h.end,V.blue,4);
  const eError=distance(e.end,ref.fine.end),hError=distance(h.end,ref.fine.end);$('euler-error').textContent=eError.toExponential(2);$('heun-error').textContent=hError.toExponential(2);$('reference-check').textContent=ref.delta.toExponential(2);$('solver-live').textContent='Euler: '+state.budget+tr(' steps','단계')+' · Heun: '+state.budget/2+tr(' steps','단계')+' · '+state.budget+tr(' evaluations each','회씩 평가');
  const all=rows.flatMap(r=>[Math.log10(Math.max(1e-12,r.eError)),Math.log10(Math.max(1e-12,r.hError))]),low=Math.floor(Math.min(...all)),high=Math.max(low+1,Math.ceil(Math.max(...all))),ticks=Array.from({length:high-low+1},(_,i)=>low+i);
- chart('error-chart',[{points:rows.map(r=>[Math.log2(r.budget),Math.log10(Math.max(1e-12,r.eError))]),color:V.orange},{points:rows.map(r=>[Math.log2(r.budget),Math.log10(Math.max(1e-12,r.hError))]),color:V.blue}],{xlim:[4,8],ylim:[low,high],xticks:[4,5,6,7,8],yticks:ticks.filter((_,i)=>i%Math.ceil(ticks.length/5)===0),xformat:x=>String(2**x),yformat:y=>'1e'+y,xlabel:tr('Field evaluations','속도장 평가 횟수'),ylabel:tr('Endpoint error','끝점 오차'),mark:Math.log2(state.budget),dots:true});
+ chart('error-chart',[{points:rows.map(r=>[Math.log2(r.budget),Math.log10(Math.max(1e-12,r.eError))]),color:V.red},{points:rows.map(r=>[Math.log2(r.budget),Math.log10(Math.max(1e-12,r.hError))]),color:V.blue}],{xlim:[4,8],ylim:[low,high],xticks:[4,5,6,7,8],yticks:ticks.filter((_,i)=>i%Math.ceil(ticks.length/5)===0),xformat:x=>String(2**x),yformat:y=>'1e'+y,xlabel:tr('Field evaluations','속도장 평가 횟수'),ylabel:tr('Endpoint error','끝점 오차'),mark:Math.log2(state.budget),dots:true});
  solverResult={eError,hError,referenceDelta:ref.delta,eulerNfe:e.nfe,heunNfe:h.nfe};const profiles=areaProfiles();S.quadrature(model,state,ref,profiles);$('euler-area').textContent=fmt(profiles[0].area,5);$('heun-area').textContent=fmt(profiles[1].area,5);$('reference-area').textContent=fmt(ref.fine.end[state.axis]-model.a[state.selected][state.axis],5);
 }
 function sync(){

@@ -33,16 +33,16 @@ const prose={
     "ko": "궤적을 계산해야 얻는 우도에서 시작해, 직접 구하기 어려운 주변 속도와 계산 가능한 조건부 목표로 연결."
   },
   "route-node": {
-    "en": "<small>01 · LIKELIHOOD</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#9ebbd8\" stroke-width=\"1.2\"><path d=\"M12 10C86 2 121 65 222 25\"/><path d=\"M12 30C81 20 143 72 222 41\"/><path d=\"M12 53C86 32 146 70 222 57\"/><path d=\"M12 76C88 49 160 73 222 73\"/></g><path d=\"M12 30C81 20 143 72 222 41\" fill=\"none\" stroke=\"#2459d3\" stroke-width=\"2.2\"/><g fill=\"#2459d3\"><circle cx=\"12\" cy=\"30\" r=\"3\"/><circle cx=\"77\" cy=\"36\" r=\"3\"/><circle cx=\"147\" cy=\"52\" r=\"3\"/></g><circle cx=\"222\" cy=\"41\" r=\"4\" fill=\"#df6843\"/></svg><b>Integrate the trajectory</b><span>Accumulate density change.</span>",
-    "ko": "<small>01 · LIKELIHOOD</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#9ebbd8\" stroke-width=\"1.2\"><path d=\"M12 10C86 2 121 65 222 25\"/><path d=\"M12 30C81 20 143 72 222 41\"/><path d=\"M12 53C86 32 146 70 222 57\"/><path d=\"M12 76C88 49 160 73 222 73\"/></g><path d=\"M12 30C81 20 143 72 222 41\" fill=\"none\" stroke=\"#2459d3\" stroke-width=\"2.2\"/><g fill=\"#2459d3\"><circle cx=\"12\" cy=\"30\" r=\"3\"/><circle cx=\"77\" cy=\"36\" r=\"3\"/><circle cx=\"147\" cy=\"52\" r=\"3\"/></g><circle cx=\"222\" cy=\"41\" r=\"4\" fill=\"#df6843\"/></svg><b>궤적 전체를 적분</b><span>밀도 변화를 누적한다.</span>"
+    "en": "<small>01 · LIKELIHOOD</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#acbdcc\" stroke-width=\"1.2\"><path d=\"M12 10C86 2 121 65 222 25\"/><path d=\"M12 30C81 20 143 72 222 41\"/><path d=\"M12 53C86 32 146 70 222 57\"/><path d=\"M12 76C88 49 160 73 222 73\"/></g><path d=\"M12 30C81 20 143 72 222 41\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><g fill=\"#526b86\"><circle cx=\"12\" cy=\"30\" r=\"3\"/><circle cx=\"77\" cy=\"36\" r=\"3\"/><circle cx=\"147\" cy=\"52\" r=\"3\"/></g><circle cx=\"222\" cy=\"41\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Integrate the trajectory</b><span>Accumulate density change.</span>",
+    "ko": "<small>01 · LIKELIHOOD</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#acbdcc\" stroke-width=\"1.2\"><path d=\"M12 10C86 2 121 65 222 25\"/><path d=\"M12 30C81 20 143 72 222 41\"/><path d=\"M12 53C86 32 146 70 222 57\"/><path d=\"M12 76C88 49 160 73 222 73\"/></g><path d=\"M12 30C81 20 143 72 222 41\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><g fill=\"#526b86\"><circle cx=\"12\" cy=\"30\" r=\"3\"/><circle cx=\"77\" cy=\"36\" r=\"3\"/><circle cx=\"147\" cy=\"52\" r=\"3\"/></g><circle cx=\"222\" cy=\"41\" r=\"4\" fill=\"#ae4c54\"/></svg><b>궤적 전체를 적분</b><span>밀도 변화를 누적한다.</span>"
   },
   "route-fm": {
-    "en": "<small>02 · FLOW MATCHING</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#dce5ec\"><path d=\"M20 70H220M40 80V8\"/><circle cx=\"143\" cy=\"24\" r=\"19\"/><circle cx=\"143\" cy=\"24\" r=\"31\"/></g><path d=\"M66 67L143 24L132 27M143 24L137 35\" fill=\"none\" stroke=\"#2459d3\" stroke-width=\"2.2\"/><path d=\"M66 67L172 53L161 49M172 53L162 59\" fill=\"none\" stroke=\"#df6843\" stroke-width=\"2.2\"/><path d=\"M143 24L172 53\" stroke=\"#df6843\" stroke-dasharray=\"3 3\"/><circle cx=\"66\" cy=\"67\" r=\"3\" fill=\"#17283e\"/></svg><b>Compare local velocities</b><span>Replace the likelihood objective.</span>",
-    "ko": "<small>02 · FLOW MATCHING</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#dce5ec\"><path d=\"M20 70H220M40 80V8\"/><circle cx=\"143\" cy=\"24\" r=\"19\"/><circle cx=\"143\" cy=\"24\" r=\"31\"/></g><path d=\"M66 67L143 24L132 27M143 24L137 35\" fill=\"none\" stroke=\"#2459d3\" stroke-width=\"2.2\"/><path d=\"M66 67L172 53L161 49M172 53L162 59\" fill=\"none\" stroke=\"#df6843\" stroke-width=\"2.2\"/><path d=\"M143 24L172 53\" stroke=\"#df6843\" stroke-dasharray=\"3 3\"/><circle cx=\"66\" cy=\"67\" r=\"3\" fill=\"#17283e\"/></svg><b>한 지점의 속도를 비교</b><span>우도 대신 속도 회귀를 쓴다.</span>"
+    "en": "<small>02 · FLOW MATCHING</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#dce5ec\"><path d=\"M20 70H220M40 80V8\"/><circle cx=\"143\" cy=\"24\" r=\"19\"/><circle cx=\"143\" cy=\"24\" r=\"31\"/></g><path d=\"M66 67L143 24L132 27M143 24L137 35\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><path d=\"M66 67L172 53L161 49M172 53L162 59\" fill=\"none\" stroke=\"#ae4c54\" stroke-width=\"2.2\"/><path d=\"M143 24L172 53\" stroke=\"#ae4c54\" stroke-dasharray=\"3 3\"/><circle cx=\"66\" cy=\"67\" r=\"3\" fill=\"#17283e\"/></svg><b>Compare local velocities</b><span>Replace the likelihood objective.</span>",
+    "ko": "<small>02 · FLOW MATCHING</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#dce5ec\"><path d=\"M20 70H220M40 80V8\"/><circle cx=\"143\" cy=\"24\" r=\"19\"/><circle cx=\"143\" cy=\"24\" r=\"31\"/></g><path d=\"M66 67L143 24L132 27M143 24L137 35\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><path d=\"M66 67L172 53L161 49M172 53L162 59\" fill=\"none\" stroke=\"#ae4c54\" stroke-width=\"2.2\"/><path d=\"M143 24L172 53\" stroke=\"#ae4c54\" stroke-dasharray=\"3 3\"/><circle cx=\"66\" cy=\"67\" r=\"3\" fill=\"#17283e\"/></svg><b>한 지점의 속도를 비교</b><span>우도 대신 속도 회귀를 쓴다.</span>"
   },
   "route-cfm": {
-    "en": "<small>03 · CONDITIONAL FM</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#80adae\" stroke-width=\"1.3\"><path d=\"M14 12L102 45L158 18M14 32L102 45L158 33M14 53L102 45L158 54M14 74L102 45L158 73\"/></g><g fill=\"#398eaa\"><circle cx=\"14\" cy=\"12\" r=\"3\"/><circle cx=\"14\" cy=\"32\" r=\"3\"/><circle cx=\"14\" cy=\"53\" r=\"3\"/><circle cx=\"14\" cy=\"74\" r=\"3\"/></g><path d=\"M102 45L218 42L208 37M218 42L208 47\" fill=\"none\" stroke=\"#2459d3\" stroke-width=\"2.2\"/><circle cx=\"102\" cy=\"45\" r=\"4\" fill=\"#df6843\"/></svg><b>Construct a conditional target</b><span>Learn from sampled endpoint pairs.</span>",
-    "ko": "<small>03 · CONDITIONAL FM</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#80adae\" stroke-width=\"1.3\"><path d=\"M14 12L102 45L158 18M14 32L102 45L158 33M14 53L102 45L158 54M14 74L102 45L158 73\"/></g><g fill=\"#398eaa\"><circle cx=\"14\" cy=\"12\" r=\"3\"/><circle cx=\"14\" cy=\"32\" r=\"3\"/><circle cx=\"14\" cy=\"53\" r=\"3\"/><circle cx=\"14\" cy=\"74\" r=\"3\"/></g><path d=\"M102 45L218 42L208 37M218 42L208 47\" fill=\"none\" stroke=\"#2459d3\" stroke-width=\"2.2\"/><circle cx=\"102\" cy=\"45\" r=\"4\" fill=\"#df6843\"/></svg><b>조건부 목표를 구성</b><span>표본으로 뽑은 끝점 쌍에서 배운다.</span>"
+    "en": "<small>03 · CONDITIONAL FM</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#80adae\" stroke-width=\"1.3\"><path d=\"M14 12L102 45L158 18M14 32L102 45L158 33M14 53L102 45L158 54M14 74L102 45L158 73\"/></g><g fill=\"#398eaa\"><circle cx=\"14\" cy=\"12\" r=\"3\"/><circle cx=\"14\" cy=\"32\" r=\"3\"/><circle cx=\"14\" cy=\"53\" r=\"3\"/><circle cx=\"14\" cy=\"74\" r=\"3\"/></g><path d=\"M102 45L218 42L208 37M218 42L208 47\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><circle cx=\"102\" cy=\"45\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Construct a conditional target</b><span>Learn from sampled endpoint pairs.</span>",
+    "ko": "<small>03 · CONDITIONAL FM</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#80adae\" stroke-width=\"1.3\"><path d=\"M14 12L102 45L158 18M14 32L102 45L158 33M14 53L102 45L158 54M14 74L102 45L158 73\"/></g><g fill=\"#398eaa\"><circle cx=\"14\" cy=\"12\" r=\"3\"/><circle cx=\"14\" cy=\"32\" r=\"3\"/><circle cx=\"14\" cy=\"53\" r=\"3\"/><circle cx=\"14\" cy=\"74\" r=\"3\"/></g><path d=\"M102 45L218 42L208 37M218 42L208 47\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><circle cx=\"102\" cy=\"45\" r=\"4\" fill=\"#ae4c54\"/></svg><b>조건부 목표를 구성</b><span>표본으로 뽑은 끝점 쌍에서 배운다.</span>"
   },
   "hero-note": {
     "en": "An analytic toy field makes the quantities inspectable. The page compares objectives and sampling computations; it does not train a network.",
@@ -97,8 +97,8 @@ const prose={
     "ko": "수치적 차이"
   },
   "cnf-caption": {
-    "en": "Blue: accumulated log density. Orange dashes: direct analytic value. Pale dots preview the full trace. The grid and outlined patch move with the ODE; the patch area is a finite-region approximation.",
-    "ko": "파랑: 누적 로그밀도. 주황 점선: 직접 계산한 값. 옅은 점선: 전체 곡선 미리보기. 격자와 작은 영역은 ODE를 따라 움직이며, 면적은 유한한 영역으로 계산한 근삿값이다."
+    "en": "Blue: accumulated log density. Red dashes: direct analytic value. Pale dots preview the full trace. The grid and outlined patch move with the ODE; the patch area is a finite-region approximation.",
+    "ko": "파랑: 누적 로그밀도. 빨간 점선: 직접 계산한 값. 옅은 점선: 전체 곡선 미리보기. 격자와 작은 영역은 ODE를 따라 움직이며, 면적은 유한한 영역으로 계산한 근삿값이다."
   },
   "cnf-model": {
     "en": "In this demonstration, the analytic velocity takes the place of the parameterized field. The integral is evaluated up to the current time; the likelihood formula above is its endpoint form.",
@@ -133,8 +133,8 @@ const prose={
     "ko": "파란색: 해석적 목표"
   },
   "legend-prediction": {
-    "en": "Orange: candidate velocity",
-    "ko": "주황색: 후보 속도"
+    "en": "Red: candidate velocity",
+    "ko": "빨간색: 후보 속도"
   },
   "pred-x": {
     "en": "Candidate horizontal velocity",
@@ -157,8 +157,8 @@ const prose={
     "ko": "국소 제곱오차"
   },
   "fm-caption": {
-    "en": "Left: move the observation point or drag the orange arrow. Right: drag the same candidate in velocity space. Each contour joins velocities with the same squared error; its centre is the target. Density is shown by outlines, without a shaded background.",
-    "ko": "왼쪽: 관측 위치를 옮기거나 주황 화살표를 드래그한다. 오른쪽: 같은 후보 속도를 속도 공간에서 움직인다. 등고선은 제곱오차가 같은 속도들을 연결하며, 중심이 목표 속도다. 공간의 밀도는 채움 없이 윤곽선으로 표시한다."
+    "en": "Left: move the observation point or drag the red arrow. Right: drag the same candidate in velocity space. Each contour joins velocities with the same squared error; its centre is the target. Density is shown by outlines, without a shaded background.",
+    "ko": "왼쪽: 관측 위치를 옮기거나 빨간 화살표를 드래그한다. 오른쪽: 같은 후보 속도를 속도 공간에서 움직인다. 등고선은 제곱오차가 같은 속도들을 연결하며, 중심이 목표 속도다. 공간의 밀도는 채움 없이 윤곽선으로 표시한다."
   },
   "fm-note": {
     "en": "The displayed error is one local contribution. The training objective also averages over time and positions. Drawing a toy sample uses its known endpoint interpolation; no marginal ODE is solved for that draw.",

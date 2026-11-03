@@ -1,7 +1,7 @@
 /* Shared photograph and drawing geometry. All four experiments use this plane. */
 (function(){
 'use strict';
-const blue='#2459d3',orange='#df6843',ink='#17283e';
+const blue='#526b86',red='#ae4c54',ink='#17283e';
 const art=new Image();art.src=new URL('assets/cat-photo.jpg',document.currentScript.src).href;
 const paths=Array.from({length:48},(_,i)=>{
  const w=.22,h=.22,x=i%8,y=Math.floor(i/8),p=new Path2D(),sign=n=>n%2?1:-1;
@@ -16,7 +16,7 @@ function dot(f,p,color=blue,r=3){const{c,scale}=f;c.fillStyle=color;c.beginPath(
 function text(f,label,p,color='#82909c',size=10){const{c,scale}=f;c.fillStyle=color;c.font=`${size/scale}px -apple-system,BlinkMacSystemFont,Arial,sans-serif`;c.textAlign='center';c.textBaseline='middle';c.fillText(label,...p);}
 function arrow(f,x,v,color=blue,width=1,factor=.32){const end=[x[0]+v[0]*factor,x[1]+v[1]*factor],l=Math.hypot(v[0],v[1]);if(l<1e-8){dot(f,x,color,2);return;}line(f,[x,end],color,width);const a=Math.atan2(v[1],v[0]),r=5/f.scale;line(f,[[end[0]-r*Math.cos(a-.5),end[1]-r*Math.sin(a-.5)],end,[end[0]-r*Math.cos(a+.5),end[1]-r*Math.sin(a+.5)]],color,width);}
 function targets(f,m){const{c,scale}=f;c.save();c.strokeStyle='#dce6ed';c.lineWidth=.7/scale;const cell=m.cell||.22;for(const p of m.b)c.strokeRect(p[0]-cell/2,p[1]-cell/2,cell,cell);c.restore();}
-function piece(f,m,i,p,selected=false,alpha=1){const{c,scale}=f;c.save();c.globalAlpha=alpha;c.translate(...p);c.fillStyle='#fff';c.fill(paths[i]);if(art.naturalWidth){c.save();c.clip(paths[i]);const sw=Math.min(art.naturalWidth,art.naturalHeight*4/3),sh=sw*3/4;c.drawImage(art,(art.naturalWidth-sw)/2,(art.naturalHeight-sh)/2,sw,sh,-.88-m.b[i][0],-.66-m.b[i][1],1.76,1.32);c.restore();}c.strokeStyle=selected?orange:'rgba(255,255,255,.86)';c.lineWidth=(selected?2.4:.7)/scale;c.stroke(paths[i]);if(selected){c.strokeStyle=ink;c.lineWidth=.55/scale;c.stroke(paths[i]);}c.restore();}
+function piece(f,m,i,p,selected=false,alpha=1){const{c,scale}=f;c.save();c.globalAlpha=alpha;c.translate(...p);c.fillStyle='#fff';c.fill(paths[i]);if(art.naturalWidth){c.save();c.clip(paths[i]);const sw=Math.min(art.naturalWidth,art.naturalHeight*4/3),sh=sw*3/4;c.drawImage(art,(art.naturalWidth-sw)/2,(art.naturalHeight-sh)/2,sw,sh,-.88-m.b[i][0],-.66-m.b[i][1],1.76,1.32);c.restore();}c.strokeStyle=selected?red:'rgba(255,255,255,.86)';c.lineWidth=(selected?2.4:.7)/scale;c.stroke(paths[i]);if(selected){c.strokeStyle=ink;c.lineWidth=.55/scale;c.stroke(paths[i]);}c.restore();}
 let contourKey='',contourLines;
 function heat(f,m,t,revision){
  // Density is encoded by nested lines; every pixel outside a line stays white.
@@ -34,5 +34,5 @@ function heat(f,m,t,revision){
  const c=f.c;c.save();c.lineWidth=.8/f.scale;contourLines.forEach((segments,i)=>{c.strokeStyle=['#c9e5e2','#a7d3cf','#78b8b1','#4a978f'][i];c.beginPath();for(const[a,b]of segments){c.moveTo(...a);c.lineTo(...b);}c.stroke();});c.restore();
 }
 art.onload=()=>window.dispatchEvent(new Event('puzzlephotoload'));art.onerror=()=>window.dispatchEvent(new Event('puzzlephotoerror'));
-window.PuzzleView={frame,point,line,dot,text,arrow,targets,piece,heat,blue,orange,ink,get loaded(){return art.naturalWidth>0;}};
+window.PuzzleView={frame,point,line,dot,text,arrow,targets,piece,heat,blue,red,ink,get loaded(){return art.naturalWidth>0;}};
 })();

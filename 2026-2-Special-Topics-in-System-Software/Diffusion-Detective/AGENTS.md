@@ -25,3 +25,5 @@
 - course-equations.json is the displayed-equation audit. The current CNF likelihood and instantaneous change-of-variables equations come from flow-based PDF pages 32 and 21. The analytic field stands in for a parameterized neural field; compare mathematical objectives, never claim measured training acceleration or actual neural optimization.
 
 - Visual revision: pure white surfaces, outline-only density contours (no tinted density wash). The CFM photo is an 8 × 6 jigsaw with 48 actual model components. Show start/current/end together; a selected piece links all three. FM includes a linked velocity-space squared-error contour plot. Do not label these graphs as trained results.
+
+- Color preference: use muted slate blue (#526b86) and subdued red (#ae4c54), with pure white surfaces. Keep UI, SVGs, canvas plots and bilingual color labels consistent; do not restore vivid cobalt or orange accents.
