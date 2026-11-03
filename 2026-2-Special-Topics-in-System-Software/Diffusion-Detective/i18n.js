@@ -109,8 +109,8 @@ const prose={
     "ko": "추적 입자 사이 거리"
   },
   "sde-finite": {
-    "en": "The curves compare empirical x-coordinate densities with the analytic reference. Finite samples and numerical integration cause discrepancies; the theorem concerns distributions in continuous time, not identical clouds or paths. CDF discrepancy measures this projection only.",
-    "ko": "곡선은 표본의 x좌표 밀도와 해석적 기준을 비교한다. 유한 표본과 수치적분 때문에 차이가 생긴다. 정리는 연속 시간의 분포에 대한 것이며 점 구름이나 개별 경로의 일치를 뜻하지 않는다. CDF 차이는 x축 투영만 측정한다."
+    "en": "The reverse SDE and its probability flow ODE have the same one-time marginals under an exact score and a matching terminal law. This does not identify their path laws or temporal correlations. Empirical x-density and CDF discrepancies below include finite-sample and discretization effects.",
+    "ko": "정확한 Score와 같은 종단 분포 아래 역방향 SDE와 대응 ODE는 각 시각의 주변분포를 공유한다. 경로 전체의 확률법칙이나 시간 사이 상관관계까지 같다는 뜻은 아니다. 표본의 x축 밀도와 CDF 차이에는 유한 표본 및 이산화 오차가 포함된다."
   },
   "sde-bridge": {
     "en": "<b>Matching distributions leaves freedom in the paths.</b><span>Flow Matching uses this freedom differently: choose a probability path and learn a velocity that generates it.</span>",
@@ -193,8 +193,8 @@ const prose={
     "ko": "자리를 채우는 것과 그림을 맞추는 것은 다르다"
   },
   "puzzle-intro": {
-    "en": "A jigsaw checks <b>which piece belongs in each place</b>. A positional distribution describes <b>where the pieces are</b>. Exchange two destinations, then hide the photographs: the endpoint positions stay the same while the image changes.",
-    "ko": "직소퍼즐은 <b>어느 조각이 어느 자리에 있는지</b>를 확인한다. 위치 분포는 <b>조각들이 어디에 있는지</b>를 나타낸다. 두 조각의 도착점을 바꾼 뒤 사진을 숨겨 보면, 끝점 위치는 그대로인데 그림은 달라진다."
+    "en": "A jigsaw checks <b>which piece belongs in each place</b>. A positional distribution describes <b>where the pieces are</b>. Photographs and position markers stay visible together: exchange two destinations and compare both representations.",
+    "ko": "직소퍼즐은 <b>어느 조각이 어느 자리에 있는지</b>를 확인한다. 위치 분포는 <b>조각들이 어디에 있는지</b>를 나타낸다. 사진과 위치 표식을 함께 보면서 두 도착점을 교환해 두 표현을 비교한다."
   },
   "pairing": {
     "en": "Pairing preset",
@@ -212,14 +212,6 @@ const prose={
     "en": "Assigned destination",
     "ko": "대응하는 도착점"
   },
-  "puzzle-photo-label": {
-    "en": "Photo pieces",
-    "ko": "사진 조각"
-  },
-  "puzzle-position-label": {
-    "en": "Positions only",
-    "ko": "위치만 보기"
-  },
   "puzzle-swap-label": {
     "en": "Exchange two destinations",
     "ko": "두 조각의 도착점 교환"
@@ -232,9 +224,13 @@ const prose={
     "en": "One piece identity across three arrangements",
     "ko": "세 배치에서 같은 조각 추적"
   },
+  "positions-heading": {
+    "en": "The same arrangements, with piece identities removed",
+    "ko": "같은 배치에서 조각의 정체성만 제외"
+  },
   "pair-caption": {
-    "en": "The exchange button swaps the selected piece with a second piece and moves to the endpoint. It keeps all endpoint positions occupied; only their identities change. Dot view shows component centers. The smooth distributions and sampled clouds are compared below.",
-    "ko": "교환 버튼은 선택한 조각과 다른 조각의 도착점을 바꾸고 끝점으로 이동한다. 모든 끝점 자리는 그대로 채워지고 조각의 정체성만 달라진다. 점 보기는 모형 성분의 중심을 표시하며, 매끄러운 분포와 표본 비교는 아래 그래프에서 확인한다."
+    "en": "Exchange the selected piece with a second one at the endpoint. The photograph changes while the endpoint markers stay fixed. Markers indicate Gaussian-component centers; the plots below compare smooth densities and samples.",
+    "ko": "교환 버튼은 끝점에서 선택한 조각과 다른 조각을 바꾼다. 사진은 바뀌고 끝점 표식은 그대로 유지된다. 표식은 가우시안 성분의 중심이며, 아래 그래프에서는 매끄러운 밀도와 표본을 비교한다."
   },
   "flow-compare-title": {
     "en": "One probability path, two ways to move samples",
@@ -265,8 +261,8 @@ const prose={
     "ko": "평균 속도로도 분포를 맞추는 이유"
   },
   "mean-read": {
-    "en": "At one location, several endpoint pairs can contribute different directions. Weight them by their conditional probabilities. This velocity satisfies the continuity equation for the interpolation’s density. Move the observation point below, then inspect how the shared loss minimum follows the mean.",
-    "ko": "한 위치에는 서로 다른 방향을 가진 여러 끝점 쌍이 기여할 수 있다. 각 쌍의 조건부 확률로 가중하면 보간 분포의 연속방정식을 만족하는 속도를 얻는다. 아래 관측 위치를 바꾸고 평균 속도와 손실의 최소점이 함께 이동하는 모습을 확인한다."
+    "en": "For a fixed endpoint coupling, conditional averaging yields a velocity satisfying the continuity equation for the interpolation density. The density evolution constrains probability transport, not the identity of each trajectory. Changing the coupling generally changes the interior probability path even when the endpoints remain fixed.",
+    "ko": "끝점 결합분포를 고정하면 조건부 평균 속도는 보간 밀도의 연속방정식을 만족한다. 밀도 변화는 확률의 이동을 제약하며 개별 궤적의 정체성을 지정하지는 않는다. 끝점 분포를 유지하더라도 결합분포를 바꾸면 중간 확률 경로는 일반적으로 달라진다."
   },
   "field-label": {
     "en": "At the observation point: weighted directions",
@@ -277,8 +273,8 @@ const prose={
     "ko": "색 화살표: 확률로 가중한 기여가 가장 큰 세 방향. 파랑: 48개 성분을 모두 반영한 평균. 화면을 클릭해 관측 위치를 바꿀 수 있다."
   },
   "loss-explain": {
-    "en": "The model sees position and time, while different endpoint pairs can supply different target velocities there. Squared-error regression recovers their conditional mean. The conditional and marginal objectives differ by a parameter-independent constant.",
-    "ko": "모델은 위치와 시각을 보고 예측하지만, 같은 위치에서도 끝점 쌍에 따라 목표 속도가 달라질 수 있음. 제곱오차 회귀는 그 조건부 평균을 회복하며, 두 목적함수는 매개변수와 무관한 상수만큼 차이 남."
+    "en": "Conditional expectation is the squared-error projection of the conditional target onto functions of position and time. The residual conditional variance is independent of the predictor. Averaging this decomposition gives the FM/CFM objective identity; their parameter gradients agree whenever differentiation is justified.",
+    "ko": "조건부 기대값은 위치와 시간의 함수로 조건부 목표를 예측할 때의 제곱오차 투영이다. 남은 조건부 분산은 예측값에 무관하다. 이 분해를 평균하면 FM/CFM 목적함수 관계를 얻으며, 미분이 정당화되는 조건에서 매개변수 기울기도 같다."
   },
   "loss-title": {
     "en": "Compare the local loss slices",
@@ -431,6 +427,14 @@ const prose={
   "solver-caption": {
     "en": "Equal field evaluations: Euler uses one evaluation per step, Heun two. Errors are measured against 4,096-step Heun, checked against 2,048 steps. Refinement checks consistency; it is not a certified error bound. Assigned-endpoint differences are separate from numerical integration error.",
     "ko": "동일 평가 횟수로 비교: Euler는 단계당 1회, Heun은 2회 평가. 오차 기준은 Heun 4,096단계이며 2,048단계와 비교. 세분화 차이는 일관성 점검으로 엄밀한 오차 상한은 아님. 지정 도착점과의 차이는 수치적분 오차와 구분."
+  },
+  "directions-title": {
+    "en": "Further directions under consideration",
+    "ko": "고려 중인 추가 방향"
+  },
+  "directions-body": {
+    "en": "<li><b>Alternative analogies :</b> compare seat assignments in a lecture hall or sorting labeled parcels into bins. Check whether each makes endpoint coupling, positional density, and individual identity easier to distinguish.</li><li><b>Mathematical limits :</b> state which aspects are represented by the analogy. A seating or sorting scene alone does not establish continuous-time marginal equivalence.</li>",
+    "ko": "<li><b>다른 비유 탐색 :</b> 강의실의 좌석 배정이나 이름표가 붙은 소포의 분류를 후보로 비교한다. 끝점 대응·위치 밀도·개별 정체성을 구분하는 데 어떤 비유가 더 적절한지 검토한다.</li><li><b>수학적 대응 범위 :</b> 비유가 표현하는 대상을 명시한다. 좌석 배정이나 분류 장면만으로 연속 시간의 주변분포 동치를 설명할 수 있는 것은 아니다.</li>"
   },
   "notes-title": {
     "en": "Model, scope, and sources",

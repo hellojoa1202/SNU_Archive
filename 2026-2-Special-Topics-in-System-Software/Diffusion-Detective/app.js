@@ -6,7 +6,7 @@ const budgets=[16,32,64,128,256],distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1])
 let model=M.create(),revision=0,activeSection='score',queued=false,dragging=false,lastTick=0,lastDraw=0,optionLanguage='';
 let population=null,materialGrid=null,meshCache=null,comparisonCache=null,areaCache=null;
 const refs=new Map(),traces=new Map(),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const state={time:0,selected:22,budget:32,probe:[0,0],prediction:[.6,0],pairing:0,initial:0,playing:false,axis:0,speed:1,active:'density-integral',sampleSeed:17,puzzleView:'photo'};
+const state={time:0,selected:22,budget:32,probe:[0,0],prediction:[.6,0],pairing:0,initial:0,playing:false,axis:0,speed:1,active:'density-integral',sampleSeed:17};
 let solverResult=null,cnfResult=null,lossRange=1.3;
 const optionList=Array.from({length:model.a.length},(_,i)=>'<option value="'+i+'">'+(i+1)+'</option>').join('');
 document.querySelectorAll('.piece-select').forEach(e=>e.innerHTML=optionList);$('destination').innerHTML=optionList;
@@ -56,6 +56,7 @@ function cnf(){
 function fm(){S.regression(model,{...state,revision});S.velocityLoss(model,state);$('fm-error').textContent=fmt(M.conditionalRisk(model,state.probe,state.time,state.prediction).excess,4);}
 function cfm(){
  if(visible('plan-canvas'))S.pairboard(model,state);
+ if(visible('positions-canvas'))S.positions(model,state);
  const fieldFrame=V.frame($('field-canvas'));V.heat(fieldFrame,model,state.time,revision);
  for(let y=-.65;y<=.65;y+=.26)for(let x=-1.15;x<=1.15;x+=.28)V.arrow(fieldFrame,[x,y],M.field(model,[x,y],state.time),'#cad6df',.6,.22);
  const info=M.field(model,state.probe,state.time,true),rank=info.weights.map((w,i)=>({i,w})).sort((a,b)=>b.w-a.w),colors=['#ae4c54','#32877b','#9b73a9'];
@@ -74,7 +75,6 @@ function solver(){
  solverResult={eError,hError,referenceDelta:ref.delta,eulerNfe:e.nfe,heunNfe:h.nfe};const profiles=areaProfiles();S.quadrature(model,state,ref,profiles);$('euler-area').textContent=fmt(profiles[0].area,5);$('heun-area').textContent=fmt(profiles[1].area,5);$('reference-area').textContent=fmt(ref.fine.end[state.axis]-model.a[state.selected][state.axis],5);
 }
 function sync(){
- $('puzzle-photo').setAttribute('aria-pressed',String(state.puzzleView==='photo'));$('puzzle-positions').setAttribute('aria-pressed',String(state.puzzleView==='positions'));
 
  $('header-play').hidden=activeSection!=='cnf';$('header-play').textContent=state.playing?'Ⅱ':'▶';$('header-play').setAttribute('aria-label',state.playing?tr('Pause animation','애니메이션 일시정지'):tr('Play animation','애니메이션 재생'));
  $('play-toggle').textContent=state.playing?tr('Pause','일시정지'):tr('Play','재생');$('play-toggle').setAttribute('aria-pressed',String(state.playing));$('speed').value=state.speed;
@@ -100,7 +100,6 @@ for(const id of ['play-toggle','header-play'])$(id).addEventListener('click',()=
 $('replay').addEventListener('click',()=>{state.time=0;state.playing=true;schedule();});$('speed').addEventListener('change',()=>{state.speed=Number($('speed').value);});
 for(const el of document.querySelectorAll('.time-control'))el.addEventListener('input',()=>{pause();state.time=Number(el.value);highlight(activeSection==='cnf'?'density-integral':'time');schedule();});
 for(const el of document.querySelectorAll('.piece-select'))el.addEventListener('change',()=>{state.selected=Number(el.value);highlight(activeSection==='cnf'?'initial-density':'connection');schedule();});
-for(const mode of ['photo','positions'])$('puzzle-'+mode).addEventListener('click',()=>{state.puzzleView=mode;highlight('connection');schedule();});
 $('puzzle-swap').addEventListener('click',()=>{const other=(state.selected+Math.floor(model.a.length/2))%model.a.length;M.swap(model,state.selected,model.pi[other]);state.pairing=3;state.time=1;invalidate();highlight('connection');schedule();});
 $('puzzle-reset').addEventListener('click',()=>{setPairing(0);state.time=1;highlight('connection');schedule();});
 $('pairing').addEventListener('change',()=>{setPairing(Number($('pairing').value));highlight('connection');schedule();});$('initial').addEventListener('change',()=>{setInitial(Number($('initial').value));highlight('connection');schedule();});

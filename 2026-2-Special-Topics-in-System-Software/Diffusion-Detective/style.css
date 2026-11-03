@@ -17,4 +17,4 @@
 .projection-chart{display:block;width:100%;height:230px;background:#fff;margin:20px 0 10px}#cnf-details>.chapter{border-top:0;padding:20px 0}.chapter-number{line-height:1.8}#sde .scene-pair canvas{height:320px}
 @media(max-width:480px){.projection-chart{height:220px}#sde .scene-pair canvas{height:290px}}
 
-.puzzle-switch{display:flex;gap:0}.puzzle-switch button{border-radius:0}.puzzle-switch button+button{border-left:0}.puzzle-switch button[aria-pressed="true"]{border-bottom:2px solid var(--blue);font-weight:600;color:var(--ink)}#puzzle-analogy .experiment{margin-top:22px}.puzzle-tools{margin-top:22px}
+#puzzle-analogy .experiment{margin-top:22px}.puzzle-tools{margin-top:22px}

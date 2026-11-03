@@ -73,12 +73,27 @@ function pairboard(model,state){
   text(c,titles[stage],p.x+30,p.y+18,V.ink,'left',11);
   text(c,stage===0?'t = 0':stage===2?'t = 1':'t = '+state.time.toFixed(2),p.cx,p.y+p.h-15,'#627386','center',10);
   c.save();c.beginPath();c.rect(p.x,p.y+30,p.w,p.h-60);c.clip();c.translate(p.cx,p.cy);c.scale(p.scale,p.scale);const f={c,scale:p.scale,w:p.w,h:p.h};
-  if(stage===1&&state.puzzleView!=='positions'){const i=state.selected;V.line(f,[model.a[i],model.b[model.pi[i]]],V.red,1.5,[3,4]);V.dot(f,model.a[i],V.red,2.5);}
-  for(const i of order){const pos=stage===0?model.a[i]:stage===2?model.b[model.pi[i]]:M.component(model,i,state.time).mu;if(state.puzzleView==='positions'){V.dot(f,pos,'#6085ad',3.2);}else V.piece(f,model,i,pos,i===state.selected);}
+  if(stage===1){const i=state.selected;V.line(f,[model.a[i],model.b[model.pi[i]]],V.red,1.5,[3,4]);V.dot(f,model.a[i],V.red,2.5);}
+  for(const i of order){const pos=stage===0?model.a[i]:stage===2?model.b[model.pi[i]]:M.component(model,i,state.time).mu;V.piece(f,model,i,pos,i===state.selected);}
   c.restore();
   if(stage<2){if(layout.vertical)arrow(c,[w/2,p.y+p.h-4],[w/2,p.y+p.h+9],'#8da6b1',1);else arrow(c,[p.x+p.w+3,h/2],[p.x+p.w+20,h/2],'#8da6b1',1);}
  });
  const i=state.selected;document.getElementById('pair-live').textContent=tr('Piece ','조각 ')+(i+1)+' → '+tr('destination ','도착점 ')+(model.pi[i]+1)+tr(' · one of 48 conditional targets',' · 48개 조건부 목표 중 하나');
+}
+// Uniform markers deliberately discard piece identity; both views remain visible.
+function positions(model,state){
+ const {c,w,h}=setup('positions-canvas'),gap=12,panel=(w-gap*2)/3,scale=Math.min((panel-12)/2.6,(h-48)/1.8);
+ const labels=[tr('Start','출발'),tr('Current','현재'),tr('Endpoint','끝점')];
+ for(let stage=0;stage<3;stage++){
+  const cx=stage*(panel+gap)+panel/2,cy=h/2+5;
+  text(c,labels[stage],cx,18,V.ink,'center',10);
+  text(c,stage===0?'t = 0':stage===2?'t = 1':'t = '+state.time.toFixed(2),cx,h-8,'#627386','center',9);
+  c.save();c.beginPath();c.rect(stage*(panel+gap),25,panel,h-47);c.clip();
+  for(let i=0;i<model.a.length;i++){
+   const p=stage===0?model.a[i]:stage===2?model.b[model.pi[i]]:M.component(model,i,state.time).mu;
+   dot(c,[cx+p[0]*scale,cy+p[1]*scale],V.blue,w<500?1.6:2.8);
+  }c.restore();
+ }
 }
 let velocityGeometry=null;
 function velocityLoss(model,state){
@@ -97,5 +112,5 @@ function velocityLoss(model,state){
 }
 function velocityPoint(e){const r=document.getElementById('velocity-canvas').getBoundingClientRect(),g=velocityGeometry;return[(e.clientX-r.left-g.cx)/g.scale,(e.clientY-r.top-g.cy)/g.scale].map(x=>Math.max(-3,Math.min(3,x)));}
 
-window.CourseStudio={mesh,regression,loss,quadrature,pairboard,pairPoint,velocityLoss,velocityPoint};
+window.CourseStudio={mesh,regression,loss,quadrature,pairboard,positions,pairPoint,velocityLoss,velocityPoint};
 })();

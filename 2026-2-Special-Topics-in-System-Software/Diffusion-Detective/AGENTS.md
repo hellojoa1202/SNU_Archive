@@ -12,7 +12,7 @@
 
 - The accepted narrative is a brief DDPM/NCSN score connection → reverse SDE / probability flow ODE → FM / CFM. The central question is matching distributions versus matching labeled paths. Two main comparisons, not a survey with equal space for all methods.
 - transport.js provides the exact-score Brownian mixture; comparisons.js compares SDE/ODE and conditional/marginal trajectories. Each pair shares its own marginal family; do not equate the two experiments' probability paths. Diffusion noise time decreases from 1 to 0, while CFM interpolation time increases from 0 to 1.
-- Retain local regression, conditional-mean and loss demonstrations. The photo jigsaw is a visible main-flow analogy inside CFM, with photo/position-only modes and a two-destination exchange. CNF density/divergence and generation solvers remain expandable supplements.
+- Retain local regression, conditional-mean and loss demonstrations. The photo jigsaw is a visible main-flow analogy inside CFM, with simultaneous photographs and a uniform position-marker strip, plus a two-destination exchange. CNF density/divergence and generation solvers remain expandable supplements.
 - The analytic model uses 48 translated Gaussian components of fixed tau=.16. The same Gaussian offset is carried between paired endpoints. Mixture velocities use posterior weights, not uniform averaging. Changing the permutation preserves endpoint densities, not piece identities. Do not claim exact puzzle assembly by the marginal ODE.
 - Report numerical errors against refined Heun (4096 vs 2048 steps) at equal field-evaluation budgets. Refinement is a consistency check, not a certified error bound.
 - Highlight equation terms on control changes. Keep concise declarative prose, compact typography and the scrolling layout.
@@ -31,4 +31,6 @@
 
 - Proposal typography: spaces on BOTH sides of every colon, including English labels and titles (A : B).
 
-- The puzzle analogy separates piece identity from positional density. Exchanging destinations preserves endpoint density, not the entire probability path. Position-only mode shows uniform component-center dots; the separate plots show smooth densities and sampled clouds. Do not describe the ODE as solving the photograph.
+- The puzzle analogy separates piece identity from positional density. Exchanging destinations preserves endpoint density, not the entire probability path. The always-visible position strip shows uniform component-center dots; the separate plots show smooth densities and sampled clouds. Do not describe the ODE as solving the photograph.
+
+- Do not put the puzzle or its position markers behind toggles. In further directions, include evaluation of other everyday analogies (seat assignments, labeled-parcel sorting) with explicit mathematical correspondence and limitations. Explain marginal/path-law distinctions and conditional-expectation projection using only the supplied notes.
