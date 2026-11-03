@@ -13,7 +13,7 @@ function mesh(model,state,data){
  // Each edge is sampled along the initial material grid, so deformed edges can curve.
  data.grid.forEach((curve,i)=>V.line(f,curve.map(path=>M.at(path,t)),i<5?'#398eaa':'#729fc8',1));
  for(const path of data.cloud)V.dot(f,M.at(path,t),'#669990',1.7);
- const patch=data.patch.map(path=>M.at(path,t));c.beginPath();patch.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));c.closePath();c.fillStyle='rgba(82,107,134,.08)';c.fill();c.strokeStyle=V.blue;c.lineWidth=1.2/f.scale;c.stroke();
+ const patch=data.patch.map(path=>M.at(path,t));c.beginPath();patch.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));c.closePath();c.fillStyle='rgba(96,133,173,.08)';c.fill();c.strokeStyle=V.blue;c.lineWidth=1.2/f.scale;c.stroke();
  const trace=data.trace,upto=Math.floor(t*trace.steps);V.line(f,trace.path.slice(0,upto+1),V.red,2.6);
  const pos=M.at(trace.path,t);V.dot(f,pos,V.ink,4.5);V.dot(f,trace.path[0],V.red,3);
  V.text(f,tr('Start','출발'),[trace.path[0][0],trace.path[0][1]-.09],V.red,11);
@@ -52,7 +52,7 @@ function loss(model,state){
 function quadrature(model,state,reference,profiles){const{c,w,h}=setup('quadrature-canvas'),left=48,right=w-20,panelH=(h-80)/2;const samples=Array.from({length:101},(_,k)=>{const t=k/100,p=M.at(reference.fine.path,t);return[t,M.field(model,p,t)[state.axis]];});const values=[0,...samples.map(p=>p[1]),...profiles.flatMap(p=>p.segments.flatMap(s=>[s.v0,s.v1]))];let low=Math.min(...values),high=Math.max(...values);const pad=Math.max(.06,(high-low)*.12);low-=pad;high+=pad;
  profiles.forEach((profile,i)=>{const top=24+i*(panelH+28),bottom=top+panelH-20,color=i?V.blue:V.red,map=(t,v)=>[left+t*(right-left),bottom-(v-low)/(high-low)*(bottom-top)];
  text(c,i?'Heun':'Euler',left,top-8,color,'left',12);for(const y of [low,0,high]){line(c,[map(0,y),map(1,y)],y===0?'#a9bbc8':'#edf1f4',y===0?1.2:.7);text(c,y.toFixed(2),left-7,map(0,y)[1]+3,'#8293a0','right',9);}
- profile.segments.forEach(seg=>{const current=state.time>=seg.t0&&state.time<seg.t1,points=[map(seg.t0,0),map(seg.t0,seg.v0),map(seg.t1,seg.v1),map(seg.t1,0)];c.beginPath();points.forEach((p,j)=>j?c.lineTo(...p):c.moveTo(...p));c.closePath();c.fillStyle=i?(current?'rgba(82,107,134,.3)':'rgba(82,107,134,.09)'):(current?'rgba(174,76,84,.32)':'rgba(174,76,84,.10)');c.fill();c.strokeStyle=i?'rgba(82,107,134,.36)':'rgba(174,76,84,.38)';c.lineWidth=current?1.5:.65;c.stroke();});
+ profile.segments.forEach(seg=>{const current=state.time>=seg.t0&&state.time<seg.t1,points=[map(seg.t0,0),map(seg.t0,seg.v0),map(seg.t1,seg.v1),map(seg.t1,0)];c.beginPath();points.forEach((p,j)=>j?c.lineTo(...p):c.moveTo(...p));c.closePath();c.fillStyle=i?(current?'rgba(96,133,173,.3)':'rgba(96,133,173,.09)'):(current?'rgba(174,76,84,.32)':'rgba(174,76,84,.10)');c.fill();c.strokeStyle=i?'rgba(96,133,173,.36)':'rgba(174,76,84,.38)';c.lineWidth=current?1.5:.65;c.stroke();});
  line(c,samples.map(([t,v])=>map(t,v)),'#6f7f8c',1.1);line(c,[map(state.time,low),map(state.time,high)],'#a5b4be',1,[3,4]);for(const t of [0,.5,1])text(c,String(t),map(t,0)[0],bottom+15,'#81939f','center',10);
  });text(c,tr('Time · signed area accumulates displacement','시간 · 부호 있는 면적을 누적하면 변위'),w/2,h-5,V.ink,'center',10);
 }
@@ -73,8 +73,8 @@ function pairboard(model,state){
   text(c,titles[stage],p.x+30,p.y+18,V.ink,'left',11);
   text(c,stage===0?'t = 0':stage===2?'t = 1':'t = '+state.time.toFixed(2),p.cx,p.y+p.h-15,'#627386','center',10);
   c.save();c.beginPath();c.rect(p.x,p.y+30,p.w,p.h-60);c.clip();c.translate(p.cx,p.cy);c.scale(p.scale,p.scale);const f={c,scale:p.scale,w:p.w,h:p.h};
-  if(stage===1){const i=state.selected;V.line(f,[model.a[i],model.b[model.pi[i]]],V.red,1.5,[3,4]);V.dot(f,model.a[i],V.red,2.5);}
-  for(const i of order){const pos=stage===0?model.a[i]:stage===2?model.b[model.pi[i]]:M.component(model,i,state.time).mu;V.piece(f,model,i,pos,i===state.selected);}
+  if(stage===1&&state.puzzleView!=='positions'){const i=state.selected;V.line(f,[model.a[i],model.b[model.pi[i]]],V.red,1.5,[3,4]);V.dot(f,model.a[i],V.red,2.5);}
+  for(const i of order){const pos=stage===0?model.a[i]:stage===2?model.b[model.pi[i]]:M.component(model,i,state.time).mu;if(state.puzzleView==='positions'){V.dot(f,pos,'#6085ad',3.2);}else V.piece(f,model,i,pos,i===state.selected);}
   c.restore();
   if(stage<2){if(layout.vertical)arrow(c,[w/2,p.y+p.h-4],[w/2,p.y+p.h+9],'#8da6b1',1);else arrow(c,[p.x+p.w+3,h/2],[p.x+p.w+20,h/2],'#8da6b1',1);}
  });

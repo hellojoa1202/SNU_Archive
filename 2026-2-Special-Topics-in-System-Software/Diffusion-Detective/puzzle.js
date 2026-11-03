@@ -1,7 +1,7 @@
 /* Shared photograph and drawing geometry. All four experiments use this plane. */
 (function(){
 'use strict';
-const blue='#526b86',red='#ae4c54',ink='#17283e';
+const blue='#6085ad',red='#ae4c54',ink='#17283e';
 const art=new Image();art.src=new URL('assets/cat-photo.jpg',document.currentScript.src).href;
 const paths=Array.from({length:48},(_,i)=>{
  const w=.22,h=.22,x=i%8,y=Math.floor(i/8),p=new Path2D(),sign=n=>n%2?1:-1;

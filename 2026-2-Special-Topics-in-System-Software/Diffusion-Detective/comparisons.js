@@ -1,7 +1,7 @@
 /* Linked path / population comparisons. Computation is shared by both languages. */
 (function(){
 'use strict';
-const M=FlowMath,T=TransportMath,$=id=>document.getElementById(id),tr=(en,ko)=>DiffusionI18n.text(en,ko),blue='#526b86',red='#ae4c54';
+const M=FlowMath,T=TransportMath,$=id=>document.getElementById(id),tr=(en,ko)=>DiffusionI18n.text(en,ko),blue='#6085ad',red='#ae4c54';
 const toy=T.create(),state={progress:0,count:192,initialSeed:43,noiseSeed:71,selected:0,playing:!matchMedia('(prefers-reduced-motion: reduce)').matches};
 let starts,ode,sde,previous=null,flowCache=null,queued=false,last=0,drawAt=0,contourCache=new Map();
 function visible(id){const r=$(id).getBoundingClientRect();return r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight+120;}

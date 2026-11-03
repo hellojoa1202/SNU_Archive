@@ -12,7 +12,7 @@
 
 - The accepted narrative is a brief DDPM/NCSN score connection → reverse SDE / probability flow ODE → FM / CFM. The central question is matching distributions versus matching labeled paths. Two main comparisons, not a survey with equal space for all methods.
 - transport.js provides the exact-score Brownian mixture; comparisons.js compares SDE/ODE and conditional/marginal trajectories. Each pair shares its own marginal family; do not equate the two experiments' probability paths. Diffusion noise time decreases from 1 to 0, while CFM interpolation time increases from 0 to 1.
-- Retain local regression, conditional-mean and loss demonstrations. CNF density/divergence, the photo pair identifiers, and generation solvers are expandable supplements.
+- Retain local regression, conditional-mean and loss demonstrations. The photo jigsaw is a visible main-flow analogy inside CFM, with photo/position-only modes and a two-destination exchange. CNF density/divergence and generation solvers remain expandable supplements.
 - The analytic model uses 48 translated Gaussian components of fixed tau=.16. The same Gaussian offset is carried between paired endpoints. Mixture velocities use posterior weights, not uniform averaging. Changing the permutation preserves endpoint densities, not piece identities. Do not claim exact puzzle assembly by the marginal ODE.
 - Report numerical errors against refined Heun (4096 vs 2048 steps) at equal field-evaluation budgets. Refinement is a consistency check, not a certified error bound.
 - Highlight equation terms on control changes. Keep concise declarative prose, compact typography and the scrolling layout.
@@ -27,6 +27,8 @@
 
 - Visual revision: pure white surfaces, outline-only density contours (no tinted density wash). The CFM photo is an 8 × 6 jigsaw with 48 actual model components. Show start/current/end together; a selected piece links all three. FM includes a linked velocity-space squared-error contour plot. Do not label these graphs as trained results.
 
-- Color preference: use muted slate blue (#526b86) and subdued red (#ae4c54), with pure white surfaces. Keep UI, SVGs, canvas plots and bilingual color labels consistent; do not restore vivid cobalt or orange accents.
+- Color preference: use slightly brighter muted blue (#6085ad) and subdued red (#ae4c54), with pure white surfaces. Keep UI, SVGs, canvas plots and bilingual color labels consistent; do not restore vivid cobalt or orange accents.
 
 - Proposal typography: spaces on BOTH sides of every colon, including English labels and titles (A : B).
+
+- The puzzle analogy separates piece identity from positional density. Exchanging destinations preserves endpoint density, not the entire probability path. Position-only mode shows uniform component-center dots; the separate plots show smooth densities and sampled clouds. Do not describe the ODE as solving the photograph.

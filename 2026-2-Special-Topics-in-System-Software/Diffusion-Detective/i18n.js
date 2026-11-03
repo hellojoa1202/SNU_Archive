@@ -33,20 +33,20 @@ const prose={
     "ko": "생성 모델이 맞춰야 하는 것은 개별 경로일까, 그 경로들이 만드는 분포일까? Score 기반 생성에서 조건부 속도 회귀까지 이 질문을 따라간다."
   },
   "route-node": {
-    "en": "<small>01 · SCORE</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#acbdcc\" stroke-width=\"1.2\"><path d=\"M12 10C86 2 121 65 222 25\"/><path d=\"M12 30C81 20 143 72 222 41\"/><path d=\"M12 53C86 32 146 70 222 57\"/><path d=\"M12 76C88 49 160 73 222 73\"/></g><path d=\"M12 30C81 20 143 72 222 41\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><g fill=\"#526b86\"><circle cx=\"12\" cy=\"30\" r=\"3\"/><circle cx=\"77\" cy=\"36\" r=\"3\"/><circle cx=\"147\" cy=\"52\" r=\"3\"/></g><circle cx=\"222\" cy=\"41\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Start from the score</b><span>Connect noise and score prediction.</span>",
-    "ko": "<small>01 · SCORE</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#acbdcc\" stroke-width=\"1.2\"><path d=\"M12 10C86 2 121 65 222 25\"/><path d=\"M12 30C81 20 143 72 222 41\"/><path d=\"M12 53C86 32 146 70 222 57\"/><path d=\"M12 76C88 49 160 73 222 73\"/></g><path d=\"M12 30C81 20 143 72 222 41\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><g fill=\"#526b86\"><circle cx=\"12\" cy=\"30\" r=\"3\"/><circle cx=\"77\" cy=\"36\" r=\"3\"/><circle cx=\"147\" cy=\"52\" r=\"3\"/></g><circle cx=\"222\" cy=\"41\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Score에서 출발</b><span>노이즈 예측과 Score 예측을 연결.</span>"
+    "en": "<small>01 · SCORE</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#acbdcc\" stroke-width=\"1.2\"><path d=\"M12 10C86 2 121 65 222 25\"/><path d=\"M12 30C81 20 143 72 222 41\"/><path d=\"M12 53C86 32 146 70 222 57\"/><path d=\"M12 76C88 49 160 73 222 73\"/></g><path d=\"M12 30C81 20 143 72 222 41\" fill=\"none\" stroke=\"#6085ad\" stroke-width=\"2.2\"/><g fill=\"#6085ad\"><circle cx=\"12\" cy=\"30\" r=\"3\"/><circle cx=\"77\" cy=\"36\" r=\"3\"/><circle cx=\"147\" cy=\"52\" r=\"3\"/></g><circle cx=\"222\" cy=\"41\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Start from the score</b><span>Connect noise and score prediction.</span>",
+    "ko": "<small>01 · SCORE</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#acbdcc\" stroke-width=\"1.2\"><path d=\"M12 10C86 2 121 65 222 25\"/><path d=\"M12 30C81 20 143 72 222 41\"/><path d=\"M12 53C86 32 146 70 222 57\"/><path d=\"M12 76C88 49 160 73 222 73\"/></g><path d=\"M12 30C81 20 143 72 222 41\" fill=\"none\" stroke=\"#6085ad\" stroke-width=\"2.2\"/><g fill=\"#6085ad\"><circle cx=\"12\" cy=\"30\" r=\"3\"/><circle cx=\"77\" cy=\"36\" r=\"3\"/><circle cx=\"147\" cy=\"52\" r=\"3\"/></g><circle cx=\"222\" cy=\"41\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Score에서 출발</b><span>노이즈 예측과 Score 예측을 연결.</span>"
   },
   "route-fm": {
-    "en": "<small>02 · DISTRIBUTIONS</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#dce5ec\"><path d=\"M20 70H220M40 80V8\"/><circle cx=\"143\" cy=\"24\" r=\"19\"/><circle cx=\"143\" cy=\"24\" r=\"31\"/></g><path d=\"M66 67L143 24L132 27M143 24L137 35\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><path d=\"M66 67L172 53L161 49M172 53L162 59\" fill=\"none\" stroke=\"#ae4c54\" stroke-width=\"2.2\"/><path d=\"M143 24L172 53\" stroke=\"#ae4c54\" stroke-dasharray=\"3 3\"/><circle cx=\"66\" cy=\"67\" r=\"3\" fill=\"#17283e\"/></svg><b>Change the process</b><span>Compare stochastic and deterministic paths.</span>",
-    "ko": "<small>02 · DISTRIBUTIONS</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#dce5ec\"><path d=\"M20 70H220M40 80V8\"/><circle cx=\"143\" cy=\"24\" r=\"19\"/><circle cx=\"143\" cy=\"24\" r=\"31\"/></g><path d=\"M66 67L143 24L132 27M143 24L137 35\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><path d=\"M66 67L172 53L161 49M172 53L162 59\" fill=\"none\" stroke=\"#ae4c54\" stroke-width=\"2.2\"/><path d=\"M143 24L172 53\" stroke=\"#ae4c54\" stroke-dasharray=\"3 3\"/><circle cx=\"66\" cy=\"67\" r=\"3\" fill=\"#17283e\"/></svg><b>생성 과정을 바꾸기</b><span>확률적 경로와 결정론적 경로 비교.</span>"
+    "en": "<small>02 · DISTRIBUTIONS</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#dce5ec\"><path d=\"M20 70H220M40 80V8\"/><circle cx=\"143\" cy=\"24\" r=\"19\"/><circle cx=\"143\" cy=\"24\" r=\"31\"/></g><path d=\"M66 67L143 24L132 27M143 24L137 35\" fill=\"none\" stroke=\"#6085ad\" stroke-width=\"2.2\"/><path d=\"M66 67L172 53L161 49M172 53L162 59\" fill=\"none\" stroke=\"#ae4c54\" stroke-width=\"2.2\"/><path d=\"M143 24L172 53\" stroke=\"#ae4c54\" stroke-dasharray=\"3 3\"/><circle cx=\"66\" cy=\"67\" r=\"3\" fill=\"#17283e\"/></svg><b>Change the process</b><span>Compare stochastic and deterministic paths.</span>",
+    "ko": "<small>02 · DISTRIBUTIONS</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#dce5ec\"><path d=\"M20 70H220M40 80V8\"/><circle cx=\"143\" cy=\"24\" r=\"19\"/><circle cx=\"143\" cy=\"24\" r=\"31\"/></g><path d=\"M66 67L143 24L132 27M143 24L137 35\" fill=\"none\" stroke=\"#6085ad\" stroke-width=\"2.2\"/><path d=\"M66 67L172 53L161 49M172 53L162 59\" fill=\"none\" stroke=\"#ae4c54\" stroke-width=\"2.2\"/><path d=\"M143 24L172 53\" stroke=\"#ae4c54\" stroke-dasharray=\"3 3\"/><circle cx=\"66\" cy=\"67\" r=\"3\" fill=\"#17283e\"/></svg><b>생성 과정을 바꾸기</b><span>확률적 경로와 결정론적 경로 비교.</span>"
   },
   "route-cfm": {
-    "en": "<small>03 · FLOW MATCHING</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#80adae\" stroke-width=\"1.3\"><path d=\"M14 12L102 45L158 18M14 32L102 45L158 33M14 53L102 45L158 54M14 74L102 45L158 73\"/></g><g fill=\"#398eaa\"><circle cx=\"14\" cy=\"12\" r=\"3\"/><circle cx=\"14\" cy=\"32\" r=\"3\"/><circle cx=\"14\" cy=\"53\" r=\"3\"/><circle cx=\"14\" cy=\"74\" r=\"3\"/></g><path d=\"M102 45L218 42L208 37M218 42L208 47\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><circle cx=\"102\" cy=\"45\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Learn a marginal velocity</b><span>Build targets from endpoint pairs.</span>",
-    "ko": "<small>03 · FLOW MATCHING</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#80adae\" stroke-width=\"1.3\"><path d=\"M14 12L102 45L158 18M14 32L102 45L158 33M14 53L102 45L158 54M14 74L102 45L158 73\"/></g><g fill=\"#398eaa\"><circle cx=\"14\" cy=\"12\" r=\"3\"/><circle cx=\"14\" cy=\"32\" r=\"3\"/><circle cx=\"14\" cy=\"53\" r=\"3\"/><circle cx=\"14\" cy=\"74\" r=\"3\"/></g><path d=\"M102 45L218 42L208 37M218 42L208 47\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><circle cx=\"102\" cy=\"45\" r=\"4\" fill=\"#ae4c54\"/></svg><b>주변 속도 학습</b><span>끝점 쌍에서 학습 목표 구성.</span>"
+    "en": "<small>03 · FLOW MATCHING</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#80adae\" stroke-width=\"1.3\"><path d=\"M14 12L102 45L158 18M14 32L102 45L158 33M14 53L102 45L158 54M14 74L102 45L158 73\"/></g><g fill=\"#398eaa\"><circle cx=\"14\" cy=\"12\" r=\"3\"/><circle cx=\"14\" cy=\"32\" r=\"3\"/><circle cx=\"14\" cy=\"53\" r=\"3\"/><circle cx=\"14\" cy=\"74\" r=\"3\"/></g><path d=\"M102 45L218 42L208 37M218 42L208 47\" fill=\"none\" stroke=\"#6085ad\" stroke-width=\"2.2\"/><circle cx=\"102\" cy=\"45\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Learn a marginal velocity</b><span>Build targets from endpoint pairs.</span>",
+    "ko": "<small>03 · FLOW MATCHING</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#80adae\" stroke-width=\"1.3\"><path d=\"M14 12L102 45L158 18M14 32L102 45L158 33M14 53L102 45L158 54M14 74L102 45L158 73\"/></g><g fill=\"#398eaa\"><circle cx=\"14\" cy=\"12\" r=\"3\"/><circle cx=\"14\" cy=\"32\" r=\"3\"/><circle cx=\"14\" cy=\"53\" r=\"3\"/><circle cx=\"14\" cy=\"74\" r=\"3\"/></g><path d=\"M102 45L218 42L208 37M218 42L208 47\" fill=\"none\" stroke=\"#6085ad\" stroke-width=\"2.2\"/><circle cx=\"102\" cy=\"45\" r=\"4\" fill=\"#ae4c54\"/></svg><b>주변 속도 학습</b><span>끝점 쌍에서 학습 목표 구성.</span>"
   },
   "hero-note": {
-    "en": "Two comparisons, each with its own reference distribution: reverse SDE / probability flow ODE, then conditional paths / marginal ODE. The two experiments do not assume the same probability path.",
-    "ko": "두 비교는 각각의 기준 분포를 사용한다: 역방향 SDE / Probability Flow ODE, 조건부 경로 / 주변 ODE. 두 실험 사이의 확률 경로까지 같다고 가정하지 않는다."
+    "en": "Two comparisons, each with its own reference distribution. A photo jigsaw makes the distinction between piece identity and occupied positions concrete in the CFM section.",
+    "ko": "두 비교는 각각의 기준 분포를 사용한다. CFM에서는 사진 퍼즐로 조각의 정체성과 채워진 위치의 차이를 직접 확인한다."
   },
   "score-title": {
     "en": "From predicted noise to the score",
@@ -188,9 +188,13 @@ const prose={
     "en": "Sample a paired start and endpoint, then interpolate. These individual paths may cross. Their conditional mean velocity defines a different ODE: under regularity, it reproduces the same intermediate distributions without keeping each pair’s assignment.",
     "ko": "출발점과 도착점을 쌍으로 뽑아 보간하면 개별 경로는 교차할 수 있다. 조건부 평균 속도로 정의한 ODE는 다른 경로를 따른다. 적절한 정칙성 아래 같은 중간 분포를 만들지만 각 쌍의 대응까지 유지하지는 않는다."
   },
-  "flow-compare-title": {
-    "en": "One probability path, two ways to move samples",
-    "ko": "하나의 확률 경로를 만드는 두 이동 방식"
+  "pair-view": {
+    "en": "A filled board is not necessarily a solved puzzle",
+    "ko": "자리를 채우는 것과 그림을 맞추는 것은 다르다"
+  },
+  "puzzle-intro": {
+    "en": "A jigsaw checks <b>which piece belongs in each place</b>. A positional distribution describes <b>where the pieces are</b>. Exchange two destinations, then hide the photographs: the endpoint positions stay the same while the image changes.",
+    "ko": "직소퍼즐은 <b>어느 조각이 어느 자리에 있는지</b>를 확인한다. 위치 분포는 <b>조각들이 어디에 있는지</b>를 나타낸다. 두 조각의 도착점을 바꾼 뒤 사진을 숨겨 보면, 끝점 위치는 그대로인데 그림은 달라진다."
   },
   "pairing": {
     "en": "Pairing preset",
@@ -208,6 +212,38 @@ const prose={
     "en": "Assigned destination",
     "ko": "대응하는 도착점"
   },
+  "puzzle-photo-label": {
+    "en": "Photo pieces",
+    "ko": "사진 조각"
+  },
+  "puzzle-position-label": {
+    "en": "Positions only",
+    "ko": "위치만 보기"
+  },
+  "puzzle-swap-label": {
+    "en": "Exchange two destinations",
+    "ko": "두 조각의 도착점 교환"
+  },
+  "puzzle-reset-label": {
+    "en": "Restore original pairing",
+    "ko": "기본 대응 복원"
+  },
+  "board-label": {
+    "en": "One piece identity across three arrangements",
+    "ko": "세 배치에서 같은 조각 추적"
+  },
+  "pair-caption": {
+    "en": "The exchange button swaps the selected piece with a second piece and moves to the endpoint. It keeps all endpoint positions occupied; only their identities change. Dot view shows component centers. The smooth distributions and sampled clouds are compared below.",
+    "ko": "교환 버튼은 선택한 조각과 다른 조각의 도착점을 바꾸고 끝점으로 이동한다. 모든 끝점 자리는 그대로 채워지고 조각의 정체성만 달라진다. 점 보기는 모형 성분의 중심을 표시하며, 매끄러운 분포와 표본 비교는 아래 그래프에서 확인한다."
+  },
+  "flow-compare-title": {
+    "en": "One probability path, two ways to move samples",
+    "ko": "하나의 확률 경로를 만드는 두 이동 방식"
+  },
+  "comparison-time": {
+    "en": "Interpolation time",
+    "ko": "보간 시간"
+  },
   "conditional-label": {
     "en": "Conditional interpolation",
     "ko": "조건부 보간"
@@ -220,25 +256,9 @@ const prose={
     "en": "A highlighted pair starts at the same point in both panels. Blue follows its assigned conditional segment; red follows the probability-weighted mean field. Change the pairing to alter the interior of the path while preserving endpoint densities. The density projection uses 144 samples; integration uses 384 Heun steps.",
     "ko": "강조한 쌍은 두 화면에서 같은 점으로 출발한다. 파랑은 지정된 조건부 선분, 빨강은 확률로 가중한 평균 속도를 따른다. 대응만 바꾸면 양 끝 분포를 유지하며 중간 경로가 달라진다. 밀도 투영에는 표본 144개, 적분에는 Heun 384단계를 사용한다."
   },
-  "photo-open": {
-    "en": "Optional: identify endpoint pairs with photo pieces",
-    "ko": "선택: 사진 조각으로 끝점 대응 확인"
-  },
-  "pair-view": {
-    "en": "48 pieces, 48 conditional endpoint pairs",
-    "ko": "48개 조각으로 보는 조건부 끝점 대응"
-  },
-  "board-label": {
-    "en": "Follow the selected piece across time",
-    "ko": "선택한 조각의 출발·중간·도착을 함께 보기"
-  },
-  "pair-caption": {
-    "en": "Drag a piece in the starting panel to change its initial position. Select a piece in any panel to follow its correspondence. Changing only the pairing preserves both endpoint densities. The photo labels the pairs; it is not an image-generation result.",
-    "ko": "출발 화면의 조각을 드래그하면 초기 위치가 바뀐다. 어느 화면에서든 조각을 선택하면 같은 대응이 강조된다. 대응만 바꾸면 두 끝점 분포는 유지된다. 사진은 끝점 쌍을 구별하는 표시다."
-  },
   "pair-meaning": {
-    "en": "The photograph identifies a conditional endpoint pair. A marginal ODE reproduces the distribution path under the stated regularity; its individual trajectories need not keep those labeled assignments.",
-    "ko": "사진은 조건부 끝점 쌍의 식별 표시. 정칙성 가정 아래 주변 ODE는 분포 경로를 재현하지만, 개별 궤적이 그 표식의 도착점 대응까지 유지하는 것은 아님."
+    "en": "The puzzle separates identity from position. Changing a pairing preserves the endpoint densities but generally changes the intermediate ones. For any fixed pairing, its conditional paths and the marginal ODE reproduce the same time marginals under regularity; individual pieces need not reach their assigned slots along the ODE.",
+    "ko": "퍼즐은 조각의 정체성과 위치를 구분한다. 대응을 바꾸면 끝점 밀도는 유지되지만 중간 밀도는 일반적으로 달라진다. 하나의 대응을 고정하면, 그 조건부 경로와 주변 ODE는 적절한 정칙성 아래 각 시각의 같은 분포를 만든다. ODE를 따르는 개별 조각이 지정된 칸에 도착할 필요는 없다."
   },
   "mean-question": {
     "en": "Why does the average work?",
