@@ -4,49 +4,297 @@ const prose={
     "en": "Skip to content",
     "ko": "본문으로 이동"
   },
-  "nav-cnf": {
-    "en": "Neural ODE flows",
-    "ko": "Neural ODE 기반 Flow"
+  "nav-score": {
+    "en": "Noise and score",
+    "ko": "노이즈와 Score"
+  },
+  "nav-sde": {
+    "en": "SDE → ODE",
+    "ko": "SDE → ODE 비교"
   },
   "nav-fm": {
-    "en": "Flow Matching",
-    "ko": "FM: 속도 회귀"
-  },
-  "nav-cfm": {
-    "en": "Conditional Flow Matching",
-    "ko": "CFM: 조건부 목표"
+    "en": "Flow Matching → CFM",
+    "ko": "Flow Matching → CFM 학습"
   },
   "nav-solver": {
-    "en": "Generation: ODE solvers",
-    "ko": "생성: ODE 수치해법"
+    "en": "Numerical generation",
+    "ko": "수치적 생성"
   },
   "hero-title": {
-    "en": "From Neural ODEs<br><span>to Conditional Flow Matching.</span>",
-    "ko": "Neural ODE에서<br><span>Conditional Flow Matching으로.</span>"
+    "en": "From Diffusion<br><span>to Flow Matching.</span>",
+    "ko": "Diffusion에서<br><span>Flow Matching으로.</span>"
   },
   "hero-lead": {
-    "en": "One transport problem. Three ways to construct a training objective.",
-    "ko": "하나의 분포 운반 문제에서 이어지는 세 가지 학습 구성."
+    "en": "Different paths. Matching distributions.",
+    "ko": "서로 다른 경로, 같은 시각의 분포."
   },
   "hero-body": {
-    "en": "Follow the obstacle that each method leaves behind: a trajectory-dependent likelihood, an inaccessible marginal velocity, and a tractable conditional target.",
-    "ko": "궤적을 계산해야 얻는 우도에서 시작해, 직접 구하기 어려운 주변 속도와 계산 가능한 조건부 목표로 연결."
+    "en": "Must a generative model recover individual paths, or the distributions they carry? Follow this question from score-based sampling to conditional velocity regression.",
+    "ko": "생성 모델이 맞춰야 하는 것은 개별 경로일까, 그 경로들이 만드는 분포일까? Score 기반 생성에서 조건부 속도 회귀까지 이 질문을 따라간다."
   },
   "route-node": {
-    "en": "<small>01 · LIKELIHOOD</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#acbdcc\" stroke-width=\"1.2\"><path d=\"M12 10C86 2 121 65 222 25\"/><path d=\"M12 30C81 20 143 72 222 41\"/><path d=\"M12 53C86 32 146 70 222 57\"/><path d=\"M12 76C88 49 160 73 222 73\"/></g><path d=\"M12 30C81 20 143 72 222 41\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><g fill=\"#526b86\"><circle cx=\"12\" cy=\"30\" r=\"3\"/><circle cx=\"77\" cy=\"36\" r=\"3\"/><circle cx=\"147\" cy=\"52\" r=\"3\"/></g><circle cx=\"222\" cy=\"41\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Integrate the trajectory</b><span>Accumulate density change.</span>",
-    "ko": "<small>01 · LIKELIHOOD</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#acbdcc\" stroke-width=\"1.2\"><path d=\"M12 10C86 2 121 65 222 25\"/><path d=\"M12 30C81 20 143 72 222 41\"/><path d=\"M12 53C86 32 146 70 222 57\"/><path d=\"M12 76C88 49 160 73 222 73\"/></g><path d=\"M12 30C81 20 143 72 222 41\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><g fill=\"#526b86\"><circle cx=\"12\" cy=\"30\" r=\"3\"/><circle cx=\"77\" cy=\"36\" r=\"3\"/><circle cx=\"147\" cy=\"52\" r=\"3\"/></g><circle cx=\"222\" cy=\"41\" r=\"4\" fill=\"#ae4c54\"/></svg><b>궤적 전체를 적분</b><span>밀도 변화를 누적한다.</span>"
+    "en": "<small>01 · SCORE</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#acbdcc\" stroke-width=\"1.2\"><path d=\"M12 10C86 2 121 65 222 25\"/><path d=\"M12 30C81 20 143 72 222 41\"/><path d=\"M12 53C86 32 146 70 222 57\"/><path d=\"M12 76C88 49 160 73 222 73\"/></g><path d=\"M12 30C81 20 143 72 222 41\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><g fill=\"#526b86\"><circle cx=\"12\" cy=\"30\" r=\"3\"/><circle cx=\"77\" cy=\"36\" r=\"3\"/><circle cx=\"147\" cy=\"52\" r=\"3\"/></g><circle cx=\"222\" cy=\"41\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Start from the score</b><span>Connect noise and score prediction.</span>",
+    "ko": "<small>01 · SCORE</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#acbdcc\" stroke-width=\"1.2\"><path d=\"M12 10C86 2 121 65 222 25\"/><path d=\"M12 30C81 20 143 72 222 41\"/><path d=\"M12 53C86 32 146 70 222 57\"/><path d=\"M12 76C88 49 160 73 222 73\"/></g><path d=\"M12 30C81 20 143 72 222 41\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><g fill=\"#526b86\"><circle cx=\"12\" cy=\"30\" r=\"3\"/><circle cx=\"77\" cy=\"36\" r=\"3\"/><circle cx=\"147\" cy=\"52\" r=\"3\"/></g><circle cx=\"222\" cy=\"41\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Score에서 출발</b><span>노이즈 예측과 Score 예측을 연결.</span>"
   },
   "route-fm": {
-    "en": "<small>02 · FLOW MATCHING</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#dce5ec\"><path d=\"M20 70H220M40 80V8\"/><circle cx=\"143\" cy=\"24\" r=\"19\"/><circle cx=\"143\" cy=\"24\" r=\"31\"/></g><path d=\"M66 67L143 24L132 27M143 24L137 35\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><path d=\"M66 67L172 53L161 49M172 53L162 59\" fill=\"none\" stroke=\"#ae4c54\" stroke-width=\"2.2\"/><path d=\"M143 24L172 53\" stroke=\"#ae4c54\" stroke-dasharray=\"3 3\"/><circle cx=\"66\" cy=\"67\" r=\"3\" fill=\"#17283e\"/></svg><b>Compare local velocities</b><span>Replace the likelihood objective.</span>",
-    "ko": "<small>02 · FLOW MATCHING</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#dce5ec\"><path d=\"M20 70H220M40 80V8\"/><circle cx=\"143\" cy=\"24\" r=\"19\"/><circle cx=\"143\" cy=\"24\" r=\"31\"/></g><path d=\"M66 67L143 24L132 27M143 24L137 35\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><path d=\"M66 67L172 53L161 49M172 53L162 59\" fill=\"none\" stroke=\"#ae4c54\" stroke-width=\"2.2\"/><path d=\"M143 24L172 53\" stroke=\"#ae4c54\" stroke-dasharray=\"3 3\"/><circle cx=\"66\" cy=\"67\" r=\"3\" fill=\"#17283e\"/></svg><b>한 지점의 속도를 비교</b><span>우도 대신 속도 회귀를 쓴다.</span>"
+    "en": "<small>02 · DISTRIBUTIONS</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#dce5ec\"><path d=\"M20 70H220M40 80V8\"/><circle cx=\"143\" cy=\"24\" r=\"19\"/><circle cx=\"143\" cy=\"24\" r=\"31\"/></g><path d=\"M66 67L143 24L132 27M143 24L137 35\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><path d=\"M66 67L172 53L161 49M172 53L162 59\" fill=\"none\" stroke=\"#ae4c54\" stroke-width=\"2.2\"/><path d=\"M143 24L172 53\" stroke=\"#ae4c54\" stroke-dasharray=\"3 3\"/><circle cx=\"66\" cy=\"67\" r=\"3\" fill=\"#17283e\"/></svg><b>Change the process</b><span>Compare stochastic and deterministic paths.</span>",
+    "ko": "<small>02 · DISTRIBUTIONS</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#dce5ec\"><path d=\"M20 70H220M40 80V8\"/><circle cx=\"143\" cy=\"24\" r=\"19\"/><circle cx=\"143\" cy=\"24\" r=\"31\"/></g><path d=\"M66 67L143 24L132 27M143 24L137 35\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><path d=\"M66 67L172 53L161 49M172 53L162 59\" fill=\"none\" stroke=\"#ae4c54\" stroke-width=\"2.2\"/><path d=\"M143 24L172 53\" stroke=\"#ae4c54\" stroke-dasharray=\"3 3\"/><circle cx=\"66\" cy=\"67\" r=\"3\" fill=\"#17283e\"/></svg><b>생성 과정을 바꾸기</b><span>확률적 경로와 결정론적 경로 비교.</span>"
   },
   "route-cfm": {
-    "en": "<small>03 · CONDITIONAL FM</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#80adae\" stroke-width=\"1.3\"><path d=\"M14 12L102 45L158 18M14 32L102 45L158 33M14 53L102 45L158 54M14 74L102 45L158 73\"/></g><g fill=\"#398eaa\"><circle cx=\"14\" cy=\"12\" r=\"3\"/><circle cx=\"14\" cy=\"32\" r=\"3\"/><circle cx=\"14\" cy=\"53\" r=\"3\"/><circle cx=\"14\" cy=\"74\" r=\"3\"/></g><path d=\"M102 45L218 42L208 37M218 42L208 47\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><circle cx=\"102\" cy=\"45\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Construct a conditional target</b><span>Learn from sampled endpoint pairs.</span>",
-    "ko": "<small>03 · CONDITIONAL FM</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#80adae\" stroke-width=\"1.3\"><path d=\"M14 12L102 45L158 18M14 32L102 45L158 33M14 53L102 45L158 54M14 74L102 45L158 73\"/></g><g fill=\"#398eaa\"><circle cx=\"14\" cy=\"12\" r=\"3\"/><circle cx=\"14\" cy=\"32\" r=\"3\"/><circle cx=\"14\" cy=\"53\" r=\"3\"/><circle cx=\"14\" cy=\"74\" r=\"3\"/></g><path d=\"M102 45L218 42L208 37M218 42L208 47\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><circle cx=\"102\" cy=\"45\" r=\"4\" fill=\"#ae4c54\"/></svg><b>조건부 목표를 구성</b><span>표본으로 뽑은 끝점 쌍에서 배운다.</span>"
+    "en": "<small>03 · FLOW MATCHING</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#80adae\" stroke-width=\"1.3\"><path d=\"M14 12L102 45L158 18M14 32L102 45L158 33M14 53L102 45L158 54M14 74L102 45L158 73\"/></g><g fill=\"#398eaa\"><circle cx=\"14\" cy=\"12\" r=\"3\"/><circle cx=\"14\" cy=\"32\" r=\"3\"/><circle cx=\"14\" cy=\"53\" r=\"3\"/><circle cx=\"14\" cy=\"74\" r=\"3\"/></g><path d=\"M102 45L218 42L208 37M218 42L208 47\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><circle cx=\"102\" cy=\"45\" r=\"4\" fill=\"#ae4c54\"/></svg><b>Learn a marginal velocity</b><span>Build targets from endpoint pairs.</span>",
+    "ko": "<small>03 · FLOW MATCHING</small><svg viewBox=\"0 0 240 86\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#80adae\" stroke-width=\"1.3\"><path d=\"M14 12L102 45L158 18M14 32L102 45L158 33M14 53L102 45L158 54M14 74L102 45L158 73\"/></g><g fill=\"#398eaa\"><circle cx=\"14\" cy=\"12\" r=\"3\"/><circle cx=\"14\" cy=\"32\" r=\"3\"/><circle cx=\"14\" cy=\"53\" r=\"3\"/><circle cx=\"14\" cy=\"74\" r=\"3\"/></g><path d=\"M102 45L218 42L208 37M218 42L208 47\" fill=\"none\" stroke=\"#526b86\" stroke-width=\"2.2\"/><circle cx=\"102\" cy=\"45\" r=\"4\" fill=\"#ae4c54\"/></svg><b>주변 속도 학습</b><span>끝점 쌍에서 학습 목표 구성.</span>"
   },
   "hero-note": {
-    "en": "An analytic toy field makes the quantities inspectable. The page compares objectives and sampling computations; it does not train a network.",
-    "ko": "해석적 토이 속도장으로 각 값을 직접 확인. 학습 목적과 샘플링 계산을 비교하며 신경망 학습은 수행하지 않음."
+    "en": "Two comparisons, each with its own reference distribution: reverse SDE / probability flow ODE, then conditional paths / marginal ODE. The two experiments do not assume the same probability path.",
+    "ko": "두 비교는 각각의 기준 분포를 사용한다: 역방향 SDE / Probability Flow ODE, 조건부 경로 / 주변 ODE. 두 실험 사이의 확률 경로까지 같다고 가정하지 않는다."
+  },
+  "score-title": {
+    "en": "From predicted noise to the score",
+    "ko": "노이즈 예측에서 Score로"
+  },
+  "score-intro": {
+    "en": "DDPM predicts noise; NCSN predicts the score. At the optimal predictor, a known scale factor connects the two. The next question is how this quantity moves a distribution.",
+    "ko": "DDPM은 노이즈를, NCSN은 Score를 예측한다. 최적 예측에서는 알려진 배율로 두 값을 연결할 수 있다. 다음 질문은 이 값으로 분포를 어떻게 이동시키는가이다."
+  },
+  "score-note": {
+    "en": "Here ε⋆ is the conditional mean noise, not the particular noise used to corrupt one sample. The score is a gradient of log density. We use an analytic score below so that sampling behavior can be isolated from estimation error.",
+    "ko": "ε⋆는 한 표본에 넣었던 실제 노이즈가 아니라 조건부 평균 노이즈다. Score는 로그밀도의 기울기다. 아래에서는 해석적 Score를 사용하여 추정 오차와 샘플링 방식의 차이를 구분한다."
+  },
+  "sde-title": {
+    "en": "A random path is not the distribution",
+    "ko": "하나의 무작위 경로와 분포는 다르다"
+  },
+  "sde-intro": {
+    "en": "The reverse SDE injects noise along its trajectory. Its probability flow ODE has no stepwise noise and half the score correction. With the exact score and matching initial law, both reproduce the same time marginals.",
+    "ko": "역방향 SDE는 경로에 노이즈를 추가한다. 대응하는 Probability Flow ODE에는 단계별 노이즈가 없고 Score 보정의 계수가 절반이다. 정확한 Score와 같은 초기 분포를 사용하면 두 과정은 각 시각의 분포를 재현한다."
+  },
+  "sde-clock": {
+    "en": "Generation runs from noise time t = 1 down to t = 0. Both panels start from the same samples drawn from the exact terminal mixture. This toy uses zero forward drift and constant diffusion.",
+    "ko": "생성은 노이즈 시간 t = 1에서 t = 0으로 진행한다. 두 화면은 정확한 종단 혼합분포에서 뽑은 동일 표본으로 시작한다. 토이 모형의 정방향 drift는 0, 확산 계수는 상수다."
+  },
+  "sde-view": {
+    "en": "Follow one particle. Compare the whole population.",
+    "ko": "한 입자를 추적하고 전체 분포를 비교한다."
+  },
+  "sde-rerun": {
+    "en": "New noise, same starts",
+    "ko": "출발점 유지 · 노이즈 다시 뽑기"
+  },
+  "sde-starts": {
+    "en": "New initial sample",
+    "ko": "초기 표본 다시 뽑기"
+  },
+  "sde-time": {
+    "en": "Generation progress",
+    "ko": "생성 진행도"
+  },
+  "sde-count": {
+    "en": "Population size",
+    "ko": "표본 수"
+  },
+  "sde-legend": {
+    "en": "Blue: SDE · Red: ODE · Gray contours: analytic reference density. Click a point to track the same initial particle in both panels; arrow keys select adjacent particles. Dashed blue: its previous noise realization.",
+    "ko": "파랑: SDE · 빨강: ODE · 회색 등고선: 해석적 기준 밀도. 점을 클릭하면 두 화면에서 같은 출발 입자를 추적한다. 방향키로 입자를 바꿀 수 있다. 파란 점선은 직전 노이즈로 생성한 경로다."
+  },
+  "sde-diff": {
+    "en": "SDE: x-marginal CDF discrepancy",
+    "ko": "SDE: x축 주변 CDF 차이"
+  },
+  "ode-diff": {
+    "en": "ODE: x-marginal CDF discrepancy",
+    "ko": "ODE: x축 주변 CDF 차이"
+  },
+  "path-diff": {
+    "en": "Tracked particle separation",
+    "ko": "추적 입자 사이 거리"
+  },
+  "sde-finite": {
+    "en": "The curves compare empirical x-coordinate densities with the analytic reference. Finite samples and numerical integration cause discrepancies; the theorem concerns distributions in continuous time, not identical clouds or paths. CDF discrepancy measures this projection only.",
+    "ko": "곡선은 표본의 x좌표 밀도와 해석적 기준을 비교한다. 유한 표본과 수치적분 때문에 차이가 생긴다. 정리는 연속 시간의 분포에 대한 것이며 점 구름이나 개별 경로의 일치를 뜻하지 않는다. CDF 차이는 x축 투영만 측정한다."
+  },
+  "sde-bridge": {
+    "en": "<b>Matching distributions leaves freedom in the paths.</b><span>Flow Matching uses this freedom differently: choose a probability path and learn a velocity that generates it.</span>",
+    "ko": "<b>분포를 맞추면서도 경로는 다르게 구성할 수 있다.</b><span>Flow Matching은 확률 경로를 먼저 정하고 이를 만드는 속도를 학습한다.</span>"
+  },
+  "fm-title": {
+    "en": "From matching distributions to learning a velocity",
+    "ko": "분포를 맞추는 과정에서 속도를 학습하는 문제로"
+  },
+  "fm-intro": {
+    "en": "Instead of fixing the path through forward diffusion, choose a probability path. Flow Matching regresses its marginal velocity. The difficulty is evaluating that target: conditional paths provide the next step.",
+    "ko": "정방향 확산으로 경로를 정하는 대신 확률 경로를 직접 선택한다. Flow Matching은 이를 만드는 주변 속도를 회귀한다. 계산하기 어려운 이 목표를 조건부 경로로 바꾸는 것이 다음 단계다."
+  },
+  "fm-open": {
+    "en": "Inspect local velocity regression",
+    "ko": "국소 속도 회귀 살펴보기"
+  },
+  "fm-view": {
+    "en": "A local velocity comparison and its error",
+    "ko": "같은 후보 속도, 두 가지 관점"
+  },
+  "position-plane": {
+    "en": "Position space: choose where to compare",
+    "ko": "위치 공간: 비교할 위치"
+  },
+  "velocity-plane": {
+    "en": "Velocity space: choose a prediction",
+    "ko": "속도 공간: 비교할 후보"
+  },
+  "legend-target": {
+    "en": "Blue: analytic target",
+    "ko": "파란색: 해석적 목표"
+  },
+  "legend-prediction": {
+    "en": "Red: candidate velocity",
+    "ko": "빨간색: 후보 속도"
+  },
+  "pred-x": {
+    "en": "Candidate horizontal velocity",
+    "ko": "후보 가로속도"
+  },
+  "pred-y": {
+    "en": "Candidate vertical velocity",
+    "ko": "후보 세로속도"
+  },
+  "sample-position": {
+    "en": "Draw a time and position",
+    "ko": "시각·위치 표본 뽑기"
+  },
+  "use-target": {
+    "en": "Match the target",
+    "ko": "목표 속도에 맞추기"
+  },
+  "local-error": {
+    "en": "Local squared error",
+    "ko": "국소 제곱오차"
+  },
+  "fm-caption": {
+    "en": "Left: move the observation point or drag the red arrow. Right: drag the same candidate in velocity space. Each contour joins velocities with the same squared error; its centre is the target. Density is shown by outlines, without a shaded background.",
+    "ko": "왼쪽: 관측 위치를 옮기거나 빨간 화살표를 드래그한다. 오른쪽: 같은 후보 속도를 속도 공간에서 움직인다. 등고선은 제곱오차가 같은 속도들을 연결하며, 중심이 목표 속도다. 공간의 밀도는 채움 없이 윤곽선으로 표시한다."
+  },
+  "fm-note": {
+    "en": "The displayed error is one local contribution. The training objective also averages over time and positions. Drawing a toy sample uses its known endpoint interpolation; no marginal ODE is solved for that draw.",
+    "ko": "표시한 오차는 한 위치에서의 기여. 학습 목적함수는 시각·위치에 대해서도 평균. 토이 표본은 알려진 끝점 보간으로 뽑으며 이 표본 추출에 주변 ODE 풀이는 필요하지 않음."
+  },
+  "bridge-cfm": {
+    "en": "<small>02 → 03</small><b>The local target is still hard to evaluate.</b><span>Conditional Flow Matching replaces it with a target obtained from sampled endpoints.</span>",
+    "ko": "<small>02 → 03</small><b>한 지점의 목표 속도도 직접 계산하기 어렵다.</b><span>Conditional Flow Matching은 끝점 표본에서 얻는 조건부 목표를 사용한다.</span>"
+  },
+  "cfm-title": {
+    "en": "Straight conditional paths, curved marginal paths",
+    "ko": "직선인 조건부 경로, 곡선인 주변 경로"
+  },
+  "cfm-intro": {
+    "en": "Sample a paired start and endpoint, then interpolate. These individual paths may cross. Their conditional mean velocity defines a different ODE: under regularity, it reproduces the same intermediate distributions without keeping each pair’s assignment.",
+    "ko": "출발점과 도착점을 쌍으로 뽑아 보간하면 개별 경로는 교차할 수 있다. 조건부 평균 속도로 정의한 ODE는 다른 경로를 따른다. 적절한 정칙성 아래 같은 중간 분포를 만들지만 각 쌍의 대응까지 유지하지는 않는다."
+  },
+  "flow-compare-title": {
+    "en": "One probability path, two ways to move samples",
+    "ko": "하나의 확률 경로를 만드는 두 이동 방식"
+  },
+  "pairing": {
+    "en": "Pairing preset",
+    "ko": "대응 프리셋"
+  },
+  "initial": {
+    "en": "Initial arrangement",
+    "ko": "초기 배치"
+  },
+  "piece-plan": {
+    "en": "Selected marker",
+    "ko": "선택한 표식"
+  },
+  "destination": {
+    "en": "Assigned destination",
+    "ko": "대응하는 도착점"
+  },
+  "conditional-label": {
+    "en": "Conditional interpolation",
+    "ko": "조건부 보간"
+  },
+  "marginal-label": {
+    "en": "Marginal ODE",
+    "ko": "주변 ODE"
+  },
+  "flow-compare-note": {
+    "en": "A highlighted pair starts at the same point in both panels. Blue follows its assigned conditional segment; red follows the probability-weighted mean field. Change the pairing to alter the interior of the path while preserving endpoint densities. The density projection uses 144 samples; integration uses 384 Heun steps.",
+    "ko": "강조한 쌍은 두 화면에서 같은 점으로 출발한다. 파랑은 지정된 조건부 선분, 빨강은 확률로 가중한 평균 속도를 따른다. 대응만 바꾸면 양 끝 분포를 유지하며 중간 경로가 달라진다. 밀도 투영에는 표본 144개, 적분에는 Heun 384단계를 사용한다."
+  },
+  "photo-open": {
+    "en": "Optional: identify endpoint pairs with photo pieces",
+    "ko": "선택: 사진 조각으로 끝점 대응 확인"
+  },
+  "pair-view": {
+    "en": "48 pieces, 48 conditional endpoint pairs",
+    "ko": "48개 조각으로 보는 조건부 끝점 대응"
+  },
+  "board-label": {
+    "en": "Follow the selected piece across time",
+    "ko": "선택한 조각의 출발·중간·도착을 함께 보기"
+  },
+  "pair-caption": {
+    "en": "Drag a piece in the starting panel to change its initial position. Select a piece in any panel to follow its correspondence. Changing only the pairing preserves both endpoint densities. The photo labels the pairs; it is not an image-generation result.",
+    "ko": "출발 화면의 조각을 드래그하면 초기 위치가 바뀐다. 어느 화면에서든 조각을 선택하면 같은 대응이 강조된다. 대응만 바꾸면 두 끝점 분포는 유지된다. 사진은 끝점 쌍을 구별하는 표시다."
+  },
+  "pair-meaning": {
+    "en": "The photograph identifies a conditional endpoint pair. A marginal ODE reproduces the distribution path under the stated regularity; its individual trajectories need not keep those labeled assignments.",
+    "ko": "사진은 조건부 끝점 쌍의 식별 표시. 정칙성 가정 아래 주변 ODE는 분포 경로를 재현하지만, 개별 궤적이 그 표식의 도착점 대응까지 유지하는 것은 아님."
+  },
+  "mean-question": {
+    "en": "Why does the average work?",
+    "ko": "평균 속도로도 분포를 맞추는 이유"
+  },
+  "mean-read": {
+    "en": "At one location, several endpoint pairs can contribute different directions. Weight them by their conditional probabilities. This velocity satisfies the continuity equation for the interpolation’s density. Move the observation point below, then inspect how the shared loss minimum follows the mean.",
+    "ko": "한 위치에는 서로 다른 방향을 가진 여러 끝점 쌍이 기여할 수 있다. 각 쌍의 조건부 확률로 가중하면 보간 분포의 연속방정식을 만족하는 속도를 얻는다. 아래 관측 위치를 바꾸고 평균 속도와 손실의 최소점이 함께 이동하는 모습을 확인한다."
+  },
+  "field-label": {
+    "en": "At the observation point: weighted directions",
+    "ko": "관측점에서의 가중 방향"
+  },
+  "weight-explanation": {
+    "en": "Colored arrows: the three largest probability-weighted contributions. Blue: the mean using all 48 components. Click to move the observation point.",
+    "ko": "색 화살표: 확률로 가중한 기여가 가장 큰 세 방향. 파랑: 48개 성분을 모두 반영한 평균. 화면을 클릭해 관측 위치를 바꿀 수 있다."
+  },
+  "loss-explain": {
+    "en": "The model sees position and time, while different endpoint pairs can supply different target velocities there. Squared-error regression recovers their conditional mean. The conditional and marginal objectives differ by a parameter-independent constant.",
+    "ko": "모델은 위치와 시각을 보고 예측하지만, 같은 위치에서도 끝점 쌍에 따라 목표 속도가 달라질 수 있음. 제곱오차 회귀는 그 조건부 평균을 회복하며, 두 목적함수는 매개변수와 무관한 상수만큼 차이 남."
+  },
+  "loss-title": {
+    "en": "Compare the local loss slices",
+    "ko": "국소 손실 단면 비교"
+  },
+  "candidate-offset": {
+    "en": "Horizontal offset from the conditional mean",
+    "ko": "조건부 평균에서 후보 가로속도의 차이"
+  },
+  "risk-total-label": {
+    "en": "Conditional squared error",
+    "ko": "조건부 제곱오차"
+  },
+  "risk-excess-label": {
+    "en": "Error from the mean",
+    "ko": "평균과의 오차"
+  },
+  "risk-variance-label": {
+    "en": "Conditional variance",
+    "ko": "조건부 분산"
+  },
+  "use-mean": {
+    "en": "Set both coordinates to the mean",
+    "ko": "두 좌표를 평균에 맞추기"
+  },
+  "loss-caption": {
+    "en": "Move the horizontal candidate coordinate while holding its vertical coordinate fixed. Both curves have the same horizontal minimizer; their gap is independent of the candidate. This local slice illustrates the objective identity rather than displaying the full training losses.",
+    "ko": "세로 후보 좌표를 고정하고 가로 좌표를 이동. 두 곡선은 가로 방향 최솟값 위치가 같고 높이 차이는 후보와 무관. 이 국소 단면으로 목적함수 관계를 설명하며 전체 학습 손실 자체를 표시하는 것은 아님."
+  },
+  "cfm-conclusion": {
+    "en": "<small>03 → GENERATION</small><b>CFM makes the FM objective trainable.</b><span>Training uses conditional targets. Generation follows the learned field with an ODE solver.</span>",
+    "ko": "<small>03 → GENERATION</small><b>CFM은 FM의 목표를 학습 가능한 형태로 만든다.</b><span>학습에는 조건부 목표를 쓰고, 생성할 때는 학습한 속도장을 따라 ODE를 푼다.</span>"
+  },
+  "cnf-open": {
+    "en": "Supplement: density and divergence along an ODE",
+    "ko": "보조 실험: ODE의 밀도와 발산"
   },
   "cnf-title": {
     "en": "Likelihood needs the whole trajectory",
@@ -103,150 +351,6 @@ const prose={
   "cnf-model": {
     "en": "In this demonstration, the analytic velocity takes the place of the parameterized field. The integral is evaluated up to the current time; the likelihood formula above is its endpoint form.",
     "ko": "이 데모에서는 해석적 속도장이 매개변수화된 속도장 역할을 대신함. 적분은 현재 시각까지 계산하며, 위 우도 수식은 끝 시각에서의 형태."
-  },
-  "bridge-fm": {
-    "en": "<small>01 → 02</small><b>The likelihood needs a trajectory.</b><span>Flow Matching changes the training objective to a local velocity comparison.</span>",
-    "ko": "<small>01 → 02</small><b>우도 계산에는 궤적이 필요하다.</b><span>Flow Matching은 학습 목표를 한 지점의 속도 비교로 바꾼다.</span>"
-  },
-  "fm-title": {
-    "en": "Replace likelihood evaluation with velocity regression",
-    "ko": "우도 계산에서 속도 회귀로"
-  },
-  "fm-intro": {
-    "en": "Prescribe a probability path and its generating velocity. Flow Matching fits that velocity pointwise, so the objective contains no trajectory solve.",
-    "ko": "확률 경로와 이를 만드는 속도를 정하고, 위치별 목표 속도에 맞추도록 회귀. 목적함수 안에서 전체 궤적을 풀 필요가 없어짐."
-  },
-  "compute-cnf": {
-    "en": "<b>Likelihood-based flow</b><span>Initial state → ODE steps → accumulated density → objective</span>",
-    "ko": "<b>우도 기반 Flow</b><span>초기 상태 → ODE 단계 → 누적 밀도 → 목적함수</span>"
-  },
-  "compute-fm": {
-    "en": "<b>Flow Matching</b><span>Sample time and position → compare velocities → local error</span>",
-    "ko": "<b>Flow Matching</b><span>시각·위치 표본 → 속도 비교 → 국소 오차</span>"
-  },
-  "fm-view": {
-    "en": "A local velocity comparison and its error",
-    "ko": "같은 후보 속도, 두 가지 관점"
-  },
-  "legend-target": {
-    "en": "Blue: analytic target",
-    "ko": "파란색: 해석적 목표"
-  },
-  "legend-prediction": {
-    "en": "Red: candidate velocity",
-    "ko": "빨간색: 후보 속도"
-  },
-  "pred-x": {
-    "en": "Candidate horizontal velocity",
-    "ko": "후보 가로속도"
-  },
-  "pred-y": {
-    "en": "Candidate vertical velocity",
-    "ko": "후보 세로속도"
-  },
-  "sample-position": {
-    "en": "Draw a time and position",
-    "ko": "시각·위치 표본 뽑기"
-  },
-  "use-target": {
-    "en": "Match the target",
-    "ko": "목표 속도에 맞추기"
-  },
-  "local-error": {
-    "en": "Local squared error",
-    "ko": "국소 제곱오차"
-  },
-  "fm-caption": {
-    "en": "Left: move the observation point or drag the red arrow. Right: drag the same candidate in velocity space. Each contour joins velocities with the same squared error; its centre is the target. Density is shown by outlines, without a shaded background.",
-    "ko": "왼쪽: 관측 위치를 옮기거나 빨간 화살표를 드래그한다. 오른쪽: 같은 후보 속도를 속도 공간에서 움직인다. 등고선은 제곱오차가 같은 속도들을 연결하며, 중심이 목표 속도다. 공간의 밀도는 채움 없이 윤곽선으로 표시한다."
-  },
-  "fm-note": {
-    "en": "The displayed error is one local contribution. The training objective also averages over time and positions. Drawing a toy sample uses its known endpoint interpolation; no marginal ODE is solved for that draw.",
-    "ko": "표시한 오차는 한 위치에서의 기여. 학습 목적함수는 시각·위치에 대해서도 평균. 토이 표본은 알려진 끝점 보간으로 뽑으며 이 표본 추출에 주변 ODE 풀이는 필요하지 않음."
-  },
-  "bridge-cfm": {
-    "en": "<small>02 → 03</small><b>The local target is still hard to evaluate.</b><span>Conditional Flow Matching replaces it with a target obtained from sampled endpoints.</span>",
-    "ko": "<small>02 → 03</small><b>한 지점의 목표 속도도 직접 계산하기 어렵다.</b><span>Conditional Flow Matching은 끝점 표본에서 얻는 조건부 목표를 사용한다.</span>"
-  },
-  "cfm-title": {
-    "en": "Construct a target from an endpoint pair",
-    "ko": "끝점 쌍에서 계산 가능한 목표를 만든다"
-  },
-  "cfm-intro": {
-    "en": "Sample two paired endpoints, interpolate their positions, and differentiate that path. This gives a conditional target without integrating the marginal ODE.",
-    "ko": "대응하는 끝점 쌍을 뽑고 위치를 보간한 뒤 그 경로의 속도를 계산. 주변 ODE를 적분하지 않고 조건부 목표를 얻을 수 있음."
-  },
-  "pair-view": {
-    "en": "48 pieces, 48 conditional endpoint pairs",
-    "ko": "48개 조각으로 보는 조건부 끝점 대응"
-  },
-  "pairing": {
-    "en": "Pairing preset",
-    "ko": "대응 프리셋"
-  },
-  "initial": {
-    "en": "Initial arrangement",
-    "ko": "초기 배치"
-  },
-  "board-label": {
-    "en": "Follow the selected piece across time",
-    "ko": "선택한 조각의 출발·중간·도착을 함께 보기"
-  },
-  "field-label": {
-    "en": "At the observation point: weighted directions",
-    "ko": "관측점에서의 가중 방향"
-  },
-  "piece-plan": {
-    "en": "Selected marker",
-    "ko": "선택한 표식"
-  },
-  "destination": {
-    "en": "Assigned destination",
-    "ko": "대응하는 도착점"
-  },
-  "pair-caption": {
-    "en": "Drag a piece in the starting panel to change its initial position. Select a piece in any panel to follow its correspondence. Changing only the pairing preserves both endpoint densities. The photo labels the pairs; it is not an image-generation result.",
-    "ko": "출발 화면의 조각을 드래그하면 초기 위치가 바뀐다. 어느 화면에서든 조각을 선택하면 같은 대응이 강조된다. 대응만 바꾸면 두 끝점 분포는 유지된다. 사진은 끝점 쌍을 구별하는 표시다."
-  },
-  "pair-meaning": {
-    "en": "The photograph identifies a conditional endpoint pair. A marginal ODE reproduces the distribution path under the stated regularity; its individual trajectories need not keep those labeled assignments.",
-    "ko": "사진은 조건부 끝점 쌍의 식별 표시. 정칙성 가정 아래 주변 ODE는 분포 경로를 재현하지만, 개별 궤적이 그 표식의 도착점 대응까지 유지하는 것은 아님."
-  },
-  "loss-explain": {
-    "en": "The model sees position and time, while different endpoint pairs can supply different target velocities there. Squared-error regression recovers their conditional mean. The conditional and marginal objectives differ by a parameter-independent constant.",
-    "ko": "모델은 위치와 시각을 보고 예측하지만, 같은 위치에서도 끝점 쌍에 따라 목표 속도가 달라질 수 있음. 제곱오차 회귀는 그 조건부 평균을 회복하며, 두 목적함수는 매개변수와 무관한 상수만큼 차이 남."
-  },
-  "loss-title": {
-    "en": "Compare the local loss slices",
-    "ko": "국소 손실 단면 비교"
-  },
-  "candidate-offset": {
-    "en": "Horizontal offset from the conditional mean",
-    "ko": "조건부 평균에서 후보 가로속도의 차이"
-  },
-  "risk-total-label": {
-    "en": "Conditional squared error",
-    "ko": "조건부 제곱오차"
-  },
-  "risk-excess-label": {
-    "en": "Error from the mean",
-    "ko": "평균과의 오차"
-  },
-  "risk-variance-label": {
-    "en": "Conditional variance",
-    "ko": "조건부 분산"
-  },
-  "use-mean": {
-    "en": "Set both coordinates to the mean",
-    "ko": "두 좌표를 평균에 맞추기"
-  },
-  "loss-caption": {
-    "en": "Move the horizontal candidate coordinate while holding its vertical coordinate fixed. Both curves have the same horizontal minimizer; their gap is independent of the candidate. This local slice illustrates the objective identity rather than displaying the full training losses.",
-    "ko": "세로 후보 좌표를 고정하고 가로 좌표를 이동. 두 곡선은 가로 방향 최솟값 위치가 같고 높이 차이는 후보와 무관. 이 국소 단면으로 목적함수 관계를 설명하며 전체 학습 손실 자체를 표시하는 것은 아님."
-  },
-  "cfm-conclusion": {
-    "en": "<small>03 → GENERATION</small><b>CFM makes the FM objective trainable.</b><span>Training uses conditional targets. Generation follows the learned field with an ODE solver.</span>",
-    "ko": "<small>03 → GENERATION</small><b>CFM은 FM의 목표를 학습 가능한 형태로 만든다.</b><span>학습에는 조건부 목표를 쓰고, 생성할 때는 학습한 속도장을 따라 ODE를 푼다.</span>"
   },
   "solver-title": {
     "en": "Sampling still needs an ODE solver",
@@ -313,24 +417,12 @@ const prose={
     "ko": "모형·범위·출처"
   },
   "model-notes": {
-    "en": "<li><b>One shared model:</b> 48 equally weighted Gaussian components, width 0.16, carry a shared offset between paired endpoints. Pairing and initial-position edits affect all scenes.</li><li><b>What is computed:</b> analytic velocities and losses; Heun trajectories and a divergence integral. The toy field substitutes for a learned network. The comparison concerns objective construction, not measured training speed.</li><li><b>Numerical resolution:</b> material grid: 512 steps; particle paths: 1,024 steps; tracked log-density trace: 2,048 steps. Solver reference: 4,096 steps.</li>",
-    "ko": "<li><b>공통 모형:</b> 동일 가중치·폭 0.16의 가우시안 성분 48개가 대응 끝점 사이에 같은 오프셋을 운반. 대응·출발 위치 수정은 전체 장면에 반영.</li><li><b>계산 범위:</b> 해석적 속도·손실, Heun 궤적과 발산 적분. 토이 속도장이 학습된 신경망을 대신하며, 학습 속도 측정이 아닌 목적함수 구성의 비교.</li><li><b>수치 해상도:</b> 격자 512단계, 입자 궤적 1,024단계, 추적 로그밀도 2,048단계. 수치해법 기준해 4,096단계.</li>"
+    "en": "<li><b>Score experiment:</b> three smooth Gaussian components, exact score, exact terminal sampling. Reverse SDE: 512 Euler–Maruyama steps; probability flow ODE: 512 Heun steps.</li><li><b>CFM experiment:</b> 48 translated Gaussian components, width 0.16, share a Gaussian offset within each endpoint pair. The conditional and marginal displays use the same initial samples.</li><li><b>Scope:</b> analytic targets replace trained networks. Equal marginals apply within each experiment, not between the diffusion and CFM probability paths. Numerical and finite-sample discrepancies are visible.</li>",
+    "ko": "<li><b>Score 실험:</b> 매끄러운 가우시안 성분 3개, 정확한 Score와 종단 표본. 역방향 SDE는 Euler–Maruyama 512단계, Probability Flow ODE는 Heun 512단계.</li><li><b>CFM 실험:</b> 폭 0.16의 가우시안 성분 48개. 각 끝점 쌍 안에서 같은 가우시안 오프셋을 공유하며 조건부·주변 화면은 동일 초기 표본을 사용.</li><li><b>범위:</b> 해석적 목표가 학습된 신경망을 대신한다. 분포 일치는 각 실험 내부의 관계이며 Diffusion과 CFM의 경로끼리 같다는 뜻은 아니다. 수치·표본 오차를 함께 표시.</li>"
   },
   "sources": {
-    "en": "Flow-based notes: “How the density moves along a trajectory” (PDF p. 21), “Training: maximum likelihood” (p. 32), “Regress the velocity instead” (p. 39), and conditional targets and objective equivalence (pp. 43, 46–47, 50–52). Differential-equations appendix: integral equation, Euler, and Heun (pp. 14–16).",
-    "ko": "Flow-based 자료: 궤적을 따른 밀도 변화(PDF 21쪽), 최대우도 학습(32쪽), 속도 회귀(39쪽), 조건부 목표와 목적함수 동치(43, 46–47, 50–52쪽). 미분방정식 부록: 적분식·Euler·Heun(14–16쪽)."
-  },
-  "weight-explanation": {
-    "en": "Colored arrows: the three largest probability-weighted contributions. Blue: the mean using all 48 components. Click to move the observation point.",
-    "ko": "색 화살표: 확률로 가중한 기여가 가장 큰 세 방향. 파랑: 48개 성분을 모두 반영한 평균. 화면을 클릭해 관측 위치를 바꿀 수 있다."
-  },
-  "position-plane": {
-    "en": "Position space: choose where to compare",
-    "ko": "위치 공간: 비교할 위치"
-  },
-  "velocity-plane": {
-    "en": "Velocity space: choose a prediction",
-    "ko": "속도 공간: 비교할 후보"
+    "en": "Score-based notes: PDF p. 51. Score-SDE notes: pp. 70, 73. Flow-based notes: pp. 21, 32, 39, 43, 46–47, 50–52. Differential-equations appendix: pp. 14–16. Every displayed equation is listed in the repository’s source audit.",
+    "ko": "Score-based 자료: PDF 51쪽. Score-SDE 자료: 70, 73쪽. Flow-based 자료: 21, 32, 39, 43, 46–47, 50–52쪽. 미분방정식 부록: 14–16쪽. 모든 표시 수식은 저장소의 출처 목록에 기록."
   }
 };
 let language=document.documentElement.lang==='ko'?'ko':'en';

@@ -3,10 +3,10 @@
 'use strict';
 const M=FlowMath,V=PuzzleView,S=CourseStudio,$=id=>document.getElementById(id),tr=(en,ko)=>DiffusionI18n.text(en,ko);
 const budgets=[16,32,64,128,256],distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]),fmt=(x,n=3)=>Number(x).toFixed(n);
-let model=M.create(),revision=0,activeSection='cnf',queued=false,dragging=false,lastTick=0,lastDraw=0,optionLanguage='';
+let model=M.create(),revision=0,activeSection='score',queued=false,dragging=false,lastTick=0,lastDraw=0,optionLanguage='';
 let population=null,materialGrid=null,meshCache=null,comparisonCache=null,areaCache=null;
 const refs=new Map(),traces=new Map(),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const state={time:0,selected:19,budget:32,probe:[0,0],prediction:[.6,0],pairing:0,initial:0,playing:!reduced,axis:0,speed:1,active:'density-integral',sampleSeed:17};
+const state={time:0,selected:19,budget:32,probe:[0,0],prediction:[.6,0],pairing:0,initial:0,playing:false,axis:0,speed:1,active:'density-integral',sampleSeed:17};
 let solverResult=null,cnfResult=null,lossRange=1.3;
 const optionList=Array.from({length:model.a.length},(_,i)=>'<option value="'+i+'">'+(i+1)+'</option>').join('');
 document.querySelectorAll('.piece-select').forEach(e=>e.innerHTML=optionList);$('destination').innerHTML=optionList;
@@ -55,7 +55,7 @@ function cnf(){
 }
 function fm(){S.regression(model,{...state,revision});S.velocityLoss(model,state);$('fm-error').textContent=fmt(M.conditionalRisk(model,state.probe,state.time,state.prediction).excess,4);}
 function cfm(){
- S.pairboard(model,state);
+ if(visible('plan-canvas'))S.pairboard(model,state);
  const fieldFrame=V.frame($('field-canvas'));V.heat(fieldFrame,model,state.time,revision);
  for(let y=-.65;y<=.65;y+=.26)for(let x=-1.15;x<=1.15;x+=.28)V.arrow(fieldFrame,[x,y],M.field(model,[x,y],state.time),'#cad6df',.6,.22);
  const info=M.field(model,state.probe,state.time,true),rank=info.weights.map((w,i)=>({i,w})).sort((a,b)=>b.w-a.w),colors=['#ae4c54','#32877b','#9b73a9'];
@@ -87,8 +87,8 @@ function sync(){
  for(const[j,axis]of ['x','y'].entries()){const range=Math.max(2,Math.ceil(Math.abs(state.prediction[j])));$('prediction-'+axis).min=-range;$('prediction-'+axis).max=range;$('prediction-'+axis).value=state.prediction[j];$('prediction-'+axis+'-out').textContent=fmt(state.prediction[j],2);}
  highlight(state.active);
 }
-function visible(id){const r=$(id).getBoundingClientRect();return r.bottom>0&&r.top<innerHeight+160;}
-function render(all=false){sync();if(!dragging&&(all||visible('cnf')))cnf();if(all||visible('fm'))fm();if(all||visible('cfm'))cfm();if(!dragging&&(all||visible('solver')))solver();}
+function visible(id){const r=$(id).getBoundingClientRect();return r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight+160;}
+function render(all=false){sync();if(!dragging&&visible('mesh-canvas'))cnf();if(visible('fm-canvas')||visible('velocity-canvas'))fm();if(all||visible('cfm'))cfm();if(!dragging&&(all||visible('solver')))solver();window.dispatchEvent(new Event('flowrender'));}
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;render();});}
 function tick(now){const dt=lastTick?Math.min((now-lastTick)/1000,.1):0;lastTick=now;
  if(state.playing&&activeSection==='cnf'&&visible('mesh-canvas')&&!document.hidden){state.time=(state.time+dt*state.speed/20)%1;if(now-lastDraw>100){lastDraw=now;highlight('density-integral');render();}}
@@ -124,11 +124,11 @@ for(const[id,kind]of [['plan-canvas','connection'],['fm-canvas','target'],['fiel
  else if(kind==='prediction')state.prediction[0]+=delta[0];else state.probe=state.probe.map((x,j)=>x+delta[j]);highlight(kind);schedule();});
 $('budget').addEventListener('change',()=>{state.budget=Number($('budget').value);highlight('euler');schedule();});$('coordinate').addEventListener('change',()=>{state.axis=Number($('coordinate').value);highlight('integral');schedule();});
 const quad=$('quadrature-canvas');quad.addEventListener('pointermove',e=>{if(e.pointerType==='touch'&&!e.buttons)return;const r=quad.getBoundingClientRect();state.time=Math.max(0,Math.min(.9999,(e.clientX-r.left-48)/(r.width-68)));highlight(e.clientY-r.top<r.height/2?'euler':'correct');schedule();});quad.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();state.time=Math.max(0,Math.min(.9999,state.time+(e.key==='ArrowLeft'?-1:1)/state.budget));highlight('integral');schedule();});
-$('solver-details').addEventListener('toggle',schedule);
+document.querySelectorAll('details').forEach(e=>e.addEventListener('toggle',schedule));
 function updateSection(){let best='';for(const section of document.querySelectorAll('section.chapter')){if(section.id==='notes')continue;const r=section.getBoundingClientRect();if(r.top<innerHeight*.45&&r.bottom>100)best=section.id;}
  if(best)activeSection=best;document.querySelectorAll('.contents a').forEach(a=>a.classList.toggle('active',a.hash==='#'+activeSection));schedule();}
 window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-innerHeight;$('reading-progress').style.width=(h?scrollY/h*100:0)+'%';updateSection();},{passive:true});
 for(const event of ['diffusionlanguagechange','puzzlephotoload','resize'])window.addEventListener(event,()=>{optionLanguage='';schedule();});
-window.FlowLab={snapshot:()=>({...state,probe:state.probe.slice(),prediction:state.prediction.slice(),model:JSON.parse(JSON.stringify(model)),revision,activeSection,loaded:V.loaded,cnf:cnfResult,risk:M.conditionalRisk(model,state.probe,state.time,state.prediction),solver:solverResult,areas:areaProfiles().map(p=>({area:p.area,displacement:p.displacement,nfe:p.nfe}))}),highlight};
+window.FlowLab={modelState:()=>({model,time:state.time,selected:state.selected,revision}),snapshot:()=>({...state,probe:state.probe.slice(),prediction:state.prediction.slice(),model:JSON.parse(JSON.stringify(model)),revision,activeSection,loaded:V.loaded,cnf:cnfResult,risk:M.conditionalRisk(model,state.probe,state.time,state.prediction),solver:solverResult,areas:areaProfiles().map(p=>({area:p.area,displacement:p.displacement,nfe:p.nfe}))}),highlight};
 render();updateSection();requestAnimationFrame(tick);
 })();

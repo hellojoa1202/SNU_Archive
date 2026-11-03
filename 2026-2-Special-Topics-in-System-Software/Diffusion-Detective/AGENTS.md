@@ -10,8 +10,9 @@
 - The project README contains only two execution links, Korean and English. The archive root README stays a plain EWHA-style table without links. The course README is only its small course title.
 - Deploy through this repository's GitHub Pages workflow. Do not update a Sites copy unless requested.
 
-- The accepted narrative is likelihood-trained Neural ODE / continuous normalizing flows → Flow Matching → Conditional Flow Matching. Explain the obstacle that connects each stage. Density/divergence integration is now explicitly approved; do not restore DDPM, Fourier, or score-denoising tutorials.
-- One shared analytic model supports an automatic CNF material-grid / log-density trace, manual local FM prediction, manual CFM pairing / conditional mean / loss slices, and an optional Euler/Heun generation comparison. Preserve draggable starts, pairing changes, probes, and the real photo puzzle only in CFM. Photo pieces label conditional pairs; marginal ODE paths need not retain those identities.
+- The accepted narrative is a brief DDPM/NCSN score connection → reverse SDE / probability flow ODE → FM / CFM. The central question is matching distributions versus matching labeled paths. Two main comparisons, not a survey with equal space for all methods.
+- transport.js provides the exact-score Brownian mixture; comparisons.js compares SDE/ODE and conditional/marginal trajectories. Each pair shares its own marginal family; do not equate the two experiments' probability paths. Diffusion noise time decreases from 1 to 0, while CFM interpolation time increases from 0 to 1.
+- Retain local regression, conditional-mean and loss demonstrations. CNF density/divergence, the photo pair identifiers, and generation solvers are expandable supplements.
 - The analytic model uses 48 translated Gaussian components of fixed tau=.16. The same Gaussian offset is carried between paired endpoints. Mixture velocities use posterior weights, not uniform averaging. Changing the permutation preserves endpoint densities, not piece identities. Do not claim exact puzzle assembly by the marginal ODE.
 - Report numerical errors against refined Heun (4096 vs 2048 steps) at equal field-evaluation budgets. Refinement is a consistency check, not a certified error bound.
 - Highlight equation terms on control changes. Keep concise declarative prose, compact typography and the scrolling layout.
@@ -21,9 +22,11 @@
 - Do not label concepts by lecture/chapter numbers; those numbers were personal file labels. Use concept names in both languages. Use 1., 2., 3., 4. for visible section numbering. Apply content feedback to both language versions together.
 
 - Latest requirement: display only equations directly present in the supplied lecture PDFs. course-equations.json records each equation and its exact source slide/PDF page. Do not add model-specific density, assignment-cost, energy, Taylor, flux-integral or observed-order formulas. Keep toy computations in the numerical engine distinct from displayed lecture equations.
-- Mixed interaction modes: only the CNF trajectory scene plays automatically while visible; all FM/CFM controls and solver controls are manual. Shared time and model edits persist across sections and languages. Keep the optional generation experiment expandable. Do not introduce metaphor titles such as motion score, probability gate, or wind map.
+- Mixed interaction modes: the score SDE/ODE scene plays automatically while visible; CFM controls and solver controls are manual. CNF playback is optional and initially paused. Shared time and model edits persist across sections and languages. Keep the optional generation experiment expandable. Do not introduce metaphor titles such as motion score, probability gate, or wind map.
 - course-equations.json is the displayed-equation audit. The current CNF likelihood and instantaneous change-of-variables equations come from flow-based PDF pages 32 and 21. The analytic field stands in for a parameterized neural field; compare mathematical objectives, never claim measured training acceleration or actual neural optimization.
 
 - Visual revision: pure white surfaces, outline-only density contours (no tinted density wash). The CFM photo is an 8 × 6 jigsaw with 48 actual model components. Show start/current/end together; a selected piece links all three. FM includes a linked velocity-space squared-error contour plot. Do not label these graphs as trained results.
 
 - Color preference: use muted slate blue (#526b86) and subdued red (#ae4c54), with pure white surfaces. Keep UI, SVGs, canvas plots and bilingual color labels consistent; do not restore vivid cobalt or orange accents.
+
+- Proposal typography: spaces on BOTH sides of every colon, including English labels and titles (A : B).

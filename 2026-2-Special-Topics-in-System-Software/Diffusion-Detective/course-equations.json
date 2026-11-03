@@ -64,5 +64,29 @@
     "file": "lecA-differential-equations.pdf",
     "pdf_page": 16,
     "slide_title": "Heun’s method"
+  },
+  "score-noise": {
+    "html": "s<sup>⋆</sup>(x̃,σ) = <span data-link=\"score\">−(1/σ) ε<sup>⋆</sup>(x̃,σ)</span>",
+    "file": "lec02-score-based.pdf",
+    "pdf_page": 51,
+    "slide_title": "Score and noise prediction carry the same information"
+  },
+  "reverse-sde": {
+    "html": "dx̄(t) = [f(x̄(t),t) − <span data-link=\"score\">g²(t) ∇ log p<sub>t</sub>(x̄(t))</span>] dt + <span data-link=\"randomness\">g(t) dw̄(t)</span>",
+    "file": "lec03-score-sde.pdf",
+    "pdf_page": 70,
+    "slide_title": "Summary: The Reverse-Time SDE"
+  },
+  "probability-flow": {
+    "html": "dx̃(t)/dt = f(x̃(t),t) − <span data-link=\"score\">½ g²(t) ∇ log p<sub>t</sub>(x̃(t))</span>",
+    "file": "lec03-score-sde.pdf",
+    "pdf_page": 73,
+    "slide_title": "Probability flow ODE"
+  },
+  "continuity": {
+    "html": "<span data-link=\"time\">∂<sub>t</sub>p<sub>t</sub></span> + ∇·(<span data-link=\"probe\">p<sub>t</sub> v<sub>t</sub></span>) = 0",
+    "file": "lec04-flow-based.pdf",
+    "pdf_page": 47,
+    "slide_title": "Marginal velocity generates the marginals"
   }
 }
