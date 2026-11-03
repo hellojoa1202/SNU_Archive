@@ -57,6 +57,39 @@ function boundaryHistory(paths,cut){
  }});events.sort((a,b)=>a.time-b.time);return{initialInside,events};
 }
 function boundaryCounts(history,t){let entered=0,left=0;for(const e of history.events){if(e.time>t)break;if(e.time===t&&!e.enter)continue;e.enter?entered++:left++;}return{initial:history.initialInside,entered,left,current:history.initialInside+entered-left};}
-const api={create,component,field,density,swap,integrate,at,samples,conditionalRisk,normalCDF,regionMass,regionRate,quadrature,boundaryHistory,boundaryCounts};
+// Analytic spatial derivative of the toy mixture's marginal velocity.
+// Used internally to evaluate the lecture divergence integral.
+function differential(m,x,t){
+ const f=field(m,x,t,true),mean=[0,0],J=[[0,0],[0,0]];
+ const centers=m.a.map((_,i)=>component(m,i,t).mu);
+ for(let i=0;i<f.weights.length;i++)for(let j=0;j<2;j++)mean[j]+=f.weights[i]*centers[i][j];
+ for(let i=0;i<f.weights.length;i++)for(let a=0;a<2;a++)for(let b=0;b<2;b++)
+  J[a][b]+=f.weights[i]*(f.components[i][a]-f.v[a])*(centers[i][b]-mean[b])/(m.tau*m.tau);
+ return{v:f.v,jacobian:J,divergence:J[0][0]+J[1][1]};
+}
+function logDensity(m,x,t){
+ const logs=m.a.map((_,i)=>{const c=component(m,i,t).mu;return-((x[0]-c[0])**2+(x[1]-c[1])**2)/(2*m.tau*m.tau);});
+ const top=Math.max(...logs);
+ return top+Math.log(logs.reduce((s,q)=>s+Math.exp(q-top),0))-Math.log(m.a.length*2*Math.PI*m.tau*m.tau);
+}
+function likelihoodTrace(m,start,steps=2048){
+ if(!Number.isInteger(steps)||steps<1)throw new RangeError('Invalid trace resolution');
+ const h=1/steps,path=[start.slice()],logp0=logDensity(m,start,0),logp=[logp0],divergences=[];
+ let x=start.slice(),value=logp0;
+ for(let k=0;k<steps;k++){
+  const t=k*h,a=differential(m,x,t),predict=x.map((q,j)=>q+h*a.v[j]),b=differential(m,predict,t+h);
+  divergences.push(a.divergence);x=x.map((q,j)=>q+h*(a.v[j]+b.v[j])/2);
+  value-=h*(a.divergence+b.divergence)/2;path.push(x);logp.push(value);
+ }
+ divergences.push(differential(m,x,1).divergence);
+ return{path,logp,divergences,logp0,steps};
+}
+function scalarAt(values,t){const q=Math.max(0,Math.min(1,t))*(values.length-1),i=Math.min(values.length-2,Math.floor(q)),w=q-i;return values[i]*(1-w)+values[i+1]*w;}
+function trainingPair(m,t,index,seed=17){
+ const start=samples(m,m.a.length,seed)[index],offset=start.map((x,j)=>x-m.a[index][j]);
+ const end=m.b[m.pi[index]].map((x,j)=>x+offset[j]);
+ return{start,end,position:start.map((x,j)=>(1-t)*x+t*end[j]),velocity:end.map((x,j)=>x-start[j])};
+}
+const api={differential,logDensity,likelihoodTrace,scalarAt,trainingPair,create,component,field,density,swap,integrate,at,samples,conditionalRisk,normalCDF,regionMass,regionRate,quadrature,boundaryHistory,boundaryCounts};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FlowMath=api;
 })(globalThis);

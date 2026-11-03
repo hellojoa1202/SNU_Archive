@@ -1,4 +1,22 @@
 {
+  "likelihood": {
+    "file": "lec04-flow-based.pdf",
+    "pdf_page": 32,
+    "slide_title": "Training: maximum likelihood",
+    "html": "log p<sub>ϕ</sub>(x<sub>T</sub>) = <span data-link=\"initial-density\">log p<sub>prior</sub>(x<sub>0</sub>)</span> − <span data-link=\"density-integral\">∫<sub>0</sub><sup>T</sup> ∇·v<sub>ϕ</sub>(x<sub>t</sub>,t) dt</span>"
+  },
+  "instant": {
+    "file": "lec04-flow-based.pdf",
+    "pdf_page": 21,
+    "slide_title": "How the density moves along a trajectory",
+    "html": "<span data-link=\"density-rate\">d/dt log p<sub>t</sub>(x<sub>t</sub>)</span> = −<span data-link=\"divergence\">∇·v<sub>t</sub>(x<sub>t</sub>)</span>"
+  },
+  "fm": {
+    "html": "L<sub>FM</sub>(ϕ) = E<sub>t, xₜ∼pₜ</sub> ‖<span data-link=\"prediction\">v<sub>ϕ</sub>(x<sub>t</sub>,t)</span> − <span data-link=\"target\">v<sub>t</sub>(x<sub>t</sub>)</span>‖²",
+    "file": "lec04-flow-based.pdf",
+    "pdf_page": 39,
+    "slide_title": "Regress the velocity instead"
+  },
   "interpolant": {
     "html": "x<sub>t</sub> = <span data-link=\"time\">a<sub>t</sub></span><span data-link=\"connection\">x<sub>0</sub></span> + <span data-link=\"time\">b<sub>t</sub></span><span data-link=\"connection\">x<sub>T</sub></span><br>a<sub>0</sub> = b<sub>T</sub> = 1,　a<sub>T</sub> = b<sub>0</sub> = 0",
     "file": "lec04-flow-based.pdf",
@@ -17,12 +35,6 @@
     "pdf_page": 47,
     "slide_title": "The velocity that generates the family"
   },
-  "fm": {
-    "html": "L<sub>FM</sub>(ϕ) = E<sub>t, xₜ∼pₜ</sub> ‖<span data-link=\"prediction\">v<sub>ϕ</sub>(x<sub>t</sub>,t)</span> − v<sub>t</sub>(x<sub>t</sub>)‖²",
-    "file": "lec04-flow-based.pdf",
-    "pdf_page": 39,
-    "slide_title": "Regress the velocity instead"
-  },
   "cfm": {
     "html": "L<sub>CFM</sub>(ϕ) = E<sub>t, (x₀,xT)∼π</sub> ‖<span data-link=\"prediction\">v<sub>ϕ</sub>(x<sub>t</sub>,t)</span> − u<sub>t</sub>(x<sub>t</sub>;x<sub>0</sub>,x<sub>T</sub>)‖²",
     "file": "lec04-flow-based.pdf",
@@ -35,20 +47,11 @@
     "pdf_page": 52,
     "slide_title": "The minimizer is the marginal velocity"
   },
-  "continuity": {
-    "html": "<span data-link=\"time\">∂<sub>t</sub>p<sub>t</sub></span> + <span data-link=\"region\">∇·(p<sub>t</sub>v<sub>t</sub>)</span> = 0",
-    "file": "lec04-flow-based.pdf",
-    "pdf_page": 47,
-    "slide_title": "The velocity that generates the family"
-  },
-  "flux": {
-    "html": "J := <span data-link=\"region\">ρv</span><br>∂<sub>t</sub>ρ = −∇·J = −∇·(ρv)",
-    "file": "lec03-score-sde.pdf",
-    "pdf_page": 48,
-    "slide_title": "The continuity equation (flux defined on PDF p. 45)",
-    "additional_pdf_pages": [
-      45
-    ]
+  "integral": {
+    "html": "x(t) = x(0) + <span data-link=\"integral\">∫<sub>0</sub><sup>t</sup> v(x(τ),τ) dτ</span>",
+    "file": "lecA-differential-equations.pdf",
+    "pdf_page": 14,
+    "slide_title": "From a continuous trajectory to numerical updates"
   },
   "euler": {
     "html": "x<sub>n+1</sub> = x<sub>n</sub> + <span data-link=\"euler\">h v(x<sub>n</sub>,t<sub>n</sub>)</span>,　t<sub>n+1</sub> = t<sub>n</sub> + h",
@@ -61,11 +64,5 @@
     "file": "lecA-differential-equations.pdf",
     "pdf_page": 16,
     "slide_title": "Heun’s method"
-  },
-  "integral": {
-    "html": "x(t) = x(0) + <span data-link=\"integral\">∫<sub>0</sub><sup>t</sup> v(x(τ),τ) dτ</span>",
-    "file": "lecA-differential-equations.pdf",
-    "pdf_page": 14,
-    "slide_title": "From a continuous trajectory to numerical updates"
   }
 }

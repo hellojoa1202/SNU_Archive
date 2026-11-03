@@ -1,11 +1,8 @@
-/* Highlight only terms present in the lecture equations. */
+/* Control focus and hover reveal the corresponding lecture term. */
 (function(){
-for(const e of document.querySelectorAll('.time-control'))e.addEventListener('focus',()=>FlowLab.highlight('time'));
-for(const e of document.querySelectorAll('.piece-select,#destination,#pairing,#initial'))e.addEventListener('focus',()=>FlowLab.highlight('connection'));
-document.getElementById('candidate-offset').addEventListener('focus',()=>FlowLab.highlight('prediction'));
-document.getElementById('coordinate').addEventListener('focus',()=>FlowLab.highlight('integral'));
-document.getElementById('budget').addEventListener('focus',()=>FlowLab.highlight('euler'));
-document.getElementById('mass-cut').addEventListener('focus',()=>FlowLab.highlight('region'));
-document.getElementById('use-mean').addEventListener('focus',()=>FlowLab.highlight('prediction'));
-document.querySelectorAll('[data-link]').forEach(e=>e.addEventListener('pointerenter',()=>FlowLab.highlight(e.dataset.link.split(' ')[0])));
+for(const el of document.querySelectorAll('.time-control'))el.addEventListener('focus',()=>FlowLab.highlight(el.id==='time-cnf'?'density-integral':'time'));
+for(const el of document.querySelectorAll('.piece-select,#destination,#pairing,#initial'))el.addEventListener('focus',()=>FlowLab.highlight(el.id==='piece-cnf'?'initial-density':'connection'));
+for(const id of ['prediction-x','prediction-y','candidate-offset','use-target','use-mean'])document.getElementById(id).addEventListener('focus',()=>FlowLab.highlight('prediction'));
+for(const[id,key]of [['budget','euler'],['coordinate','integral'],['sample-position','target']])document.getElementById(id).addEventListener('focus',()=>FlowLab.highlight(key));
+document.querySelectorAll('[data-link]').forEach(el=>el.addEventListener('pointerenter',()=>FlowLab.highlight(el.dataset.link.split(' ')[0])));
 })();

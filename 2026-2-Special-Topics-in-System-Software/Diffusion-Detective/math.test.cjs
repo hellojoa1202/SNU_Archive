@@ -42,3 +42,35 @@ test('Gate ledger counts repeated crossings and agrees with particle positions',
   assert.equal(count.current,count.initial+count.entered-count.left);
  }}
 });
+
+
+test('Analytic velocity derivatives agree with independent spatial differences',()=>{
+ const m=M.create(),h=1e-5;
+ for(const t of [.1,.5,.9])for(const x of [[-.4,.2],[0,0],[.7,-.2]]){
+  const d=M.differential(m,x,t);let div=0;
+  for(let j=0;j<2;j++){const a=x.slice(),b=x.slice();a[j]-=h;b[j]+=h;
+   const va=M.field(m,a,t),vb=M.field(m,b,t);
+   for(let k=0;k<2;k++)near(d.jacobian[k][j],(vb[k]-va[k])/(2*h),2e-7);
+   div+=(vb[j]-va[j])/(2*h);
+  }near(d.divergence,div,2e-7);
+ }
+});
+test('Integrated divergence reconstructs the independently evaluated log density',()=>{
+ const m=M.create();M.swap(m,2,9);
+ for(const i of [0,5,11]){const trace=M.likelihoodTrace(m,m.a[i],4096);
+  for(const t of [0,.25,.5,.75,1])near(M.scalarAt(trace.logp,t),M.logDensity(m,M.at(trace.path,t),t),2e-5);
+ }
+ const translation={a:[[0,0]],b:[[1,-2]],pi:[0],tau:.16},tr=M.likelihoodTrace(translation,[.1,.1],16);
+ for(const v of tr.logp)near(v,tr.logp0);
+ for(const v of tr.divergences)near(v,0);
+});
+test('A conditional training pair has shared offsets and the stated path derivative',()=>{
+ const m=M.create();M.swap(m,2,7);
+ for(const i of [0,2,11])for(const t of [0,.31,1]){const q=M.trainingPair(m,t,i,49),eps=1e-5;
+  const a=M.trainingPair(m,t-eps,i,49),b=M.trainingPair(m,t+eps,i,49);
+  for(let j=0;j<2;j++){
+   near(q.start[j]-m.a[i][j],q.end[j]-m.b[m.pi[i]][j]);
+   near(q.velocity[j],(b.position[j]-a.position[j])/(2*eps));
+  }
+ }
+});
