@@ -5,20 +5,21 @@
 'use strict';
 const TAU=.16;
 function create(){
- const b=Array.from({length:12},(_,i)=>[(i%4-1.5)*.42,(Math.floor(i/4)-1)*.42]);
- const order=[7,0,10,3,9,2,5,11,1,8,6,4];
- const a=order.map((j,i)=>[b[j][0]*1.22-.18,b[j][1]*1.3+.09]);
- return{a,b,pi:b.map((_,i)=>i),tau:TAU};
+ const columns=8,rows=6,cell=.22;
+ const b=Array.from({length:columns*rows},(_,i)=>[(i%columns-(columns-1)/2)*cell,(Math.floor(i/columns)-(rows-1)/2)*cell]);
+ const a=b.map((_,i)=>{const p=b[(i*17+13)%b.length];return[p[0]*1.18-.12,p[1]*1.12+.03];});
+ return{a,b,pi:b.map((_,i)=>i),tau:TAU,columns,rows,cell};
 }
 function component(m,i,t){const a=m.a[i],b=m.b[m.pi[i]],u=[b[0]-a[0],b[1]-a[1]];return{mu:[a[0]+t*u[0],a[1]+t*u[1]],u};}
 function field(m,x,t,details=false){
- const n=m.a.length,logs=new Float64Array(n),us=new Array(n);let top=-Infinity;
- for(let i=0;i<n;i++){const {mu,u}=component(m,i,t);us[i]=u;logs[i]=-((x[0]-mu[0])**2+(x[1]-mu[1])**2)/(2*m.tau*m.tau);top=Math.max(top,logs[i]);}
- let z=0,vx=0,vy=0;for(let i=0;i<n;i++){logs[i]=Math.exp(logs[i]-top);z+=logs[i];vx+=logs[i]*us[i][0];vy+=logs[i]*us[i][1];}
+ const n=m.a.length,logs=new Float64Array(n),us=details?new Array(n):null,denom=2*m.tau*m.tau;let top=-Infinity;
+ for(let i=0;i<n;i++){const a=m.a[i],b=m.b[m.pi[i]],ux=b[0]-a[0],uy=b[1]-a[1],dx=x[0]-a[0]-t*ux,dy=x[1]-a[1]-t*uy;
+  if(details)us[i]=[ux,uy];logs[i]=-(dx*dx+dy*dy)/denom;top=Math.max(top,logs[i]);}
+ let z=0,vx=0,vy=0;for(let i=0;i<n;i++){const a=m.a[i],b=m.b[m.pi[i]];logs[i]=Math.exp(logs[i]-top);z+=logs[i];vx+=logs[i]*(b[0]-a[0]);vy+=logs[i]*(b[1]-a[1]);}
  const v=[vx/z,vy/z];if(!details)return v;
  return{v,weights:Array.from(logs,q=>q/z),density:Math.exp(top)*z/(n*2*Math.PI*m.tau*m.tau),components:us};
 }
-const density=(m,x,t)=>field(m,x,t,true).density;
+function density(m,x,t){let sum=0;const d=2*m.tau*m.tau;for(let i=0;i<m.a.length;i++){const a=m.a[i],b=m.b[m.pi[i]],dx=x[0]-a[0]-t*(b[0]-a[0]),dy=x[1]-a[1]-t*(b[1]-a[1]);sum+=Math.exp(-(dx*dx+dy*dy)/d);}return sum/(m.a.length*Math.PI*d);}
 function swap(m,i,j){const other=m.pi.indexOf(j);[m.pi[i],m.pi[other]]=[m.pi[other],m.pi[i]];}
 function integrate(m,start,method='heun',steps=1024){
  if(!['euler','heun'].includes(method)||!Number.isInteger(steps)||steps<1)throw new RangeError('Invalid solver');

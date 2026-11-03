@@ -11,10 +11,10 @@ function arrow(c,a,b,color,width=1.6){line(c,[a,b],color,width);const angle=Math
 function mesh(model,state,data){
  const f=V.frame(document.getElementById('mesh-canvas')),c=f.c,t=state.time;
  // Each edge is sampled along the initial material grid, so deformed edges can curve.
- for(const curve of data.grid)V.line(f,curve.map(path=>M.at(path,t)),'#c8d6df',.85);
- for(const path of data.cloud)V.dot(f,M.at(path,t),'#96adbd',1.8);
- const patch=data.patch.map(path=>M.at(path,t));c.beginPath();patch.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));c.closePath();c.fillStyle='rgba(55,95,135,.16)';c.fill();c.strokeStyle=V.blue;c.lineWidth=1.2/f.scale;c.stroke();
- const trace=data.trace,upto=Math.floor(t*trace.steps);V.line(f,trace.path.slice(0,upto+1),V.orange,2);
+ data.grid.forEach((curve,i)=>V.line(f,curve.map(path=>M.at(path,t)),i<5?'#398eaa':'#729fc8',1));
+ for(const path of data.cloud)V.dot(f,M.at(path,t),'#669990',1.7);
+ const patch=data.patch.map(path=>M.at(path,t));c.beginPath();patch.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));c.closePath();c.fillStyle='rgba(36,89,211,.08)';c.fill();c.strokeStyle=V.blue;c.lineWidth=1.2/f.scale;c.stroke();
+ const trace=data.trace,upto=Math.floor(t*trace.steps);V.line(f,trace.path.slice(0,upto+1),V.orange,2.6);
  const pos=M.at(trace.path,t);V.dot(f,pos,V.ink,4.5);V.dot(f,trace.path[0],V.orange,3);
  V.text(f,tr('Start','출발'),[trace.path[0][0],trace.path[0][1]-.09],V.orange,11);
  const div=M.differential(model,pos,t).divergence;
@@ -27,7 +27,7 @@ function mesh(model,state,data){
 }
 function regression(model,state){
  const f=V.frame(document.getElementById('fm-canvas'));V.heat(f,model,state.time,state.revision);
- for(let y=-.65;y<=.65;y+=.26)for(let x=-1.15;x<=1.15;x+=.28)V.arrow(f,[x,y],M.field(model,[x,y],state.time),'#d7e0e6',.65,.22);
+ for(let y=-.65;y<=.65;y+=.26)for(let x=-1.15;x<=1.15;x+=.28)V.arrow(f,[x,y],M.field(model,[x,y],state.time),'#b8c8d7',.8,.22);
  const target=M.field(model,state.probe,state.time),factor=.38;
  V.arrow(f,state.probe,target,V.blue,2.5,factor);V.arrow(f,state.probe,state.prediction,V.orange,2.5,factor);V.dot(f,state.probe,V.ink,4);
  const tip=state.probe.map((x,j)=>x+factor*state.prediction[j]);V.dot(f,tip,V.orange,5);
@@ -56,5 +56,46 @@ function quadrature(model,state,reference,profiles){const{c,w,h}=setup('quadratu
  line(c,samples.map(([t,v])=>map(t,v)),'#6f7f8c',1.1);line(c,[map(state.time,low),map(state.time,high)],'#a5b4be',1,[3,4]);for(const t of [0,.5,1])text(c,String(t),map(t,0)[0],bottom+15,'#81939f','center',10);
  });text(c,tr('Time · signed area accumulates displacement','시간 · 부호 있는 면적을 누적하면 변위'),w/2,h-5,V.ink,'center',10);
 }
-window.CourseStudio={mesh,regression,loss,quadrature};
+function pairLayout(){
+ const canvas=document.getElementById('plan-canvas'),r=canvas.getBoundingClientRect(),vertical=r.width<620;
+ const panels=Array.from({length:3},(_,stage)=>{const w=vertical?r.width:(r.width-48)/3,h=vertical?r.height/3:r.height,x=vertical?0:stage*(w+24),y=vertical?stage*h:0;
+  return{x,y,w,h,cx:x+w/2,cy:y+h/2+6,scale:Math.min((w-22)/2.6,(h-80)/1.8)};});
+ return{canvas,r,panels,vertical};
+}
+function pairPoint(e,forceStage){const l=pairLayout(),x=e.clientX-l.r.left,y=e.clientY-l.r.top;let stage=forceStage;
+ if(stage===undefined)stage=l.vertical?Math.min(2,Math.max(0,Math.floor(y/(l.r.height/3)))):l.panels.reduce((best,p,i)=>Math.abs(x-p.cx)<Math.abs(x-l.panels[best].cx)?i:best,0);
+ const p=l.panels[stage];return{stage,point:[(x-p.cx)/p.scale,(y-p.cy)/p.scale]};
+}
+function pairboard(model,state){
+ const{c,w,h}=setup('plan-canvas'),layout=pairLayout(),titles=[tr('Starting arrangement','출발 배치'),tr('Conditional interpolation','조건부 보간'),tr('Assigned endpoints','대응된 도착점')],order=model.a.map((_,i)=>i).filter(i=>i!==state.selected).concat(state.selected);
+ layout.panels.forEach((p,stage)=>{
+  text(c,String(stage+1).padStart(2,'0'),p.x+8,p.y+18,V.blue,'left',10);
+  text(c,titles[stage],p.x+30,p.y+18,V.ink,'left',11);
+  text(c,stage===0?'t = 0':stage===2?'t = 1':'t = '+state.time.toFixed(2),p.cx,p.y+p.h-15,'#627386','center',10);
+  c.save();c.beginPath();c.rect(p.x,p.y+30,p.w,p.h-60);c.clip();c.translate(p.cx,p.cy);c.scale(p.scale,p.scale);const f={c,scale:p.scale,w:p.w,h:p.h};
+  if(stage===1){const i=state.selected;V.line(f,[model.a[i],model.b[model.pi[i]]],V.orange,1.5,[3,4]);V.dot(f,model.a[i],V.orange,2.5);}
+  for(const i of order){const pos=stage===0?model.a[i]:stage===2?model.b[model.pi[i]]:M.component(model,i,state.time).mu;V.piece(f,model,i,pos,i===state.selected);}
+  c.restore();
+  if(stage<2){if(layout.vertical)arrow(c,[w/2,p.y+p.h-4],[w/2,p.y+p.h+9],'#8da6b1',1);else arrow(c,[p.x+p.w+3,h/2],[p.x+p.w+20,h/2],'#8da6b1',1);}
+ });
+ const i=state.selected;document.getElementById('pair-live').textContent=tr('Piece ','조각 ')+(i+1)+' → '+tr('destination ','도착점 ')+(model.pi[i]+1)+tr(' · one of 48 conditional targets',' · 48개 조건부 목표 중 하나');
+}
+let velocityGeometry=null;
+function velocityLoss(model,state){
+ const{c,w,h}=setup('velocity-canvas'),target=M.field(model,state.probe,state.time),p=state.prediction;
+ const bound=Math.max(2.2,...target.map(v=>Math.abs(v)+.6),...p.map(v=>Math.abs(v)+.3));
+ const left=38,right=w-20,top=35,bottom=h-35,scale=Math.min((right-left)/(bound*2),(bottom-top)/(bound*2)),cx=(left+right)/2,cy=(top+bottom)/2,map=v=>[cx+v[0]*scale,cy+v[1]*scale];
+ velocityGeometry={cx,cy,scale,bound};
+ c.save();c.beginPath();c.rect(left,top,right-left,bottom-top);c.clip();
+ line(c,[[left,cy],[right,cy]],'#dce5ec');line(c,[[cx,top],[cx,bottom]],'#dce5ec');
+ const a=map(target),b=map(p);for(const radius of [.5,1,1.5,2]){c.beginPath();c.arc(...a,radius*scale,0,Math.PI*2);c.strokeStyle='#abc0ec';c.lineWidth=.85;c.stroke();text(c,(radius*radius).toFixed(2),a[0]+radius*scale-3,a[1]-5,'#6c89b5','right',9);}
+ line(c,[a,b],V.orange,2);dot(c,a,V.blue,4);dot(c,b,V.orange,5);c.restore();
+ text(c,tr('Squared error in velocity space','속도 공간에서의 제곱오차'),14,17,V.ink,'left',11);
+ text(c,'vₓ',right,cy+15,'#7e8b9b','right',10);text(c,'vᵧ',cx+8,bottom-3,'#7e8b9b','left',10);
+ for(const v of [-2,-1,1,2])if(Math.abs(v)<bound){text(c,String(v),map([v,0])[0],cy+13,'#8c9aaa','center',9);text(c,String(v),cx-7,map([0,v])[1]+3,'#8c9aaa','right',9);}
+ text(c,tr('Target at the centre · drag the orange point','중심: 목표 속도 · 주황 점을 드래그'),w/2,h-9,'#526a80','center',10);
+}
+function velocityPoint(e){const r=document.getElementById('velocity-canvas').getBoundingClientRect(),g=velocityGeometry;return[(e.clientX-r.left-g.cx)/g.scale,(e.clientY-r.top-g.cy)/g.scale].map(x=>Math.max(-3,Math.min(3,x)));}
+
+window.CourseStudio={mesh,regression,loss,quadrature,pairboard,pairPoint,velocityLoss,velocityPoint};
 })();
