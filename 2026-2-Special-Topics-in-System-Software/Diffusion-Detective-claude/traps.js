@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
   const M = root.BoardModel;
-  const BLUE = '#6085ad';
+  const BLUE = '#5076a6';
   const RED = '#ae4c54';
   const INK = '#17283e';
   const MUTED = '#6b7e91';

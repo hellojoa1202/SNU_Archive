@@ -46,6 +46,12 @@
   }
   function marginalSeries(t) { const pts = []; for (let i = 0; i <= 240; i++) { const x = -1.6 + 3.2 * i / 240; pts.push([x, M.marginalX(x, t)]); } return pts; }
 
+  /* equations: the LaTeX source sits in the HTML; \htmlData{link=...} becomes a data-link span */
+  for (const el of document.querySelectorAll('.equation[data-equation]')) {
+    if (!el.dataset.tex) el.dataset.tex = el.textContent.trim();
+    if (window.katex) { try { window.katex.render(el.dataset.tex, el, { displayMode: true, trust: true, strict: 'ignore', throwOnError: false }); } catch (e) { /* leave the source visible */ } }
+  }
+
   /* equation highlighting */
   const focusState = {};
   function applyFocus(equation) {
@@ -163,6 +169,112 @@
   setFocus('reverse-sde', ['score', 'randomness']);
   setFocus('pf-ode', ['score']);
   setFocus('eta-family', ['eta']);
+
+  /* ============================================================ 2b optical bench */
+  const bench = { progress: 0, playing: !reduced, eta: 1, seed: 41, force: false, run: null, grid: null, N: 24 };
+  const scratch2 = [0, 0];
+  function benchRun() { bench.run = S.run({ T: 1, eta: bench.eta, steps: 256, count: bench.N, startSeed: bench.seed, noiseSeed: bench.seed + 7, exactStart: true, trackPaths: bench.N, snapshots: 60 }); }
+  function benchColor(u) {
+    /* dark field -> accent blue -> near white */
+    const a = [16, 28, 46], b = [74, 112, 162], c = [214, 230, 247];
+    const m = u < 0.62 ? [a, b, u / 0.62] : [b, c, (u - 0.62) / 0.38];
+    return m[0].map((v, i) => Math.round(v + (m[1][i] - v) * m[2]));
+  }
+  function benchLight(c, t, w, h, lims) {
+    const gw = 192, gh = Math.max(8, Math.round(gw * h / w));
+    if (!bench.grid || bench.grid.width !== gw || bench.grid.height !== gh) { bench.grid = document.createElement('canvas'); bench.grid.width = gw; bench.grid.height = gh; }
+    const g = bench.grid.getContext('2d');
+    const img = g.createImageData(gw, gh);
+    const v = M.variance(t);
+    const px = new Float64Array(gw), py = new Float64Array(gh);
+    const colsX = [], rowsY = [];
+    for (let i = 0; i < M.COLUMNS; i++) colsX.push((i - (M.COLUMNS - 1) / 2) * M.CELL);
+    for (let j = 0; j < M.ROWS; j++) rowsY.push((j - (M.ROWS - 1) / 2) * M.CELL);
+    for (let i = 0; i < gw; i++) { const x = lims.x0 + (lims.x1 - lims.x0) * (i + 0.5) / gw; let acc = 0; for (const cxk of colsX) acc += Math.exp(-(x - cxk) * (x - cxk) / (2 * v)); px[i] = acc; }
+    for (let j = 0; j < gh; j++) { const y = lims.y1 - (lims.y1 - lims.y0) * (j + 0.5) / gh; let acc = 0; for (const cyk of rowsY) acc += Math.exp(-(y - cyk) * (y - cyk) / (2 * v)); py[j] = acc; }
+    let max = 0;
+    for (let i = 0; i < gw; i++) if (px[i] > max) max = px[i];
+    let maxy = 0;
+    for (let j = 0; j < gh; j++) if (py[j] > maxy) maxy = py[j];
+    max *= maxy;
+    const d = img.data;
+    for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) {
+      const u = Math.pow(px[i] * py[j] / max, 0.8);
+      const [r, gg, b] = benchColor(u);
+      const o = 4 * (j * gw + i);
+      d[o] = r; d[o + 1] = gg; d[o + 2] = b; d[o + 3] = 255;
+    }
+    g.putImageData(img, 0, 0);
+    c.imageSmoothingEnabled = true;
+    c.imageSmoothingQuality = 'high';
+    c.drawImage(bench.grid, 0, 0, w, h);
+  }
+  function drawBench() {
+    if (!bench.run) benchRun();
+    $('bench-progress').value = bench.progress;
+    const t = progressToTime(bench.progress, 1);
+    $('bench-progress-out').textContent = `${txt('lbl-noise-time')} ${t.toFixed(3)}`;
+    $('bench-stiffness').textContent = fmt(1 / M.variance(t), 1);
+    $('bench-eta-out').textContent = bench.eta.toFixed(0);
+    const canvas = $('bench-board');
+    if (!visible(canvas)) return;
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
+    const c = canvas.getContext('2d');
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    /* the view tightens with the light: half-height 1 at t = 0, about 2.6 at t = 1 */
+    const H = 1.0 + 1.6 * (1 - Math.exp(-t / 0.2));
+    const W = H * w / h;
+    const lims = { x0: -W, x1: W, y0: -H, y1: H };
+    const X = (x) => (x - lims.x0) / (2 * W) * w;
+    const Y = (y) => (lims.y1 - y) / (2 * H) * h;
+    benchLight(c, t, w, h, lims);
+    const fr = frameAtTime(bench.run, t);
+    const upto = Math.floor((1 - t) * 256) + 1;
+    const v = M.variance(t);
+    const k = (1 + bench.eta * bench.eta) / 2;
+    let captured = 0;
+    for (let n = 0; n < bench.N; n++) {
+      const path = bench.run.paths[n].slice(Math.max(0, upto - 24), upto);
+      c.strokeStyle = 'rgba(255,236,200,.3)'; c.lineWidth = 1; c.beginPath();
+      path.forEach(([x, y], i) => (i ? c.lineTo(X(x), Y(y)) : c.moveTo(X(x), Y(y))));
+      c.lineTo(X(fr.xs[n]), Y(fr.ys[n])); c.stroke();
+    }
+    for (let n = 0; n < bench.N; n++) {
+      const x = fr.xs[n], y = fr.ys[n];
+      const cen = M.centers[M.slotOf(x, y)];
+      if (Math.hypot(x - cen[0], y - cen[1]) < 3 * M.TAU) captured++;
+      if (bench.force) {
+        M.score(x, y, t, scratch2);
+        let dx = k * scratch2[0] * v, dy = k * scratch2[1] * v;
+        let L = Math.hypot(dx, dy) * w / (2 * W);
+        if (L > 1) {
+          const cap = Math.min(L, 60) / L;
+          dx *= cap; dy *= cap;
+          const ex = X(x) + dx * w / (2 * W), ey = Y(y) - dy * w / (2 * W);
+          const ang = Math.atan2(ey - Y(y), ex - X(x));
+          c.strokeStyle = '#ffb547'; c.fillStyle = '#ffb547'; c.lineWidth = 1.4;
+          c.beginPath(); c.moveTo(X(x), Y(y)); c.lineTo(ex, ey); c.stroke();
+          c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex - 6 * Math.cos(ang - 0.45), ey - 6 * Math.sin(ang - 0.45)); c.lineTo(ex - 6 * Math.cos(ang + 0.45), ey - 6 * Math.sin(ang + 0.45)); c.closePath(); c.fill();
+        }
+      }
+      c.beginPath(); c.arc(X(x), Y(y), 5.5, 0, 2 * Math.PI); c.fillStyle = 'rgba(255,200,120,.3)'; c.fill();
+      c.beginPath(); c.arc(X(x), Y(y), 3, 0, 2 * Math.PI); c.fillStyle = '#ffe0a0'; c.fill();
+      c.strokeStyle = 'rgba(16,28,46,.9)'; c.lineWidth = 1; c.stroke();
+    }
+    $('bench-captured').textContent = `${captured} / ${bench.N}`;
+    c.font = '10px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
+    c.fillStyle = 'rgba(236,243,251,.75)'; c.textAlign = 'left';
+    c.fillText(`t = ${t.toFixed(3)}`, 12, h - 12);
+    c.textAlign = 'right';
+    c.fillText(`${(2 * W).toFixed(1)} × ${(2 * H).toFixed(1)}`, w - 12, h - 12);
+  }
+  $('bench-progress').addEventListener('input', () => { bench.playing = false; setPlay($('bench-play'), false); bench.progress = +$('bench-progress').value; drawBench(); });
+  $('bench-play').addEventListener('click', () => { if (bench.progress >= 1) bench.progress = 0; bench.playing = !bench.playing; setPlay($('bench-play'), bench.playing); });
+  $('bench-again').addEventListener('click', () => { bench.seed++; benchRun(); bench.progress = 0; bench.playing = !reduced; setPlay($('bench-play'), bench.playing); drawBench(); });
+  $('bench-force').addEventListener('change', () => { bench.force = $('bench-force').checked; if (bench.force) flash(['score']); drawBench(); });
+  $('bench-eta').addEventListener('change', () => { bench.eta = +$('bench-eta').value; flash(bench.eta > 0 ? ['eta', 'randomness'] : ['eta']); benchRun(); bench.progress = 0; bench.playing = !reduced; setPlay($('bench-play'), bench.playing); drawBench(); });
 
   /* ====================================================================== 3 lab */
   const lab = { tab: 'start', T: 0.25, start: 'prior', bias: 0, smooth: 0, nfe: 128, method: 'auto', eta: 0, count: 1024, noiseSeed: 23, startSeed: 11, progress: 1, playing: false, arrows: false, run: null, ref: null, timer: null };
@@ -306,9 +418,9 @@
   fetch(new URL('sweeps.json', document.currentScript ? document.currentScript.src : location.href)).then((r) => (r.ok ? r.json() : null)).then((json) => { if (json && !sw.data) { sw.data = json; $('sweep-status').textContent = txt('status-pre'); drawSweeps(); } }).catch(() => {});
 
   /* ============================================================== chrome & loop */
-  function drawAll() { drawForward(); drawFamily(); drawLab(); drawSweeps(); }
+  function drawAll() { drawForward(); drawFamily(); drawBench(); drawLab(); drawSweeps(); }
   for (const b of document.querySelectorAll('.language-switch button')) b.addEventListener('click', () => T.setLanguage(b.dataset.lang));
-  window.addEventListener('languagechange', () => { setPlay($('forward-play'), fw.playing); setPlay($('family-play'), fam.playing); setPlay($('lab-play'), lab.playing); restoreFocus(); if (lab.run) labRun(); drawAll(); });
+  window.addEventListener('languagechange', () => { setPlay($('forward-play'), fw.playing); setPlay($('family-play'), fam.playing); setPlay($('bench-play'), bench.playing); setPlay($('lab-play'), lab.playing); restoreFocus(); if (lab.run) labRun(); drawAll(); });
 
   const navLinks = Array.from(document.querySelectorAll('.contents nav a'));
   let queued = false;
@@ -329,6 +441,7 @@
     if (!document.hidden) {
       if (fw.playing && visible($('forward-board'))) { fw.t = sliderToTime(Math.min(1, timeToSlider(fw.t) + dt / 14)); if (fw.t >= 1) { fw.playing = false; setPlay($('forward-play'), false); } drawForward(); }
       if (fam.playing && visible($('sde-board'))) { fam.progress = Math.min(1, fam.progress + dt / 12); if (fam.progress >= 1) { fam.playing = false; setPlay($('family-play'), false); } drawFamily(); }
+      if (bench.playing && visible($('bench-board'))) { bench.progress = Math.min(1, bench.progress + dt / 12); if (bench.progress >= 1) { bench.playing = false; setPlay($('bench-play'), false); } drawBench(); }
       if (lab.playing && visible($('lab-board'))) { lab.progress = Math.min(1, lab.progress + dt / 6); if (lab.progress >= 1) { lab.playing = false; setPlay($('lab-play'), false); } drawLab(); }
     }
     requestAnimationFrame(tick);
