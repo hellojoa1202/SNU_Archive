@@ -170,67 +170,82 @@
   setFocus('pf-ode', ['score']);
   setFocus('eta-family', ['eta']);
 
-  /* ================================================================ 2b annealing */
-  const an = { progress: 0, playing: !reduced, eta: 1, steps: 256, seed: 41, defects: true, run: null, N: 512 };
-  function annealRun() { an.run = S.run({ T: 1, eta: an.eta, steps: an.steps, count: an.N, startSeed: an.seed, noiseSeed: an.seed + 7, exactStart: true, snapshots: 60 }); }
-  function annealStats(fr) {
-    const occ = new Int32Array(M.K);
-    let onsite = 0;
-    const stranded = [];
-    for (let n = 0; n < fr.xs.length; n++) {
-      const k = M.slotOf(fr.xs[n], fr.ys[n]);
-      occ[k]++;
-      const cen = M.centers[k];
-      if (Math.hypot(fr.xs[n] - cen[0], fr.ys[n] - cen[1]) < 3 * M.TAU) onsite++; else stranded.push(n);
+  /* ============================================================== 2b iron filings */
+  const fil = { progress: 0, playing: !reduced, eta: 1, steps: 256, tilt: 0, thick: 0, seed: 51, field: true, run: null, N: 400 };
+  const filScratch = [0, 0];
+  function filError() { return { bias: [fil.tilt, 0], smooth: fil.thick }; }
+  function filRun() { fil.run = S.run({ T: 1, eta: fil.eta, steps: fil.steps, count: fil.N, startSeed: fil.seed, noiseSeed: fil.seed + 3, exactStart: true, error: filError(), snapshots: 60 }); }
+  /* a fixed pseudo-random jitter per cell so the strokes do not sit on a visible grid */
+  function hash2(i, j) { let h = (i * 73856093) ^ (j * 19349663); h = (h ^ (h >>> 13)) * 1274126177; h = (h ^ (h >>> 16)) >>> 0; return h / 4294967296; }
+  function stroke(c, X, Y, ang, L, width) { const dx = Math.cos(ang) * L / 2, dy = Math.sin(ang) * L / 2; c.lineWidth = width; c.beginPath(); c.moveTo(X - dx, Y - dy); c.lineTo(X + dx, Y + dy); c.stroke(); }
+  function filField(f, t) {
+    const c = f.c;
+    const err = filError();
+    const tb = t + fil.thick;
+    const nx = 78;
+    const cell = (f.xlim[1] - f.xlim[0]) / nx;
+    const ny = Math.ceil((f.ylim[1] - f.ylim[0]) / cell);
+    const px = f.map(1, 0)[0] - f.map(0, 0)[0];
+    const c0 = M.centers[0];
+    const dmax = Math.max(M.density(0, 0, tb), M.density(c0[0], c0[1], tb), M.density(0.11, 0.11, tb));
+    c.lineCap = 'round';
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      const u = hash2(i, j), v = hash2(j + 101, i + 7);
+      const x = f.xlim[0] + (i + 0.2 + 0.6 * u) * cell;
+      const y = f.ylim[0] + (j + 0.2 + 0.6 * v) * cell;
+      const d = M.density(x, y, tb) / dmax;
+      const a = 0.1 + 0.68 * Math.pow(Math.min(1, d), 0.38);
+      M.perturbedScore(x, y, t, err, filScratch);
+      const ang = Math.atan2(-filScratch[1], filScratch[0]);
+      const [X, Y] = f.map(x, y);
+      c.strokeStyle = `rgba(52,66,84,${a.toFixed(3)})`;
+      stroke(c, X, Y, ang, cell * px * (0.55 + 0.35 * u), 1);
     }
-    const expct = fr.xs.length / M.K;
-    const tol = 2.5 * Math.sqrt(expct);
-    const bad = [];
-    for (let k = 0; k < M.K; k++) if (Math.abs(occ[k] - expct) > tol) bad.push(k);
-    return { onsite, stranded, bad };
   }
-  function drawAnneal() {
-    if (!an.run) annealRun();
-    $('anneal-progress').value = an.progress;
-    const t = progressToTime(an.progress, 1);
-    $('anneal-progress-out').textContent = `${txt('lbl-noise-time')} ${t.toFixed(3)}`;
-    $('anneal-temp').textContent = fmt(M.variance(t), 4);
-    const canvas = $('anneal-board');
+  function drawFilings() {
+    if (!fil.run) filRun();
+    $('fil-progress').value = fil.progress;
+    const t = progressToTime(fil.progress, 1);
+    $('fil-progress-out').textContent = `${txt('lbl-noise-time')} ${t.toFixed(3)}`;
+    $('fil-eta-out').textContent = fil.eta.toFixed(2);
+    $('fil-tilt-out').textContent = fil.tilt.toFixed(1);
+    $('fil-thick-out').textContent = fil.thick.toFixed(3);
+    $('fil-step').textContent = (1 / fil.steps).toFixed(4);
+    const canvas = $('fil-board');
     if (!visible(canvas)) return;
-    const fr = frameAtTime(an.run, t);
-    const st = annealStats(fr);
-    const cold = t < 0.02;
-    $('anneal-onsite').textContent = `${Math.round(100 * st.onsite / fr.xs.length)} %`;
-    $('anneal-defect-count').textContent = cold ? `${st.bad.length} / ${M.K}` : '–';
+    const fr = frameAtTime(fil.run, t);
     const H = 1.0 + 1.6 * (1 - Math.exp(-t / 0.2));
     const W = H * Math.max(1, canvas.clientWidth - 48) / Math.max(1, canvas.clientHeight - 42);
     const f = V.frame(canvas, [-W, W], [-H, H]);
     const c = f.c;
+    if (fil.field) filField(f, t);
+    const err = filError();
     const px = f.map(1, 0)[0] - f.map(0, 0)[0];
-    const ringAlpha = Math.max(0, Math.min(1, 1 - t / 0.12));
-    if (ringAlpha > 0) {
-      const r = 2 * Math.sqrt(M.variance(Math.min(t, 0.05))) * px;
-      c.strokeStyle = `rgba(150,165,180,${(0.2 + 0.6 * ringAlpha).toFixed(2)})`;
-      c.fillStyle = `rgba(80,118,166,${(0.07 * ringAlpha).toFixed(3)})`;
-      c.lineWidth = 1;
-      for (const [x, y] of M.centers) { const [X, Y] = f.map(x, y); c.beginPath(); c.arc(X, Y, r, 0, 2 * Math.PI); c.fill(); c.stroke(); }
-    }
-    V.dots(f, fr.xs, fr.ys, { color: V.BLUE, r: 2, max: an.N });
-    if (an.defects && cold) {
-      for (const n of st.stranded) V.dot(f, [fr.xs[n], fr.ys[n]], '#d98c3a', 3);
-      c.strokeStyle = V.RED;
-      c.lineWidth = 1.6;
-      for (const k of st.bad) { const [X, Y] = f.map(M.centers[k][0], M.centers[k][1]); c.beginPath(); c.arc(X, Y, 3 * M.TAU * px + 3, 0, 2 * Math.PI); c.stroke(); }
+    let onsite = 0;
+    c.strokeStyle = V.BLUE;
+    c.lineCap = 'round';
+    for (let n = 0; n < fr.xs.length; n++) {
+      const x = fr.xs[n], y = fr.ys[n];
+      const cen = M.centers[M.slotOf(x, y)];
+      if (Math.hypot(x - cen[0], y - cen[1]) < 3 * M.TAU) onsite++;
+      M.perturbedScore(x, y, t, err, filScratch);
+      const ang = Math.atan2(-filScratch[1], filScratch[0]);
+      const [X, Y] = f.map(x, y);
+      stroke(c, X, Y, ang, Math.max(5, Math.min(9, 0.05 * px)), 2);
     }
     f.end();
+    $('fil-onsite').textContent = `${Math.round(100 * onsite / fr.xs.length)} %`;
+    $('fil-tv').textContent = t < 0.02 ? fmt(S.slotError(fr.xs, fr.ys).tv) : '–';
   }
-  function annealRestart() { annealRun(); an.progress = 0; an.playing = !reduced; setPlay($('anneal-play'), an.playing); drawAnneal(); }
-  $('anneal-progress').addEventListener('input', () => { an.playing = false; setPlay($('anneal-play'), false); an.progress = +$('anneal-progress').value; drawAnneal(); });
-  $('anneal-play').addEventListener('click', () => { if (an.progress >= 1) an.progress = 0; an.playing = !an.playing; setPlay($('anneal-play'), an.playing); });
-  $('anneal-again').addEventListener('click', () => { an.seed++; annealRestart(); });
-  $('anneal-defects').addEventListener('change', () => { an.defects = $('anneal-defects').checked; drawAnneal(); });
-  $('anneal-steps').addEventListener('change', () => { an.steps = +$('anneal-steps').value; flash(['grid']); annealRestart(); });
-  $('anneal-eta').addEventListener('change', () => { an.eta = +$('anneal-eta').value; flash(an.eta > 0 ? ['eta', 'randomness'] : ['eta']); annealRestart(); });
+  function filChanged(links) { flash(links); filRun(); drawFilings(); }
+  $('fil-progress').addEventListener('input', () => { fil.playing = false; setPlay($('fil-play'), false); fil.progress = +$('fil-progress').value; drawFilings(); });
+  $('fil-play').addEventListener('click', () => { if (fil.progress >= 1) fil.progress = 0; fil.playing = !fil.playing; setPlay($('fil-play'), fil.playing); });
+  $('fil-again').addEventListener('click', () => { fil.seed++; filRun(); fil.progress = 0; fil.playing = !reduced; setPlay($('fil-play'), fil.playing); drawFilings(); });
+  $('fil-field').addEventListener('change', () => { fil.field = $('fil-field').checked; drawFilings(); });
+  $('fil-eta').addEventListener('input', () => { fil.eta = +$('fil-eta').value; filChanged(fil.eta > 0 ? ['eta', 'randomness'] : ['eta']); });
+  $('fil-steps').addEventListener('change', () => { fil.steps = +$('fil-steps').value; filChanged(['grid']); });
+  $('fil-tilt').addEventListener('input', () => { fil.tilt = +$('fil-tilt').value; filChanged(['score']); });
+  $('fil-thick').addEventListener('input', () => { fil.thick = +$('fil-thick').value; filChanged(['score']); });
 
   /* ====================================================================== 3 lab */
   const lab = { tab: 'start', T: 0.25, start: 'prior', bias: 0, smooth: 0, nfe: 128, method: 'auto', eta: 0, count: 1024, noiseSeed: 23, startSeed: 11, progress: 1, playing: false, arrows: false, run: null, ref: null, timer: null };
@@ -374,9 +389,9 @@
   fetch(new URL('sweeps.json', document.currentScript ? document.currentScript.src : location.href)).then((r) => (r.ok ? r.json() : null)).then((json) => { if (json && !sw.data) { sw.data = json; $('sweep-status').textContent = txt('status-pre'); drawSweeps(); } }).catch(() => {});
 
   /* ============================================================== chrome & loop */
-  function drawAll() { drawForward(); drawFamily(); drawAnneal(); drawLab(); drawSweeps(); }
+  function drawAll() { drawForward(); drawFamily(); drawFilings(); drawLab(); drawSweeps(); }
   for (const b of document.querySelectorAll('.language-switch button')) b.addEventListener('click', () => T.setLanguage(b.dataset.lang));
-  window.addEventListener('languagechange', () => { setPlay($('forward-play'), fw.playing); setPlay($('family-play'), fam.playing); setPlay($('anneal-play'), an.playing); setPlay($('lab-play'), lab.playing); restoreFocus(); if (lab.run) labRun(); drawAll(); });
+  window.addEventListener('languagechange', () => { setPlay($('forward-play'), fw.playing); setPlay($('family-play'), fam.playing); setPlay($('fil-play'), fil.playing); setPlay($('lab-play'), lab.playing); restoreFocus(); if (lab.run) labRun(); drawAll(); });
 
   const navLinks = Array.from(document.querySelectorAll('.contents nav a'));
   let queued = false;
@@ -397,7 +412,7 @@
     if (!document.hidden) {
       if (fw.playing && visible($('forward-board'))) { fw.t = sliderToTime(Math.min(1, timeToSlider(fw.t) + dt / 14)); if (fw.t >= 1) { fw.playing = false; setPlay($('forward-play'), false); } drawForward(); }
       if (fam.playing && visible($('sde-board'))) { fam.progress = Math.min(1, fam.progress + dt / 12); if (fam.progress >= 1) { fam.playing = false; setPlay($('family-play'), false); } drawFamily(); }
-      if (an.playing && visible($('anneal-board'))) { an.progress = Math.min(1, an.progress + dt / 12); if (an.progress >= 1) { an.playing = false; setPlay($('anneal-play'), false); } drawAnneal(); }
+      if (fil.playing && visible($('fil-board'))) { fil.progress = Math.min(1, fil.progress + dt / 12); if (fil.progress >= 1) { fil.playing = false; setPlay($('fil-play'), false); } drawFilings(); }
       if (lab.playing && visible($('lab-board'))) { lab.progress = Math.min(1, lab.progress + dt / 6); if (lab.progress >= 1) { lab.playing = false; setPlay($('lab-play'), false); } drawLab(); }
     }
     requestAnimationFrame(tick);
