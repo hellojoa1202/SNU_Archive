@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<meta name="description" content="Interactive course notes: the three approximations every diffusion sampler makes, measured one at a time on an optical-trap toy.">
-<title>Light Traps</title>
+<meta name="description" content="Interactive course notes: the three approximations of a diffusion sampler (prior, score, time grid), measured one at a time on an analytic toy.">
+<title>Three Approximations of a Diffusion Sampler</title>
 <link rel="stylesheet" href="../style.css">
 <script defer src="../model.js"></script>
 <script defer src="../sampler.js"></script>
@@ -30,8 +30,8 @@
 <aside class="contents">
   <div class="eyebrow">CONTENTS</div>
   <nav>
-    <a href="#forward"><span>1.</span><span data-i18n="nav-forward">Laser off</span></a>
-    <a href="#family"><span>2.</span><span data-i18n="nav-family">Laser on</span></a>
+    <a href="#forward"><span>1.</span><span data-i18n="nav-forward">Forward process</span></a>
+    <a href="#family"><span>2.</span><span data-i18n="nav-family">Reverse SDE and PF-ODE</span></a>
     <a href="#lab"><span>3.</span><span data-i18n="nav-lab">Three substitutions</span></a>
     <a href="#budget"><span>4.</span><span data-i18n="nav-budget">Error budget</span></a>
     <a href="#flow"><span>5.</span><span data-i18n="nav-flow">Flow matching</span></a>
@@ -42,114 +42,114 @@
 <main id="main">
 <section class="hero">
   <div class="eyebrow">INTERACTIVE COURSE NOTES</div>
-  <h1 data-i18n="hero-title">Light <span>Traps.</span></h1>
-  <p data-i18n="hero-lead" class="hero-lead">Three approximations of a diffusion sampler, measured one at a time.</p>
-  <p data-i18n="hero-body" class="abstract">A focused laser pulls a small particle towards the bright spot: an optical trap. A hologram can make many bright spots at once, and particles that were drifting freely in the fluid gather into the pattern. Read the light intensity as a probability density and the pull as its score, and this is a diffusion sampler. The reverse-time SDE and the probability flow ODE are exact on paper; a sampler replaces three things it does not have, the true terminal law, the true score, and continuous time. Here everything else is known in closed form, so each replacement can be switched on alone and its effect on where the particles end up can be seen.</p>
+  <h1 data-i18n="hero-title">Three approximations<br><span>of a diffusion sampler.</span></h1>
+  <p data-i18n="hero-lead" class="hero-lead">Prior, score, time grid: what a sampler replaces, measured one at a time.</p>
+  <p data-i18n="hero-body" class="abstract">The reverse-time SDE and the probability flow ODE are exact when run from the true terminal law with the true score in continuous time. A sampler has none of the three: it starts from a Gaussian prior, follows a learned score, and takes discrete steps. The lecture notes name these as the only approximations. These notes build a toy in which every other quantity is known in closed form, so that each substitution can be switched on alone and its effect on the generated distribution measured.</p>
   <div class="method-route">
-    <div data-i18n="route-1"><small>01 · LASER OFF</small><b>Particles diffuse</b><span>Brownian motion blurs the pattern: the forward process.</span></div>
-    <div data-i18n="route-2"><small>02 · LASER ON</small><b>Particles gather</b><span>One family of ways to pull them back, from ODE to SDE.</span></div>
-    <div data-i18n="route-3"><small>03 · APPROXIMATE</small><b>Replace three things</b><span>Where they start, which field they feel, how often it is updated.</span></div>
+    <div data-i18n="route-1"><small>01 · FORWARD</small><b>Forward SDE and its marginals</b><span>A 48-component mixture widened by the heat equation.</span></div>
+    <div data-i18n="route-2"><small>02 · REVERSE</small><b>One family of samplers</b><span>Reverse SDE and probability flow ODE share every marginal.</span></div>
+    <div data-i18n="route-3"><small>03 · APPROXIMATE</small><b>Prior, score, discretization</b><span>Each substitution alone, with its error measured.</span></div>
   </div>
-  <p data-i18n="hero-note" class="caption">The toy: 48 trap sites on an 8 × 6 array; the intensity field at time t is p<sub>t</sub>; the force a particle feels is ∇ log p<sub>t</sub>. For a single Gaussian beam that is the familiar linear restoring force of an optical trap. Contours show the light; dots are particles; the bars count how many particles each trap captured against the exact share of probability mass. The correspondence is stated, and its limits are listed at the end.</p>
+  <p data-i18n="hero-note" class="caption">Toy model: p<sub>data</sub> is an equal mixture of 48 Gaussians of width τ = 0.06 on an 8 × 6 grid, the forward process is dx = dw, and the score, the marginals, the cell masses and the KL to the prior are all computed in closed form or by quadrature. No neural network is trained. The picture can be read as an array of optical traps whose light intensity is p<sub>t</sub>; that reading is stated where it helps and its limits are listed at the end.</p>
 </section>
 
 <!-- 1 -->
 <section id="forward" class="chapter">
-  <div class="chapter-number">1. LASER OFF · THE FORWARD PROCESS</div>
-  <h2 data-i18n="forward-title">Particles diffuse, the pattern blurs</h2>
-  <p data-i18n="forward-intro">Switch the laser off and each particle performs Brownian motion in the fluid: dx = dw, the variance-exploding forward SDE with zero drift and unit diffusion. The particles start in 48 tight clusters of width τ = 0.06, one per trap site. Because the drift is affine, the density at time t is the same mixture of 48 Gaussians with every component widened by t, in closed form. No simulation is needed to know the law; the dots are one realisation of it.</p>
-  <div class="equation" role="math" data-equation="marginal">p<sub>t</sub>(x) = <span data-link="mixture">(1/K) Σ<sub>k</sub> N(x ; <span data-link="sites">μ<sub>k</sub></span>, (<span data-link="time">τ² + t</span>) I)</span>,&nbsp;&nbsp;&nbsp; K = 48</div>
-  <p class="caption equation-source" data-i18n="forward-source">Perturbation kernel and marginal density · Score SDE notes, PDF p. 18, 21 · with f = 0, g = 1 the Fokker–Planck equation is the heat equation ∂<sub>t</sub>p = ½ Δp (p. 34, 51).</p>
+  <div class="chapter-number">1. THE FORWARD PROCESS</div>
+  <h2 data-i18n="forward-title">The forward SDE and its marginals</h2>
+  <p data-i18n="forward-intro">The forward process is the variance-exploding instance dx = dw, with f = 0 and g = 1, so σ²(t) = t. Under an affine drift the perturbation kernel is Gaussian, p<sub>t</sub>(x<sub>t</sub> | x<sub>0</sub>) = N(x<sub>0</sub>, t I), and the marginal is the data mixture with every component widened by t. The density solves the heat equation ∂<sub>t</sub>p = ½ Δp; the samples below are one realisation of the SDE whose law it is.</p>
+  <div class="equation" role="math" data-equation="marginal">p<sub>t</sub>(x) = <span data-link="mixture">(1/K) Σ<sub>k</sub> N(x ; μ<sub>k</sub>, (<span data-link="time">τ² + t</span>) I)</span>,&nbsp;&nbsp;&nbsp; K = 48</div>
+  <p class="caption equation-source" data-i18n="forward-source">Perturbation kernel and marginal density · Score SDE notes, PDF p. 18, 21 · Fokker–Planck and heat equation p. 34, 51.</p>
   <div class="experiment">
-    <div class="experiment-heading"><h3 data-i18n="forward-view">Watch the clusters spread</h3><span class="mode-label">AUTO + MANUAL</span></div>
-    <div class="playback"><button id="forward-play"></button><button id="forward-again"><span data-i18n="btn-again">New realisation</span></button><label class="inline-check"><input type="checkbox" id="forward-arrows"><span data-i18n="forward-arrows">show the force field ∇ log p<sub>t</sub></span></label></div>
+    <div class="experiment-heading"><h3 data-i18n="forward-view">Samples of the forward SDE and the marginal p<sub>t</sub></h3><span class="mode-label">AUTO + MANUAL</span></div>
+    <div class="playback"><button id="forward-play"></button><button id="forward-again"><span data-i18n="btn-again">New realisation</span></button><label class="inline-check"><input type="checkbox" id="forward-arrows"><span data-i18n="forward-arrows">score ∇ log p<sub>t</sub></span></label></div>
     <div class="controls">
-      <label for="forward-time"><span data-i18n="forward-time">Time t since the laser went off</span><output id="forward-time-out"></output><input type="range" id="forward-time" min="0" max="1" step="0.002" value="0"></label>
-      <div class="metric-grid compact"><div><span data-i18n="m-variance">cluster variance τ² + t</span><output id="forward-variance"></output></div><div><span data-i18n="m-contrast">trap contrast</span><output id="forward-contrast"></output></div><div><span>SNR(t) = 1 / t</span><output id="forward-snr"></output></div></div>
+      <label for="forward-time"><span data-i18n="forward-time">Time t</span><output id="forward-time-out"></output><input type="range" id="forward-time" min="0" max="1" step="0.002" value="0"></label>
+      <div class="metric-grid compact"><div><span data-i18n="m-variance">component variance τ² + t</span><output id="forward-variance"></output></div><div><span data-i18n="m-contrast">mode contrast</span><output id="forward-contrast"></output></div><div><span>SNR(t) = 1 / t</span><output id="forward-snr"></output></div></div>
     </div>
     <div class="scene-pair">
-      <div><h3 data-i18n="forward-left">Intensity p<sub>t</sub> (contours) and 384 particles</h3><canvas id="forward-board" role="img"></canvas></div>
-      <div><h3 data-i18n="forward-right">x-marginal of p<sub>t</sub>, in closed form</h3><canvas id="forward-marginal" role="img"></canvas></div>
+      <div><h3 data-i18n="forward-left">384 samples · gray contours: p<sub>t</sub></h3><canvas id="forward-board" role="img"></canvas></div>
+      <div><h3 data-i18n="forward-right">x-marginal of p<sub>t</sub>, closed form</h3><canvas id="forward-marginal" role="img"></canvas></div>
     </div>
-    <p data-i18n="forward-legend" class="caption">Highlighted in the equation: the slider moves τ² + t. The 48 spots merge into one broad glow by t ≈ 0.05. The trap contrast is the intensity ratio between a site and the midpoint to its neighbour, and the signal-to-noise ratio 1 / t says how much a diffusing particle still remembers which trap it left.</p>
+    <p data-i18n="forward-legend" class="caption">The slider moves the highlighted term τ² + t. The 48 modes merge into one basin by t ≈ 0.05. Mode contrast is the density ratio between a component centre and the midpoint to its neighbour; SNR(t) = E²/P = 1 / t is the lecture's measure of how much x<sub>t</sub> still remembers x<sub>0</sub>.</p>
   </div>
 </section>
 
 <!-- 2 -->
 <section id="family" class="chapter">
-  <div class="chapter-number">2. LASER ON · GENERATION</div>
-  <h2 data-i18n="family-title">Pulling them back: one family of samplers</h2>
-  <p data-i18n="family-intro">Now turn the light on and sharpen it over time, so that at each instant the intensity is p<sub>t</sub> with t running down to zero. There is not one way to drive the particles but a one-parameter family. For every η ≥ 0 the process below has the same marginals as the forward process: the extra score in the drift cancels exactly the extra diffusion the noise adds to the Fokker–Planck equation. η = 1 is the reverse-time SDE, particles pulled through their own thermal jitter; η = 0 is the probability flow ODE, particles dragged along the field with no jitter at all.</p>
+  <div class="chapter-number">2. GENERATION</div>
+  <h2 data-i18n="family-title">Reverse-time SDE and probability flow ODE share the marginals</h2>
+  <p data-i18n="family-intro">Both generative equations are certified the same way: write the Fokker–Planck equation of the candidate, check that the forward marginals solve it, and let uniqueness do the rest. They are the two ends of a one-parameter family. For every η ≥ 0 the process below passes through the same marginals, because the extra ½ η² g² of score in the drift cancels exactly the extra ½ η² g² Δp that the noise adds to the Fokker–Planck equation. η = 1 is the reverse-time SDE, η = 0 the probability flow ODE.</p>
   <div class="equation" role="math" data-equation="eta-family">dx̄ = [ f − <span data-link="eta">(1 + η²)/2</span> g² <span data-link="score">∇ log p<sub>t</sub>(x̄)</span> ] dt + <span data-link="randomness">η g dw̄</span></div>
   <p class="caption equation-source" data-i18n="family-source">One marginal family, many processes · Score SDE notes, PDF p. 78 · reverse-time SDE p. 63, probability flow ODE p. 73.</p>
   <div class="experiment">
-    <div class="experiment-heading"><h3 data-i18n="family-view">Same captures, different paths</h3><span class="mode-label">AUTO + MANUAL</span></div>
-    <div class="playback"><button id="family-play"></button><button id="family-noise"><span data-i18n="btn-noise">New noise</span></button><button id="family-starts"><span data-i18n="btn-starts">New starts</span></button><label class="inline-check"><input type="checkbox" id="family-colors" checked><span data-i18n="family-colors">colour by start</span></label><label class="inline-check"><input type="checkbox" id="family-trails" checked><span data-i18n="family-trails">trails</span></label></div>
+    <div class="experiment-heading"><h3 data-i18n="family-view">Follow one particle. Compare the whole population.</h3><span class="mode-label">AUTO + MANUAL</span></div>
+    <div class="playback"><button id="family-play"></button><button id="family-noise"><span data-i18n="btn-noise">New noise, same starts</span></button><button id="family-starts"><span data-i18n="btn-starts">New initial sample</span></button></div>
     <div class="controls">
-      <label for="family-eta"><span>η</span><output id="family-eta-out"></output><input type="range" id="family-eta" min="0" max="1.5" step="0.05" value="1"></label>
-      <label for="family-progress"><span data-i18n="progress">Progress (t runs from 1 to 0)</span><output id="family-progress-out"></output><input type="range" id="family-progress" min="0" max="1" step="0.004" value="0"></label>
+      <label for="family-progress"><span data-i18n="progress">Generation progress</span><output id="family-progress-out"></output><input type="range" id="family-progress" min="0" max="1" step="0.004" value="0"></label>
+      <label for="family-count"><span data-i18n="family-count">Population size</span><select id="family-count"><option value="256">256</option><option value="1024" selected>1024</option></select></label>
     </div>
     <div class="scene-pair">
-      <div><h3 data-i18n="family-left">1024 particles with exact start, exact field and 256 steps</h3><canvas id="family-board" tabindex="0" role="img"></canvas></div>
-      <div><h3 data-i18n="family-right">Captures per trap against the exact share of mass</h3><canvas id="family-bars" class="bars" role="img"></canvas>
-        <div class="metric-grid"><div><span data-i18n="m-tv">capture error (total variation)</span><output id="family-tv"></output></div><div><span data-i18n="m-spread">spread / exact</span><output id="family-spread"></output></div><div><span data-i18n="m-floor">floor for 1024 exact draws</span><output id="family-floor"></output></div></div>
-      </div>
+      <div><h3 data-i18n="family-left">Reverse-time SDE (η = 1)</h3><canvas id="sde-board" tabindex="0" role="img"></canvas></div>
+      <div><h3 data-i18n="family-right">Probability flow ODE (η = 0)</h3><canvas id="ode-board" tabindex="0" role="img"></canvas></div>
     </div>
-    <p data-i18n="family-legend" class="caption">Particles are coloured by where they started. At η = 0 the colours arrive as a smooth gradient: solutions of the ODE never cross, so the map from start to end is a bijection and neighbours stay neighbours. At η = 1 the colours are scrambled. The captures per trap on the right are the same in both cases: the sampler matches mass, not identity. Click a particle to follow its path.</p>
+    <p data-i18n="family-legend" class="caption">Blue: SDE · Red: ODE · Gray contours: the analytic p<sub>t</sub>. Both panels start from the same samples of the exact terminal law p<sub>1</sub> and use the exact score with 256 steps. Click a point to track the same initial particle in both panels; arrow keys select neighbours.</p>
+    <canvas id="family-projection" class="projection-chart" role="img"></canvas>
+    <div class="metric-grid"><div><span data-i18n="m-sde-ks">SDE: x-marginal KS distance</span><output id="family-sde-ks"></output></div><div><span data-i18n="m-ode-ks">ODE: x-marginal KS distance</span><output id="family-ode-ks"></output></div><div><span data-i18n="m-sep">Tracked particle separation</span><output id="family-sep"></output></div></div>
+    <p data-i18n="family-note" class="caption">The marginals agree at every time; the trajectories do not. Solutions of the ODE never cross, so the map from x<sub>1</sub> to x<sub>0</sub> is a bijection; the SDE's endpoint is not a function of its start. Both KS distances include finite-sample and discretization effects; 1024 exact draws give about 0.03.</p>
   </div>
-  <p data-i18n="family-bridge" class="transition"><b>Everything above was exact.</b><span>A sampler has none of it: not the terminal law, not the field, not continuous time. The next section replaces them one at a time.</span></p>
+  <p data-i18n="family-bridge" class="transition"><b>Everything above used the true p<sub>1</sub>, the true score and a fine grid.</b><span>A sampler has none of them. The next section replaces them one at a time.</span></p>
 </section>
 
 <!-- 3 -->
 <section id="lab" class="chapter">
   <div class="chapter-number">3. THE THREE APPROXIMATIONS</div>
-  <h2 data-i18n="lab-title">Three substitutions, one at a time</h2>
-  <p data-i18n="lab-intro">With f = 0 and g = 1 one backward step of the family is a single line. A sampler changes three things in it: where the particles start, which field they feel, and how large the step h is, that is, how often the field is updated. The lecture notes name these as the only three approximations, and this toy keeps every other quantity exact so that each can be measured alone.</p>
+  <h2 data-i18n="lab-title">Prior, score, discretization: one substitution at a time</h2>
+  <p data-i18n="lab-intro">With f = 0 and g = 1 one backward step of the family is a single line, and a sampler changes exactly three things in it: the law of x<sub>T</sub>, the score it evaluates, and the step h. The lecture lists the substitutions, p<sub>prior</sub> for p<sub>T</sub>, s<sub>ϕ</sub> for ∇ log p<sub>t</sub>, a grid for the continuum, and notes that they are the only three. Here each is switched on alone while the other two stay exact.</p>
   <div class="equation" role="math" data-equation="step"><span data-link="start">x<sub>T</sub> ∼ N(0, T I)</span>,&nbsp;&nbsp;&nbsp; x ← x + (1 + η²)/2 · <span data-link="score-term">s̃(x, t)</span> · <span data-link="grid">h</span> + η <span data-link="grid">√h</span> z,&nbsp;&nbsp; z ∼ N(0, I)</div>
-  <p class="caption equation-source" data-i18n="lab-source">From the oracle to the model · Score SDE notes, PDF p. 86 (the three substitutions) · Euler–Maruyama step p. 87.</p>
+  <p class="caption equation-source" data-i18n="lab-source">From the oracle to the model · Score SDE notes, PDF p. 86 · Euler–Maruyama step p. 87.</p>
   <div class="equation" role="math" data-equation="surrogate"><span data-link="score-term">s̃(x, t) = ∇ log p<sub><span data-link="blur">t + δ</span></sub>(x) + <span data-link="tilt">b</span></span></div>
-  <p class="caption equation-source" data-i18n="lab-source2">Defined on this page. A learned score is a regression estimate (denoising score matching, p. 83–84) whose error is unknown; in its place, two controlled errors: a defocus δ that reads the field of a blurrier time, and a drift b that pushes every particle the same way.</p>
+  <p class="caption equation-source" data-i18n="lab-source2">Defined on this page. A trained score is a regression estimate (denoising score matching, p. 83–84) whose error is unknown; two controlled errors stand in for it: δ ≥ 0 evaluates the score at a later, smoother time, b adds a constant vector.</p>
   <div class="experiment">
     <div class="experiment-heading"><h3 data-i18n="lab-view">Switch one substitution on</h3><span class="mode-label">MANUAL</span></div>
     <div class="tabs" role="tablist">
-      <button role="tab" data-tab="start" aria-selected="true"><b data-i18n="tab-start">Start</b><span data-i18n="tab-start-sub">particles released from the wrong distribution</span></button>
-      <button role="tab" data-tab="score" aria-selected="false"><b data-i18n="tab-score">Field</b><span data-i18n="tab-score-sub">a defocused beam, a sideways drift</span></button>
-      <button role="tab" data-tab="grid" aria-selected="false"><b data-i18n="tab-grid">Steps</b><span data-i18n="tab-grid-sub">the field updated in pulses, not continuously</span></button>
+      <button role="tab" data-tab="start" aria-selected="true"><b data-i18n="tab-start">Prior</b><span data-i18n="tab-start-sub">N(0, T I) in place of p<sub>T</sub></span></button>
+      <button role="tab" data-tab="score" aria-selected="false"><b data-i18n="tab-score">Score</b><span data-i18n="tab-score-sub">s̃ in place of ∇ log p<sub>t</sub></span></button>
+      <button role="tab" data-tab="grid" aria-selected="false"><b data-i18n="tab-grid">Discretization</b><span data-i18n="tab-grid-sub">steps in place of the continuum</span></button>
     </div>
     <div class="tab-panels">
       <div class="controls three" data-panel="start">
-        <label for="lab-T"><span data-i18n="lab-T">Terminal time T (how long the laser was off)</span><output id="lab-T-out"></output><input type="range" id="lab-T" min="0.25" max="4" step="0.05" value="1"></label>
-        <label><span data-i18n="lab-start-law">Release the particles from</span><select id="lab-start"><option value="exact" data-i18n="opt-exact">p_T itself (exact)</option><option value="prior" data-i18n="opt-prior">N(0, T I), the Gaussian prior</option></select></label>
-        <div class="metric-grid compact"><div><span>SNR(T) = 1 / T</span><output id="lab-snr"></output></div><div><span data-i18n="m-klbound">KL bound ½ SNR(T) E‖x₀‖²</span><output id="lab-klbound"></output></div><div><span data-i18n="m-kl">KL(p<sub>T</sub> ‖ N(0, T I)), quadrature</span><output id="lab-kl"></output></div></div>
+        <label for="lab-T"><span data-i18n="lab-T">Terminal time T</span><output id="lab-T-out"></output><input type="range" id="lab-T" min="0.25" max="4" step="0.05" value="1"></label>
+        <label><span data-i18n="lab-start-law">Initial law</span><select id="lab-start"><option value="exact" data-i18n="opt-exact">p_T (exact)</option><option value="prior" data-i18n="opt-prior">N(0, T I)</option></select></label>
+        <div class="metric-grid compact"><div><span>SNR(T) = 1 / T</span><output id="lab-snr"></output></div><div><span data-i18n="m-klbound">bound ½ SNR(T) E‖x₀‖²</span><output id="lab-klbound"></output></div><div><span data-i18n="m-kl">KL(p<sub>T</sub> ‖ N(0, T I))</span><output id="lab-kl"></output></div></div>
       </div>
       <div class="controls three" data-panel="score" hidden>
-        <label for="lab-bias"><span data-i18n="lab-bias">Drift b<sub>x</sub></span><output id="lab-bias-out"></output><input type="range" id="lab-bias" min="-2" max="2" step="0.1" value="0"></label>
-        <label for="lab-smooth"><span data-i18n="lab-smooth">Defocus δ</span><output id="lab-smooth-out"></output><input type="range" id="lab-smooth" min="0" max="0.1" step="0.002" value="0"></label>
-        <label class="inline-check tall"><input type="checkbox" id="lab-arrows"><span data-i18n="lab-arrows">show the field the particles feel, at t = 0.02</span></label>
+        <label for="lab-bias"><span data-i18n="lab-bias">Constant bias b<sub>x</sub></span><output id="lab-bias-out"></output><input type="range" id="lab-bias" min="-2" max="2" step="0.1" value="0"></label>
+        <label for="lab-smooth"><span data-i18n="lab-smooth">Smoothing δ</span><output id="lab-smooth-out"></output><input type="range" id="lab-smooth" min="0" max="0.1" step="0.002" value="0"></label>
+        <label class="inline-check tall"><input type="checkbox" id="lab-arrows"><span data-i18n="lab-arrows">show s̃ at t = 0.02</span></label>
       </div>
       <div class="controls three" data-panel="grid" hidden>
-        <label><span data-i18n="lab-nfe">Field evaluations (pulses)</span><select id="lab-nfe"><option>8</option><option>16</option><option>32</option><option>64</option><option selected>128</option><option>256</option><option>512</option></select></label>
-        <label><span data-i18n="lab-method">Method</span><select id="lab-method"><option value="auto" data-i18n="opt-auto">Euler–Maruyama (η &gt; 0) / Heun (η = 0)</option><option value="euler" data-i18n="opt-euler">Euler, η = 0 only</option><option value="heun" data-i18n="opt-heun">Heun, η = 0 only</option></select></label>
+        <label><span data-i18n="lab-nfe">Score evaluations</span><select id="lab-nfe"><option>8</option><option>16</option><option>32</option><option>64</option><option selected>128</option><option>256</option><option>512</option></select></label>
+        <label><span data-i18n="lab-method">Integrator</span><select id="lab-method"><option value="auto" data-i18n="opt-auto">Euler–Maruyama (η &gt; 0) / Heun (η = 0)</option><option value="euler" data-i18n="opt-euler">Euler, η = 0</option><option value="heun" data-i18n="opt-heun">Heun, η = 0</option></select></label>
         <div class="metric-grid compact"><div><span data-i18n="m-step">step h = T / steps</span><output id="lab-step"></output></div><div><span data-i18n="m-nfe">evaluations spent</span><output id="lab-nfe-out"></output></div></div>
       </div>
     </div>
     <div class="controls">
-      <label for="lab-eta"><span data-i18n="lab-eta">Process η (0 = ODE, 1 = reverse SDE)</span><output id="lab-eta-out"></output><input type="range" id="lab-eta" min="0" max="1.5" step="0.05" value="1"></label>
-      <label for="lab-progress"><span data-i18n="progress">Progress (t runs from T to 0)</span><output id="lab-progress-out"></output><input type="range" id="lab-progress" min="0" max="1" step="0.004" value="1"></label>
+      <label for="lab-eta"><span data-i18n="lab-eta">η (0 = probability flow ODE, 1 = reverse SDE)</span><output id="lab-eta-out"></output><input type="range" id="lab-eta" min="0" max="1.5" step="0.05" value="1"></label>
+      <label for="lab-progress"><span data-i18n="progress">Generation progress</span><output id="lab-progress-out"></output><input type="range" id="lab-progress" min="0" max="1" step="0.004" value="1"></label>
     </div>
-    <div class="playback"><button id="lab-play"></button><button id="lab-noise"><span data-i18n="btn-noise">New noise</span></button><button id="lab-reset"><span data-i18n="btn-reset">Reset to exact</span></button><span class="live-note" id="lab-status"></span></div>
+    <div class="playback"><button id="lab-play"></button><button id="lab-noise"><span data-i18n="btn-noise2">New noise</span></button><button id="lab-reset"><span data-i18n="btn-reset">Reset to exact</span></button><span class="live-note" id="lab-status"></span></div>
     <div class="scene-pair">
-      <div><h3 data-i18n="lab-left">Where 2048 particles end up</h3><canvas id="lab-board" role="img"></canvas></div>
-      <div><h3 data-i18n="lab-right">Captures per trap against the exact share of mass</h3><canvas id="lab-bars" class="bars" role="img"></canvas>
-        <div class="metric-grid"><div><span data-i18n="m-tv">capture error (total variation)</span><output id="lab-tv"></output><small id="lab-tv-floor"></small></div><div><span data-i18n="m-spread">spread / exact</span><output id="lab-spread"></output><small id="lab-spread-floor"></small></div><div><span data-i18n="m-ks">KS distance, x-marginal</span><output id="lab-ks"></output><small id="lab-ks-floor"></small></div></div>
-      </div>
+      <div><h3 data-i18n="lab-left">Final samples · gray contours: p<sub>0</sub></h3><canvas id="lab-board" role="img"></canvas></div>
+      <div><h3 data-i18n="lab-right">x-marginal of the samples against p<sub>0</sub></h3><canvas id="lab-projection" role="img"></canvas></div>
     </div>
-    <p data-i18n="lab-legend" class="caption">600 of the 2048 particles are drawn; every metric uses all of them. Capture error compares the fraction of particles nearest to each trap with the exact mass of p₀ in that cell: it asks where the mass went. Spread is the root-mean-square distance to the nearest site, relative to the exact value: it asks how tightly the particles gathered. Small grey numbers are the values for 2048 exact draws from p₀, the floor of each metric.</p>
+    <div class="metric-grid"><div><span data-i18n="m-tv">mode mass error (total variation over the 48 cells)</span><output id="lab-tv"></output><small id="lab-tv-floor"></small></div><div><span data-i18n="m-spread">within-mode spread / exact</span><output id="lab-spread"></output><small id="lab-spread-floor"></small></div><div><span data-i18n="m-ks">x-marginal KS distance</span><output id="lab-ks"></output><small id="lab-ks-floor"></small></div></div>
+    <p data-i18n="lab-legend" class="caption">2048 samples, 600 drawn; every metric uses all of them. Mode mass error compares the fraction of samples nearest to each of the 48 centres with the exact mass of p₀ in that cell: it asks where the mass went. Spread is the root-mean-square distance to the nearest centre relative to its exact value: it asks how tightly the samples gathered. Small grey numbers are the values for 2048 exact draws from p₀, the floor of each metric.</p>
   </div>
   <ul class="concept-points">
-    <li data-i18n="lab-point-start"><b>Start.</b> The lecture bounds the mismatch by the signal-to-noise ratio: KL(p<sub>T</sub> ‖ N(0, P(T) I)) ≤ ½ SNR(T) E‖x₀‖² (PDF p. 23, 26). Here SNR(T) = 1 / T; the bound is loose by an order of magnitude but has the right trend. The ODE is a bijection and carries whatever is wrong at T to t = 0; the SDE keeps adding jitter and pulling back, which lets it forget where the particles were released.</li>
-    <li data-i18n="lab-point-score"><b>Field.</b> A drift moves mass between traps and shifts the whole pattern sideways; a defocus keeps the captures right and widens every cluster. The family multiplies the field, and hence the drift, by (1 + η²)/2, so in this toy the SDE is <em>more</em> sensitive to a constant drift than the ODE. The usual robustness argument for stochastic sampling concerns errors that fluctuate and average out, which a constant drift does not.</li>
-    <li data-i18n="lab-point-grid"><b>Steps.</b> The field is stiff: ‖∇ log p<sub>t</sub>‖ grows like 1 / (τ² + t), so the last pulses near t = 0 are the ones that matter. At equal evaluations Euler on the ODE is the most accurate up to about 128; Heun overshoots the traps on coarse grids and pays off only from 256 on; Euler–Maruyama needs √h ≪ τ in its last step or its own jitter widens the clusters.</li>
+    <li data-i18n="lab-point-start"><b>Prior.</b> The lecture bounds the mismatch by the signal-to-noise ratio, KL(p<sub>T</sub> ‖ N(0, P(T) I)) ≤ ½ SNR(T) E‖x₀‖² (PDF p. 23, 26). Here SNR(T) = 1 / T; the bound is loose by an order of magnitude but has the right trend. The ODE is a bijection and carries whatever is wrong at T to t = 0; the SDE keeps injecting noise and pulling back with the full score, and forgets its start.</li>
+    <li data-i18n="lab-point-score"><b>Score.</b> A constant bias moves mass between modes and shifts the whole distribution; smoothing keeps the mode masses and widens every mode. The family multiplies the score, and hence the bias, by (1 + η²)/2, so in this toy the SDE is <em>more</em> sensitive to a constant bias than the ODE. The usual robustness argument for stochastic sampling concerns errors that fluctuate and average out, which a constant bias does not.</li>
+    <li data-i18n="lab-point-grid"><b>Discretization.</b> The score is stiff: ‖∇ log p<sub>t</sub>‖ grows like 1 / (τ² + t), so the last steps near t = 0 decide the result. At equal evaluations Euler on the ODE is the most accurate up to about 128; Heun overshoots on coarse grids and pays off only from 256 on; Euler–Maruyama needs √h ≪ τ in its last step or its own noise widens the modes.</li>
   </ul>
 </section>
 
@@ -157,37 +157,37 @@
 <section id="budget" class="chapter">
   <div class="chapter-number">4. PUTTING IT TOGETHER</div>
   <h2 data-i18n="budget-title">The error budget</h2>
-  <p data-i18n="budget-intro">Each panel sweeps one knob with the other two substitutions switched off, for both ends of the family: the probability flow ODE with Heun (η = 0, blue) and the reverse SDE with Euler–Maruyama (η = 1, red). The T sweep holds the step size h = 1/128 fixed so that a longer laser-off time is not confused with coarser pulses. 2048 particles per point; the dashed line is the floor for 2048 exact draws.</p>
+  <p data-i18n="budget-intro">Each panel sweeps one knob with the other two substitutions switched off, for both ends of the family: the probability flow ODE with Heun (η = 0, blue) and the reverse SDE with Euler–Maruyama (η = 1, red). The T sweep holds h = 1/128 fixed so that a longer forward time is not confused with a coarser grid. 2048 samples per point; the dashed line is the value for 2048 exact draws.</p>
   <div class="experiment">
     <div class="experiment-heading"><h3 data-i18n="budget-view">One knob at a time</h3><span class="mode-label">PRECOMPUTED · RECOMPUTABLE</span></div>
     <div class="sweep-grid">
-      <div><h3 data-i18n="sw-T">Start from N(0, T I) · capture error vs T</h3><canvas id="sweep-T" role="img"></canvas></div>
-      <div><h3 data-i18n="sw-bias">Drift · capture error vs b<sub>x</sub></h3><canvas id="sweep-bias" role="img"></canvas></div>
-      <div><h3 data-i18n="sw-smooth">Defocus · spread ratio vs δ</h3><canvas id="sweep-smooth" role="img"></canvas></div>
-      <div><h3 data-i18n="sw-nfe">Pulses · spread ratio vs evaluations</h3><canvas id="sweep-nfe" role="img"></canvas></div>
+      <div><h3 data-i18n="sw-T">Prior · mode mass error against T</h3><canvas id="sweep-T" role="img"></canvas></div>
+      <div><h3 data-i18n="sw-bias">Score bias · mode mass error against b<sub>x</sub></h3><canvas id="sweep-bias" role="img"></canvas></div>
+      <div><h3 data-i18n="sw-smooth">Score smoothing · spread ratio against δ</h3><canvas id="sweep-smooth" role="img"></canvas></div>
+      <div><h3 data-i18n="sw-nfe">Discretization · spread ratio against evaluations</h3><canvas id="sweep-nfe" role="img"></canvas></div>
     </div>
     <div class="experiment-bottom"><button id="sweep-run"><span data-i18n="btn-recompute">Recompute in this browser</span></button><span class="live-note" id="sweep-status"></span></div>
   </div>
-  <p data-i18n="budget-note" class="caption">The budget is not additive. A drift that moves mass to the wrong trap cannot be repaired by more pulses, and coarse pulses cannot be repaired by a longer laser-off time. The two substitutions that move mass (start, drift) and the two that widen it (defocus, pulses) separate cleanly in the two metrics.</p>
+  <p data-i18n="budget-note" class="caption">The budget is not additive. A bias that moves mass to the wrong mode cannot be repaired by more steps, and a coarse grid cannot be repaired by a longer forward time. The two substitutions that move mass (prior, bias) and the two that widen it (smoothing, grid) separate in the two metrics.</p>
 </section>
 
 <!-- 5 -->
 <section id="flow" class="chapter">
   <div class="chapter-number">5. THE SAME THREE, ELSEWHERE</div>
-  <h2 data-i18n="flow-title">What flow matching changes, and what it does not</h2>
-  <p data-i18n="flow-intro">Flow matching never writes a score, yet for a Gaussian source the field it learns is one: the conditional velocity is an affine function of the conditional score, and averaging over the posterior turns it into the marginal score. With the matched schedule α<sub>s</sub> = b<sub>T−s</sub>, σ<sub>s</sub> = a<sub>T−s</sub> the flow-matching ODE is a probability flow ODE on (0, T).</p>
+  <h2 data-i18n="flow-title">Flow matching is a probability flow ODE</h2>
+  <p data-i18n="flow-intro">For a Gaussian source the field that flow matching learns is a score in other letters: the conditional velocity is an affine function of the conditional score, and averaging over the posterior turns it into the marginal score. With the matched schedule α<sub>s</sub> = b<sub>T−s</sub>, σ<sub>s</sub> = a<sub>T−s</sub>, the flow-matching ODE and the probability flow ODE of that diffusion coincide in distribution on (0, T).</p>
   <div class="equation" role="math" data-equation="fm">v<sub>t</sub>(x) = <span data-link="fm-drift">(ḃ<sub>t</sub> / b<sub>t</sub>) x</span> + <span data-link="fm-score">a<sub>t</sub>² (ḃ<sub>t</sub>/b<sub>t</sub> − ȧ<sub>t</sub>/a<sub>t</sub>) ∇ log p<sub>t</sub>(x)</span></div>
   <p class="caption equation-source" data-i18n="flow-source">And the marginal velocity is a marginal score · Flow-based notes, PDF p. 64 · identification on the open interval p. 69, 74.</p>
   <ul class="concept-points">
-    <li data-i18n="flow-point-1"><b>The start</b> is no longer an approximation: the interpolant reaches the prior exactly at t = 0 because b₀ = 0. The price is paid by the matched diffusion, whose coefficients diverge at that endpoint; a diffusion cannot reach N(0, I) in finite time.</li>
-    <li data-i18n="flow-point-2"><b>The field</b> error becomes a velocity error. Conditional flow matching regresses on ȧ<sub>t</sub>x₀ + ḃ<sub>t</sub>x<sub>T</sub> and its minimiser is the marginal velocity, by the same conditional-expectation argument that makes denoising score matching work.</li>
-    <li data-i18n="flow-point-3"><b>The steps</b> are unchanged. Straight conditional paths do not make the marginal trajectories straight; the solver still follows a curve.</li>
+    <li data-i18n="flow-point-1"><b>The prior</b> is no longer an approximation: the interpolant reaches p<sub>prior</sub> exactly at t = 0 because b₀ = 0. The price is paid by the matched diffusion, whose coefficients diverge at that endpoint; a diffusion cannot reach N(0, I) in finite time.</li>
+    <li data-i18n="flow-point-2"><b>The score</b> error becomes a velocity error. Conditional flow matching regresses on ȧ<sub>t</sub>x₀ + ḃ<sub>t</sub>x<sub>T</sub>, and its minimiser is the marginal velocity by the same conditional-expectation argument that makes denoising score matching work.</li>
+    <li data-i18n="flow-point-3"><b>The discretization</b> is unchanged. Straight conditional paths do not make the marginal trajectories straight; the solver still follows a curve.</li>
   </ul>
   <div class="notes">
-    <h3 data-i18n="limits-title">Where the correspondence stops</h3>
-    <p data-i18n="limits-body">A real optical trap pulls with a force proportional to ∇I for a small particle; here the force is ∇ log p<sub>t</sub>, which coincides with the linear restoring force of a single Gaussian beam but is a posterior-weighted sum for the array. The light is sharpened on the variance-exploding schedule τ² + t, which is a mathematical choice, not an experimental one. Defocus and drift stand in for the unknown error of a trained network because their effects can be predicted and checked, not because they are typical. The time grid is uniform; non-uniform spacing is a standard remedy for the stiffness in 3 and is left out as outside the lecture material.</p>
+    <h3 data-i18n="limits-title">Scope and the optical-trap reading</h3>
+    <p data-i18n="limits-body">The toy can be read as a holographic array of optical traps: light intensity p<sub>t</sub>, particles in a fluid, Brownian motion when the light is off, a restoring force when it is on, a defocused beam for δ and a sideways flow for b. The reading is exact for one Gaussian beam, whose gradient force is linear in the displacement, and loose for the array, where the real force is ∝ ∇I while the sampler follows ∇ log p<sub>t</sub>. The schedule τ² + t is a mathematical choice. Bias and smoothing stand in for the unknown error of a trained network because their effects can be predicted and checked, not because they are typical. The time grid is uniform; non-uniform spacing is a standard remedy for the stiffness in 3 and lies outside the lecture material.</p>
     <h3 data-i18n="scope-title">Model and sources</h3>
-    <p data-i18n="scope-body">Toy: 48 Gaussians, τ = 0.06, site pitch 0.22, forward dx = dw. Closed forms for p<sub>t</sub>, ∇ log p<sub>t</sub>, cell masses and the x-marginal; KL by 140 × 140 quadrature; no neural network. Samplers: the η-family with Euler–Maruyama for η &gt; 0 and Euler or Heun for η = 0, seeded so every run replays. Tests (node --test) check the score against finite differences, the heat equation, the KL bound, cell masses against Monte Carlo, and marginal alignment of the family. Lecture notes: <em>Mathematical Principles of Diffusion Models</em>, Prof. Taesup Moon, Fall 2026 (Score SDE framework; Flow-based perspective; Differential-equations appendix), following Lai, Song, Kim, Mitsufuji and Ermon, <em>The Principles of Diffusion Models</em>, arXiv:2510.21890. Optical trapping: A. Ashkin et al., <em>Observation of a single-beam gradient force optical trap for dielectric particles</em>, Optics Letters 1986.</p>
+    <p data-i18n="scope-body">Toy: 48 Gaussians, τ = 0.06, pitch 0.22, forward dx = dw. Closed forms for p<sub>t</sub>, ∇ log p<sub>t</sub>, cell masses and the x-marginal; KL by 140 × 140 quadrature. Samplers: the η-family with Euler–Maruyama for η &gt; 0 and Euler or Heun for η = 0, seeded so every run replays. Tests (node --test) check the score against finite differences, the heat equation, the KL bound, cell masses against Monte Carlo, and marginal alignment of the family. Lecture notes: <em>Mathematical Principles of Diffusion Models</em>, Prof. Taesup Moon, Fall 2026 (Score SDE framework; Flow-based perspective; Differential-equations appendix), following Lai, Song, Kim, Mitsufuji and Ermon, <em>The Principles of Diffusion Models</em>, arXiv:2510.21890. Optical trapping: A. Ashkin et al., Optics Letters 1986.</p>
   </div>
 </section>
 </main>
