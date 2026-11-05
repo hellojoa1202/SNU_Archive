@@ -50,6 +50,16 @@ function cdf(x,t){const{b,v}=stats(t);return means.reduce((s,m)=>s+cdfNormal((x-
 function projection(x,t){const{b,v}=stats(t);return means.reduce((s,m)=>s+Math.exp(-((x-b*m[0])**2)/(2*v))/Math.sqrt(2*Math.PI*v),0)/3;}
 function discrepancy(points,t){const xs=points.map(p=>p[0]).sort((a,b)=>a-b);let d=0;xs.forEach((x,i)=>{const q=cdf(x,t);d=Math.max(d,Math.abs(i/xs.length-q),Math.abs((i+1)/xs.length-q));});return d;}
 function errorCurve(paths){return Array.from({length:33},(_,i)=>{const f=frame(paths,T0+(T1-T0)*i/32);return{t:f.time,d:discrepancy(f.points,f.time)};});}
-const api={T0,T1,MASTER,means,sigma,rng,stats,posterior,density,score,conditional,terms,velocity,dataset,solve,frame,projection,cdf,discrepancy,errorCurve};
+// Time-major frames keep scrubbing cheap and worker messages compact.
+function pack(paths){
+ const count=paths.length,steps=paths[0].length-1,frames=new Float32Array((steps+1)*count*2);
+ for(let k=0;k<=steps;k++)for(let i=0;i<count;i++)for(let j=0;j<2;j++)frames[(k*count+i)*2+j]=paths[i][k][j];
+ return{count,steps,frames,curve:errorCurve(paths)};
+}
+function packedFrame(film,t){
+ const index=Math.max(0,Math.min(film.steps,Math.round((t-T0)/(T1-T0)*film.steps))),offset=index*film.count*2;
+ return{index,time:T0+(T1-T0)*index/film.steps,points:Array.from({length:film.count},(_,i)=>[film.frames[offset+2*i],film.frames[offset+2*i+1]])};
+}
+const api={pack,packedFrame,T0,T1,MASTER,means,sigma,rng,stats,posterior,density,score,conditional,terms,velocity,dataset,solve,frame,projection,cdf,discrepancy,errorCurve};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.LightMath=api;
 })(globalThis);

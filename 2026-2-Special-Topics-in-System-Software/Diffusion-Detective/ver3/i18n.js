@@ -84,8 +84,8 @@ const LightText = {
     "ko": "가로 좌표의 밀도"
   },
   "densitynote": {
-    "en": "Blue : SDE · Red : ODE · Black dashed : analytic density. Finite samples and numerical integration leave visible discrepancies. The theorem concerns exact continuous-time processes.",
-    "ko": "파랑 : SDE · 빨강 : ODE · 검정 점선 : 해석적 밀도. 유한 표본과 수치 적분 때문에 차이가 남습니다. 분포 일치 정리는 정확한 연속 시간 과정에 관한 것입니다."
+    "en": "Blue : SDE · Red : ODE · Black dashed : analytic density. Bottom ticks locate the tracked light. Finite samples and integration leave discrepancies; marginal equality concerns exact continuous-time processes.",
+    "ko": "파랑 : SDE · 빨강 : ODE · 검정 점선 : 해석적 밀도. 아래 눈금은 추적 중인 광점의 위치입니다. 유한 표본·적분 오차가 남으며, 분포 일치는 정확한 연속 시간 과정에 관한 성질입니다."
   },
   "clocknote": {
     "en": "Equation clock s runs from data to noise; generation reads it backwards. The controls use t = 1 − s. The score coefficient changes together with the stochastic term.",
@@ -120,8 +120,8 @@ const LightText = {
     "ko": "같은 속도를 구하는 두 방식"
   },
   "geocaption": {
-    "en": "Click or drag the observation point. Thin lines are representative conditional paths. Their tangents need not agree. Darkness indicates posterior weight.",
-    "ko": "관측점을 클릭하거나 드래그할 수 있습니다. 가는 선은 조건부 경로의 대표 표본입니다. 경로마다 접선이 다르며, 진하기는 사후 가중치를 나타냅니다."
+    "en": "Drag the observation point or use the position sliders. Thin paths and velocity arrows share posterior weights through opacity. The red tangent marks the conditional mean direction.",
+    "ko": "관측점을 드래그하거나 위치 슬라이더를 조절할 수 있습니다. 경로와 속도 화살표의 진하기는 같은 사후 가중치에 대응합니다. 빨간 접선은 조건부 평균 방향입니다."
   },
   "velcaption": {
     "en": "Grey arrows : conditional velocities. Red : their weighted mean. Blue ring : the velocity computed from the score identity. Both use the same velocity scale.",
@@ -172,16 +172,16 @@ const LightText = {
     "ko": "후반 · t ≥ 0.5"
   },
   "errorS": {
-    "en": "Final exposure · SDE",
-    "ko": "마지막 순간 사진 · SDE"
+    "en": "Reverse SDE · current setting",
+    "ko": "Reverse SDE · 현재 설정"
   },
   "errorO": {
-    "en": "Final exposure · ODE",
-    "ko": "마지막 순간 사진 · ODE"
+    "en": "Probability Flow ODE · current setting",
+    "ko": "Probability Flow ODE · 현재 설정"
   },
   "errorcaption": {
-    "en": "The final exposure is at t = 0.95. Outlines remain the exact target density at that time. Only this experiment uses the bias controls; sections 1 and 2 remain exact-score references.",
-    "ko": "마지막 시각은 t = 0.95입니다. 등고선은 해당 시각의 정확한 기준 밀도입니다. 편향 조작은 이 실험에만 적용되며, 앞의 두 장면은 정확한 score 기준을 유지합니다."
+    "en": "Rows share the displayed grid time and coordinate scale. Change the time slider or drag the graph cursor to compare evolution. Dashed contours show the analytic density. Sections 1 and 2 keep the exact score.",
+    "ko": "두 행은 표시된 격자 시각과 좌표 척도를 공유합니다. 시간 슬라이더나 그래프 커서를 움직여 변화 과정을 비교할 수 있습니다. 점선 등고선은 해석적 밀도이며, 앞의 두 장면은 정확한 score를 유지합니다."
   },
   "errortitle": {
     "en": "Distribution discrepancy over time",
@@ -192,8 +192,8 @@ const LightText = {
     "ko": "가로 좌표의 경험적 CDF 거리"
   },
   "errorlegend": {
-    "en": "Solid : current setting · Faint dashed : exact-score, 1,024-step reference. Blue : SDE · Red : ODE. The metric is the largest gap between the empirical and analytic CDF of the horizontal coordinate; it does not measure full 2D agreement.",
-    "ko": "실선 : 현재 설정 · 옅은 점선 : 정확한 score, 1,024스텝 기준. 파랑 : SDE · 빨강 : ODE. 지표는 가로 좌표의 경험적 CDF와 해석적 CDF 사이 최대 차이이며, 전체 2차원 분포의 일치를 측정하지는 않습니다."
+    "en": "Solid : current setting · Faint dashed : exact-score, 1,024-step reference. Blue : SDE · Red : ODE. The cursor selects a snapshot time. This projected CDF distance measures the largest horizontal-coordinate CDF gap, not full 2D agreement.",
+    "ko": "실선 : 현재 설정 · 옅은 점선 : 정확한 score, 1,024스텝 기준. 파랑 : SDE · 빨강 : ODE. 커서는 비교할 순간 사진의 시각을 선택합니다. 지표는 가로 좌표 CDF의 최대 차이이며 전체 2차원 분포의 일치를 측정하지 않습니다."
   },
   "errorbody": {
     "en": "Both samplers share the initial samples. SDE step counts use sums of the same fine-grid Brownian increments. A nonzero gap can come from finite sampling, discretization or score error; stochasticity is not assumed to help in every setting.",
@@ -214,6 +214,26 @@ const LightText = {
   "notes": {
     "en": "Model & mathematical references",
     "ko": "모형과 수학적 근거"
+  },
+  "errorTime": {
+    "en": "Comparison time · shared across views",
+    "ko": "비교 시간 · 모든 장면에 연동"
+  },
+  "referenceRow": {
+    "en": "Reference · exact score, 1,024 steps",
+    "ko": "기준 · 정확한 score, 1,024스텝"
+  },
+  "settingRow": {
+    "en": "Current setting · shared initial samples",
+    "ko": "현재 설정 · 같은 초기 표본"
+  },
+  "updatesTitle": {
+    "en": "The step count acts on these updates",
+    "ko": "스텝 수가 바꾸는 수치 업데이트"
+  },
+  "stepsNote": {
+    "en": "Changing the grid changes Δs and h in the numerical updates. It does not change the underlying continuous-time equation. The SDE update reads diffusion time backwards; Heun follows generation time.",
+    "ko": "격자를 바꾸면 수치 업데이트의 Δs와 h가 달라집니다. 연속 시간 방정식 자체는 그대로입니다. SDE는 확산 시간을 거꾸로 읽고, Heun은 생성 시간을 따라 계산합니다."
   }
 } ;
 const lang=document.documentElement.lang==='ko'?'ko':'en';

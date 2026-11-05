@@ -6,7 +6,8 @@ This version studies three connected questions : how paths can differ while marg
 
 1. Play or scrub generation time; click a light or use the numbered slider. The snapshots and histories are always visible. Compare the horizontal histograms with the dashed analytic reference.
 2. Click/drag the observation point, or use the keyboard-accessible position sliders. The position panel shows conditional paths through that point. The velocity panel averages tangent vectors using posterior weights. The score identity gives the same result, marked with a blue ring. Dashed blue vectors show the linear contribution followed by the score contribution.
-3. Add a horizontal score bias, select its time interval, and change the integration step count. Only section 3 is perturbed. Reference curves use the exact score and 1,024 steps. The two language versions retain controls and the random seed through session storage.
+3. Add a horizontal score bias, select its time interval, and change the integration step count. The upper row shows exact-score reference snapshots; the lower row shows the current setting at the same grid time and scale. Scrub the comparison slider or drag the discrepancy-graph cursor to update all scene clocks. Only section 3 is perturbed. Reference curves use the exact score and 1,024 steps. The two language versions retain controls and the random seed through session storage.
+4. Step-count changes highlight the finite step sizes in the Euler–Maruyama and Heun updates. Score-bias changes highlight the estimated score in section 3 only. Observation and time changes highlight the relevant conditional-mean, interpolation and score terms.
 
 ## Model and numerical interpretation
 
@@ -35,3 +36,9 @@ The local PDF files are not redistributed. The analogy and analytic teaching imp
 ## Verification
 
 Run `node --test model.test.cjs` from this folder. Checks cover the analytic score via finite differences, posterior-mean identity, continuity residuals, density normalization, SDE/ODE projected marginals, shared Brownian increments, Heun refinement, time-local score perturbations, equation audit, and bilingual markup. Browser checks cover playback, selection, dragging, score/grid controls, language-state persistence, and narrow layouts.
+
+## Animation and cache
+
+The comparison worker stores the active seed's samples and fine-grid Brownian increments, plus the three most recent settings. Compact Float32 frame buffers retain every solver grid state; plots show the nearest grid point rather than interpolating stochastic paths. CDF curves are evaluated at 33 grid times; the movable cursor evaluates the selected snapshot directly, so its marker need not lie exactly on the line joining those sampled curve values. Reference snapshots use the same grid time as the current setting.
+
+Time scrubbing reads stored frames without solving again. New error/grid settings run in the worker; request IDs discard obsolete responses and the previous view is visibly dimmed while pending. Initial loading disables controls until reference frames exist. The direct-computation fallback is available when a browser cannot start the worker.
