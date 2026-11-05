@@ -89,7 +89,7 @@
     $('forward-time-out').textContent = fw.t.toFixed(4);
     $('forward-variance').textContent = fmt(M.variance(fw.t), 4);
     $('forward-contrast').textContent = fmt(P.slotContrast(fw.t), 3);
-    $('forward-snr').textContent = fw.t > 0 ? fmt(M.snr(fw.t), 2) : '∞';
+    $('forward-snr').textContent = fw.t > 1e-4 ? fmt(M.snr(fw.t), 2) : '∞';
     if (!visible($('forward-board'))) return;
     scene($('forward-board'), { t: fw.t, arrows: fw.arrows ? {} : null, label: `t = ${fw.t.toFixed(4)}` });
     const pts = marginalSeries(fw.t);
