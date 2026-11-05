@@ -46,12 +46,6 @@
   }
   function marginalSeries(t) { const pts = []; for (let i = 0; i <= 240; i++) { const x = -1.6 + 3.2 * i / 240; pts.push([x, M.marginalX(x, t)]); } return pts; }
 
-  /* equations: the LaTeX source sits in the HTML; \htmlData{link=...} becomes a data-link span */
-  for (const el of document.querySelectorAll('.equation[data-equation]')) {
-    if (!el.dataset.tex) el.dataset.tex = el.textContent.trim();
-    if (window.katex) { try { window.katex.render(el.dataset.tex, el, { displayMode: true, trust: true, strict: 'ignore', throwOnError: false }); } catch (e) { /* leave the source visible */ } }
-  }
-
   /* equation highlighting */
   const focusState = {};
   function applyFocus(equation) {
