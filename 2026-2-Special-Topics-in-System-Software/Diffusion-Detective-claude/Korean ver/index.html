@@ -7,6 +7,8 @@
 <meta name="description" content="Interactive course notes: the three approximations of a diffusion sampler (prior, score, time grid), measured one at a time on an analytic toy.">
 <title>Three Approximations of a Diffusion Sampler</title>
 <link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
 <script defer src="../model.js"></script>
 <script defer src="../sampler.js"></script>
 <script defer src="../budget.js"></script>
@@ -58,9 +60,9 @@
   <div class="chapter-number">1. THE FORWARD PROCESS</div>
   <h2 data-i18n="forward-title">The forward SDE and its marginals</h2>
   <p data-i18n="forward-intro">We use the variance-exploding SDE from the lecture, dx = dw, so f = 0, g = 1 and σ²(t) = t. The perturbation kernel is a Gaussian around the starting point, and the marginal p<sub>t</sub> averages it over the data.</p>
-  <div class="equation" role="math" data-equation="kernel">p<sub>t</sub>(x<sub>t</sub> | x<sub>0</sub>) = N(x<sub>t</sub> ; x<sub>0</sub>, [<span data-link="time">σ²(t) − σ²(0)</span>] I)</div>
+  <div class="equation" role="math" data-equation="kernel">p_t(x_t \mid x_0) = \mathcal N\big(x_t ;\, x_0,\ [\,\htmlData{link=time}{\sigma^2(t) - \sigma^2(0)}\,]\, I\big)</div>
   <p class="caption equation-source" data-i18n="kernel-source">Computing the kernel, variance exploding · Score SDE notes, p. 18.</p>
-  <div class="equation" role="math" data-equation="marginal">p<sub>t</sub>(x<sub>t</sub>) = <span data-link="mixture">∫ p<sub>t</sub>(x<sub>t</sub> | x<sub>0</sub>) p<sub>data</sub>(x<sub>0</sub>) dx<sub>0</sub></span></div>
+  <div class="equation" role="math" data-equation="marginal">p_t(x_t) = \htmlData{link=mixture}{\int p_t(x_t \mid x_0)\, p_{\mathrm{data}}(x_0)\, dx_0}</div>
   <p class="caption equation-source" data-i18n="forward-source">Marginal densities · Score SDE notes, p. 21. For our mixture the integral is the same mixture with variance τ² + t.</p>
   <p data-i18n="forward-p2">The modes are 0.22 apart, so they merge once √(τ² + t) reaches about half that, near t = 0.01. By t = 0.05 the density is one blob. SNR(t) = 1 / t says how much of x<sub>0</sub> is still in x<sub>t</sub>; it never reaches zero, which is the first approximation waiting to happen.</p>
   <div class="experiment">
@@ -84,24 +86,25 @@
   <div class="chapter-number">2. GENERATION</div>
   <h2 data-i18n="family-title">Reverse SDE and probability flow ODE share the marginals</h2>
   <p data-i18n="family-intro">Both equations pass through every p<sub>t</sub>: their Fokker–Planck equations are solved by the forward marginals. The reverse SDE uses the full score and fresh noise; the probability flow ODE uses half the score and no noise. Nothing is said about individual trajectories.</p>
-  <div class="equation" role="math" data-equation="reverse-sde">dx̄(t) = [ f(x̄(t), t) − <span data-link="score">g²(t) ∇ log p<sub>t</sub>(x̄(t))</span> ] dt + <span data-link="randomness">g(t) dw̄(t)</span>,&nbsp;&nbsp;&nbsp; x̄(T) ∼ p<sub>T</sub></div>
+  <div class="equation" role="math" data-equation="reverse-sde">d\bar x(t) = \big[\, f(\bar x(t), t) - \htmlData{link=score}{g(t)^2\, \nabla \log p_t(\bar x(t))} \,\big]\, dt + \htmlData{link=randomness}{g(t)\, d\bar w(t)}, \qquad \bar x(T) \sim p_T</div>
   <p class="caption equation-source" data-i18n="reverse-source">Reverse-time SDE · Score SDE notes, p. 63.</p>
-  <div class="equation" role="math" data-equation="pf-ode"><span class="frac"><span>dx̃(t)</span><span>dt</span></span> = f(x̃(t), t) − <span data-link="score"><span class="frac"><span>1</span><span>2</span></span> g²(t) ∇ log p<sub>t</sub>(x̃(t))</span></div>
+  <div class="equation" role="math" data-equation="pf-ode">\frac{d\tilde x(t)}{dt} = f(\tilde x(t), t) - \htmlData{link=score}{\frac{1}{2}\, g(t)^2\, \nabla \log p_t(\tilde x(t))}</div>
   <p class="caption equation-source" data-i18n="pfode-source">Probability flow ODE · Score SDE notes, p. 73.</p>
   <p data-i18n="family-p2">They are the two ends of one family. For every η ≥ 0 the process below has the same marginals: the extra ½ η² g² of score in the drift cancels the extra noise exactly. η = 1 is the reverse SDE, η = 0 the probability flow ODE.</p>
-  <div class="equation" role="math" data-equation="eta-family">dx̄(t) = [ f − <span data-link="eta"><span class="frac"><span>1 + η²</span><span>2</span></span></span> g² <span data-link="score">∇ log p<sub>t</sub></span> ] dt + <span data-link="randomness">η g dw̄(t)</span>,&nbsp;&nbsp;&nbsp; η ≥ 0</div>
+  <div class="equation" role="math" data-equation="eta-family">d\bar x(t) = \Big[\, f - \htmlData{link=eta}{\frac{1+\eta^2}{2}}\, g^2\, \htmlData{link=score}{\nabla \log p_t} \,\Big]\, dt + \htmlData{link=randomness}{\eta\, g\, d\bar w(t)}, \qquad \eta \ge 0</div>
   <p class="caption equation-source" data-i18n="family-source">One marginal family, many processes · Score SDE notes, p. 78.</p>
-  <div class="experiment" id="bench">
-    <div class="experiment-heading"><h3 data-i18n="bench-view">The same equation on an optical bench</h3><span class="mode-label">AUTO + MANUAL</span></div>
-    <p data-i18n="bench-p1" class="caption">Optical tweezers hold a bead in water at the focus of a laser; the light pulls it back towards the focus and the water shakes it. That is the reverse SDE with potential U<sub>t</sub> = −log p<sub>t</sub>: near a mode the well is harmonic with stiffness 1 / (τ² + t), so each of the 48 modes is one trap and lowering t tightens all of them. The drift term is the force of the light, the noise term is the water, η is its temperature. Between traps the picture is loose: the force here is ∇ log p<sub>t</sub>, which always hands a bead to a neighbour, while real beams have dark gaps.</p>
-    <div class="playback"><button id="bench-play"></button><button id="bench-again"><span data-i18n="btn-beads">New beads</span></button><label class="inline-check"><input type="checkbox" id="bench-force"><span data-i18n="bench-force">force of the light on each bead</span></label></div>
-    <div class="controls">
-      <label for="bench-progress"><span data-i18n="progress">Generation progress</span><output id="bench-progress-out"></output><input type="range" id="bench-progress" min="0" max="1" step="0.004" value="0"></label>
-      <label for="bench-eta"><span data-i18n="bench-bath">Thermal bath</span><select id="bench-eta"><option value="1" selected data-i18n="bench-eta1">η = 1 · bead in water (reverse SDE)</option><option value="0" data-i18n="bench-eta0">η = 0 · bath off (probability flow ODE)</option></select></label>
+  <div class="experiment" id="anneal">
+    <div class="experiment-heading"><h3 data-i18n="anneal-view">Annealing: the same equation as a cooling crystal</h3><span class="mode-label">AUTO + MANUAL</span></div>
+    <p data-i18n="anneal-p1" class="caption">Molten metal cooled slowly crystallises: every atom finds a lattice site. Cooled too fast it is quenched, with atoms stranded between sites and sites left empty. Near a site, p<sub>t</sub> is a Gaussian of width τ² + t, which is a harmonic well at temperature τ² + t, so the forward time is the temperature: t = 1 is the melt and t = 0 the cold crystal. Read this way, the score is the force of the lattice, η g dw̄ is the thermal motion, the time grid is the cooling schedule, and the prior is how hot the melt was to begin with. The lecture's annealed Langevin dynamics is this picture made literal.</p>
+    <div class="playback"><button id="anneal-play"></button><button id="anneal-again"><span data-i18n="btn-melt">New melt</span></button><label class="inline-check"><input type="checkbox" id="anneal-defects" checked><span data-i18n="anneal-defects">mark defects</span></label></div>
+    <div class="controls three">
+      <label for="anneal-progress"><span data-i18n="anneal-progress">Cooling progress</span><output id="anneal-progress-out"></output><input type="range" id="anneal-progress" min="0" max="1" step="0.004" value="0"></label>
+      <label><span data-i18n="anneal-rate">Cooling schedule</span><select id="anneal-steps"><option value="256" data-i18n="rate-slow">slow · 256 steps</option><option value="32" data-i18n="rate-fast">fast · 32 steps</option><option value="8" data-i18n="rate-quench">quench · 8 steps</option></select></label>
+      <label><span data-i18n="anneal-eta">Thermal motion</span><select id="anneal-eta"><option value="1" data-i18n="anneal-eta1">η = 1 · on (reverse SDE)</option><option value="0" data-i18n="anneal-eta0">η = 0 · off (probability flow ODE)</option></select></label>
     </div>
-    <canvas id="bench-board" class="bench-board" role="img"></canvas>
-    <div class="metric-grid compact"><div><span data-i18n="m-stiffness">trap stiffness 1 / (τ² + t)</span><output id="bench-stiffness"></output></div><div><span data-i18n="m-captured">beads within 3τ of a trap centre</span><output id="bench-captured"></output></div><div><span>η</span><output id="bench-eta-out"></output></div></div>
-    <p data-i18n="bench-legend" class="caption">Brightness: p<sub>t</sub>, rescaled at each time. Dots: 24 beads started from p<sub>1</sub>, with short trails. Arrows: the drift (1 + η²)/2 · g² ∇ log p<sub>t</sub>, scaled by τ² + t so that in one trap it is the displacement to the centre.</p>
+    <canvas id="anneal-board" class="anneal-board" role="img"></canvas>
+    <div class="metric-grid compact"><div><span data-i18n="m-temp">temperature τ² + t</span><output id="anneal-temp"></output></div><div><span data-i18n="m-onsite">atoms on a site (within 3τ)</span><output id="anneal-onsite"></output></div><div><span data-i18n="m-defects">defective sites at the end</span><output id="anneal-defect-count"></output></div></div>
+    <p data-i18n="anneal-legend" class="caption">512 atoms from the melt p<sub>1</sub>, cooled with the η-family. Gray rings: the 48 lattice sites at the current thermal width. Once cold, sites with far too many or too few atoms are ringed red and stranded atoms are orange. Slow cooling gives a clean crystal; a quench with the same equation does not.</p>
   </div>
   <div class="experiment">
     <div class="experiment-heading"><h3 data-i18n="family-view">Follow one particle. Compare the whole population.</h3><span class="mode-label">AUTO + MANUAL</span></div>
@@ -127,11 +130,11 @@
   <div class="chapter-number">3. THE THREE APPROXIMATIONS</div>
   <h2 data-i18n="lab-title">Prior, score, discretization: one substitution at a time</h2>
   <p data-i18n="lab-intro">A sampler starts from the prior instead of p<sub>T</sub>, evaluates a trained network s<sub>ϕ<sup>×</sup></sub> instead of ∇ log p<sub>t</sub>, and takes finite steps. The lecture writes the generative equations with these replacements and notes that they are the only three approximations.</p>
-  <div class="equation" role="math" data-equation="oracle">dx̄ = [ f − g² <span data-link="score-term">s<sub>ϕ<sup>×</sup></sub>(x̄, t)</span> ] dt + g dw̄,&nbsp;&nbsp;&nbsp; <span class="frac"><span>dx̃</span><span>dt</span></span> = f − <span class="frac"><span>1</span><span>2</span></span> g² <span data-link="score-term">s<sub>ϕ<sup>×</sup></sub>(x̃, t)</span>,&nbsp;&nbsp;&nbsp; <span data-link="start">x̄(T), x̃(T) ∼ p<sub>prior</sub></span></div>
+  <div class="equation" role="math" data-equation="oracle">\begin{aligned} d\bar x &= \big[\, f(\bar x, t) - g^2(t)\, \htmlData{link=score-term}{s_{\phi^\times}(\bar x, t)} \,\big]\, dt + g(t)\, d\bar w, \qquad & \htmlData{link=start}{\bar x(T) \sim p_{\mathrm{prior}}} \\[2pt] \frac{d\tilde x}{dt} &= f(\tilde x, t) - \frac{1}{2}\, g^2(t)\, \htmlData{link=score-term}{s_{\phi^\times}(\tilde x, t)}, & \htmlData{link=start}{\tilde x(T) \sim p_{\mathrm{prior}}} \end{aligned}</div>
   <p class="caption equation-source" data-i18n="lab-source">From the oracle to the model · Score SDE notes, p. 86.</p>
-  <div class="equation" role="math" data-equation="em-step">x<sub>t−Δt</sub> ← x<sub>t</sub> − [ f(x<sub>t</sub>, t) − g²(t) <span data-link="score-term">s<sub>ϕ<sup>×</sup></sub>(x<sub>t</sub>, t)</span> ] <span data-link="grid">Δt</span> + g(t) <span data-link="grid">√Δt</span> z</div>
+  <div class="equation" role="math" data-equation="em-step">x_{t-\Delta t} \leftarrow x_t - \big[\, f(x_t, t) - g^2(t)\, \htmlData{link=score-term}{s_{\phi^\times}(x_t, t)} \,\big]\, \htmlData{link=grid}{\Delta t} + g(t)\, \htmlData{link=grid}{\sqrt{\Delta t}}\, z</div>
   <p class="caption equation-source" data-i18n="em-source">Euler–Maruyama step · Score SDE notes, p. 87. The Euler step of the ODE drops the noise and halves the score term; Heun adds a second evaluation per step (appendix p. 16).</p>
-  <div class="equation" role="math" data-equation="kl-bound"><span data-link="start">D<sub>KL</sub>(p<sub>T</sub> ‖ N(0, P(T) I)) ≤ <span class="frac"><span>1</span><span>2</span></span> SNR(T) E‖x<sub>0</sub>‖²</span>,&nbsp;&nbsp;&nbsp; SNR(T) = <span class="frac"><span>E(0→T)²</span><span>P(T)</span></span></div>
+  <div class="equation" role="math" data-equation="kl-bound">\htmlData{link=start}{D_{\mathrm{KL}}\big(p_T \,\|\, \mathcal N(0, P(T)\, I)\big) \le \frac{1}{2}\, \mathrm{SNR}(T)\, \mathbb E\lVert x_0\rVert^2}, \qquad \mathrm{SNR}(T) = \frac{E(0 \to T)^2}{P(T)}</div>
   <p class="caption equation-source" data-i18n="kl-source">The residue is the signal-to-noise ratio · Score SDE notes, p. 23, 26. Here E ≡ 1, P(T) = T, so SNR(T) = 1 / T.</p>
   <p data-i18n="lab-p2">The prior and the grid are reproduced exactly as a sampler makes them. The toy has no trained network, so two controlled errors stand in for it: a smoothing δ, which evaluates the exact score at t + δ, and a constant bias b. The sampler then sees ∇ log p<sub>t+δ</sub>(x) + b.</p>
   <div class="experiment">
@@ -205,7 +208,7 @@
   <div class="chapter-number">5. THE SAME THREE, ELSEWHERE</div>
   <h2 data-i18n="flow-title">Flow matching is a probability flow ODE</h2>
   <p data-i18n="flow-intro">With a Gaussian source the conditional velocity of flow matching is an affine function of the conditional score, and averaging over the posterior makes the marginal velocity a drift plus a multiple of ∇ log p<sub>t</sub>. With the matched schedule α<sub>s</sub> = b<sub>T−s</sub>, σ<sub>s</sub> = a<sub>T−s</sub> the flow-matching ODE and the probability flow ODE agree on (0, T).</p>
-  <div class="equation" role="math" data-equation="fm">v<sub>t</sub>(x) = <span data-link="fm-drift"><span class="frac"><span>ḃ<sub>t</sub></span><span>b<sub>t</sub></span></span> x</span> + <span data-link="fm-score">a<sub>t</sub>² ( <span class="frac"><span>ḃ<sub>t</sub></span><span>b<sub>t</sub></span></span> − <span class="frac"><span>ȧ<sub>t</sub></span><span>a<sub>t</sub></span></span> ) ∇ log p<sub>t</sub>(x)</span></div>
+  <div class="equation" role="math" data-equation="fm">v_t(x) = \htmlData{link=fm-drift}{\frac{\dot b_t}{b_t}\, x} + \htmlData{link=fm-score}{a_t^2 \Big( \frac{\dot b_t}{b_t} - \frac{\dot a_t}{a_t} \Big) \nabla \log p_t(x)}</div>
   <p class="caption equation-source" data-i18n="flow-source">The marginal velocity is a marginal score · Flow-based notes, p. 64; identification on the open interval, p. 69, 74.</p>
   <p data-i18n="flow-p2">So a flow-matching sampler is a probability flow ODE sampler and makes the same three substitutions.</p>
   <ul class="concept-points">
@@ -215,9 +218,9 @@
   </ul>
   <div class="notes">
     <h3 data-i18n="limits-title">Scope</h3>
-    <p data-i18n="limits-body">The optical reading is exact for one Gaussian beam, whose gradient force is linear in the displacement, and loose for the array, where the physical force is proportional to ∇I while the sampler follows ∇ log p<sub>t</sub>. Bias and smoothing stand in for the unknown error of a trained network because their effects can be predicted and checked. The time grid is uniform.</p>
+    <p data-i18n="limits-body">The crystal picture is exact as far as it goes: near a site p<sub>t</sub> is a Boltzmann weight in a harmonic well at temperature τ² + t. It says nothing about the forces between sites, which in the sampler are set by the mixture and in a metal by chemistry. Bias and smoothing stand in for the unknown error of a trained network because their effects can be predicted and checked. The time grid is uniform.</p>
     <h3 data-i18n="scope-title">Model and sources</h3>
-    <p data-i18n="scope-body">Toy: 48 Gaussians, τ = 0.06, pitch 0.22, forward dx = dw. Closed forms for p<sub>t</sub>, ∇ log p<sub>t</sub>, cell masses and the x-marginal; KL by quadrature. Samplers: the η-family with Euler–Maruyama for η &gt; 0 and Euler or Heun for η = 0, seeded. Tests (node --test) check the score against finite differences, the heat equation, the KL bound, the cell masses and the marginal alignment of the family. Lecture notes: <em>Mathematical Principles of Diffusion Models</em>, Prof. Taesup Moon, Fall 2026, following Lai, Song, Kim, Mitsufuji and Ermon, <em>The Principles of Diffusion Models</em>, arXiv:2510.21890. Optical trapping: Ashkin et al., Optics Letters 1986.</p>
+    <p data-i18n="scope-body">Toy: 48 Gaussians, τ = 0.06, pitch 0.22, forward dx = dw. Closed forms for p<sub>t</sub>, ∇ log p<sub>t</sub>, cell masses and the x-marginal; KL by quadrature. Samplers: the η-family with Euler–Maruyama for η &gt; 0 and Euler or Heun for η = 0, seeded. Tests (node --test) check the score against finite differences, the heat equation, the KL bound, the cell masses and the marginal alignment of the family. Lecture notes: <em>Mathematical Principles of Diffusion Models</em>, Prof. Taesup Moon, Fall 2026, following Lai, Song, Kim, Mitsufuji and Ermon, <em>The Principles of Diffusion Models</em>, arXiv:2510.21890. Annealed Langevin dynamics: Song and Ermon, NeurIPS 2019.</p>
   </div>
 </section>
 </main>
