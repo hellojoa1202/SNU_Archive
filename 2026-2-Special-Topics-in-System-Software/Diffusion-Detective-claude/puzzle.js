@@ -120,32 +120,33 @@
     c.restore();
   }
 
-  /** Jigsaw piece k drawn at its own slot with the matching tile of the photograph. */
-  function piece(f, k, alpha = 1, selected = false) {
+  /** Jigsaw piece k, carrying tile k of the photograph, drawn at position `pos`. */
+  function piece(f, k, pos, alpha = 1, selected = false) {
     const { c, scale } = f;
-    const [x, y] = M.centers[k];
+    const [sx, sy] = M.centers[k];
     c.save();
     c.globalAlpha = Math.max(0, Math.min(1, alpha));
-    c.translate(x, y);
+    c.translate(pos[0], pos[1]);
     c.fillStyle = '#fff';
     c.fill(paths[k]);
     if (photo.naturalWidth) {
       c.save();
       c.clip(paths[k]);
-      // the photograph covers the whole board; flip y because the context has y up
+      // the photograph covers the whole board; tile k is the part under slot k
       c.scale(1, -1);
-      c.drawImage(photo, 0, 0, photo.naturalWidth, photo.naturalHeight, M.board.left - x, -(M.board.top - y), M.board.right - M.board.left, M.board.top - M.board.bottom);
+      c.drawImage(photo, 0, 0, photo.naturalWidth, photo.naturalHeight, M.board.left - sx, -(M.board.top - sy), M.board.right - M.board.left, M.board.top - M.board.bottom);
       c.restore();
     }
     c.strokeStyle = selected ? RED : 'rgba(255,255,255,.9)';
     c.lineWidth = (selected ? 2.2 : 0.7) / scale;
     c.stroke(paths[k]);
+    if (!selected) { c.strokeStyle = 'rgba(23,40,62,.18)'; c.lineWidth = 0.5 / scale; c.stroke(paths[k]); }
     c.restore();
   }
 
-  /** All 48 pieces, piece k at opacity reveal[k] (a number, or one number for all). */
-  function pieces(f, reveal, selected = -1) {
-    for (let k = 0; k < M.K; k++) piece(f, k, typeof reveal === 'number' ? reveal : reveal[k], k === selected);
+  /** The 48 pieces at the given positions (array of [x, y]); `alpha` is one number or an array. */
+  function pieces(f, positions, alpha = 1, selected = -1) {
+    for (let k = 0; k < M.K; k++) piece(f, k, positions[k], Array.isArray(alpha) ? alpha[k] : alpha, k === selected);
   }
 
   /* ---- outline-only density contours (marching squares on a cached grid) */

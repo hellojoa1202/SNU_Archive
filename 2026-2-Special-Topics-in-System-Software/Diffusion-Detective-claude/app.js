@@ -41,11 +41,6 @@
     for (let n = 0; n < xs.length; n++) { xs[n] = a.xs[n] + w * (b.xs[n] - a.xs[n]); ys[n] = a.ys[n] + w * (b.ys[n] - a.ys[n]); }
     return { t: a.t + w * (b.t - a.t), xs, ys };
   }
-  function reveal(xs, ys) {
-    const f = S.slotFrequencies(xs, ys);
-    const m = M.slotMasses(0);
-    return Array.from(f, (v, k) => Math.min(1, v / m[k]));
-  }
   function marginalSeries(t) { const pts = []; for (let i = 0; i <= 240; i++) { const x = -1.6 + 3.2 * i / 240; pts.push([x, M.marginalX(x, t)]); } return pts; }
 
   /* equation highlighting: persistent focus per equation + a short flash */
@@ -63,27 +58,32 @@
   function setFocus(equation, names) { focusState[equation] = names; focus(equation, names); }
   function restoreFocus() { for (const [eq, names] of Object.entries(focusState)) focus(eq, names); }
 
-  /** Draw one scene: board or contours, then pieces (puzzle) and sample dots. */
-  function scene(canvas, { t, xs = null, ys = null, colors = null, revealMap = null, arrows = null, selected = -1, path = null, label = '' }) {
+  /** Draw one scene: board (or contours), the other samples as dots, then the 48 tracked pieces. */
+  function scene(canvas, { t, xs = null, ys = null, colors = null, piecePositions = null, arrows = null, selected = -1, path = null, label = '' }) {
     const f = P.frame(canvas);
-    if (shared.lens === 'contour') {
-      P.contours(f, t);
-      P.board(f, 0.5);
-    } else {
-      P.board(f, 1);
-      P.pieces(f, revealMap || P.slotContrast(t));
-    }
-    if (arrows) P.arrows(f, t, arrows.error || null, shared.lens === 'contour' ? 'rgba(23,40,62,.5)' : 'rgba(23,40,62,.38)');
+    if (shared.lens === 'contour') { P.contours(f, t); P.board(f, 0.6); } else P.board(f, 1);
+    if (arrows) P.arrows(f, t, arrows.error || null, 'rgba(23,40,62,.42)');
     if (path) P.line(f, path, P.RED, 1.6);
     let shown = 0;
-    if (xs) shown = P.dots(f, xs, ys, { colors, r: shared.lens === 'contour' ? 2 : 2.1 });
-    if (selected >= 0 && xs) { P.dot(f, [xs[selected], ys[selected]], '#fff', 6); P.dot(f, [xs[selected], ys[selected]], P.RED, 4); }
-    if (label) P.text(f, label + (xs && shown < xs.length ? `  ·  ${shown} / ${xs.length}` : ''), [P.WINDOW.x0 + 0.03, P.WINDOW.y1 - 0.05], P.INK, 10);
+    if (xs && xs.length > M.K) {
+      const rest = { xs: xs.subarray(M.K), ys: ys.subarray(M.K) };
+      shown = P.dots(f, rest.xs, rest.ys, { colors: colors ? colors.slice(M.K) : null, color: shared.lens === 'contour' ? P.BLUE : 'rgba(96,133,173,.75)', r: 1.8, max: 552 });
+    }
+    if (piecePositions) P.pieces(f, piecePositions, 1, selected);
+    if (label) P.text(f, label + (xs && xs.length > M.K ? `  ·  48 + ${shown} / ${xs.length}` : ''), [P.WINDOW.x0 + 0.03, P.WINDOW.y1 - 0.05], P.INK, 10);
     return f;
   }
+  const positionsOf = (fr) => Array.from({ length: M.K }, (_, k) => [fr.xs[k], fr.ys[k]]);
 
   /* ================================================================ 1 forward */
-  const fw = { t: 0, playing: !reduced, arrows: false };
+  const fw = { t: 0, playing: !reduced, arrows: false, seed: 3, paths: S.shakePaths(160, 3) };
+  function shakenPositions(t) {
+    const steps = fw.paths[0].length - 1;
+    const u = Math.min(1, t) * steps;
+    const i = Math.min(steps - 1, Math.floor(u));
+    const w = u - i;
+    return fw.paths.map((p) => [p[i][0] + w * (p[i + 1][0] - p[i][0]), p[i][1] + w * (p[i + 1][1] - p[i][1])]);
+  }
   function drawForward() {
     $('forward-time').value = timeToSlider(fw.t);
     $('forward-time-out').textContent = fw.t.toFixed(4);
@@ -91,19 +91,19 @@
     $('forward-contrast').textContent = fmt(P.slotContrast(fw.t), 3);
     $('forward-snr').textContent = fw.t > 1e-4 ? fmt(M.snr(fw.t), 2) : '∞';
     if (!visible($('forward-board'))) return;
-    scene($('forward-board'), { t: fw.t, arrows: fw.arrows ? {} : null, label: `t = ${fw.t.toFixed(4)}` });
+    scene($('forward-board'), { t: fw.t, piecePositions: shakenPositions(fw.t), arrows: fw.arrows ? {} : null, label: `t = ${fw.t.toFixed(4)}` });
     const pts = marginalSeries(fw.t);
     P.plot($('forward-marginal'), [{ points: pts, color: P.BLUE, label: txt('lbl-marginal'), fill: true }], { xlabel: 'x', yrange: [0, Math.max(0.5, 1.08 * Math.max(...pts.map((p) => p[1])))] });
   }
   $('forward-time').addEventListener('input', () => { fw.playing = false; setPlay($('forward-play'), false); fw.t = sliderToTime(+$('forward-time').value); flash(['time']); drawForward(); });
-  $('forward-play').addEventListener('click', () => { if (fw.t >= 1) fw.t = 0; fw.playing = !fw.playing; setPlay($('forward-play'), fw.playing); });
+  $('forward-play').addEventListener('click', () => { if (fw.t >= 1) { fw.t = 0; fw.seed++; fw.paths = S.shakePaths(160, fw.seed); } fw.playing = !fw.playing; setPlay($('forward-play'), fw.playing); });
   $('forward-arrows').addEventListener('change', () => { fw.arrows = $('forward-arrows').checked; flash(['mixture']); drawForward(); });
   setFocus('marginal', ['time']);
 
   /* ================================================================= 2 family */
   const fam = { eta: 1, progress: 0, playing: !reduced, startSeed: 11, noiseSeed: 23, colors: true, run: null, selected: -1 };
   function familyRun() {
-    fam.run = S.run({ T: 1, eta: fam.eta, steps: 256, count: 1024, startSeed: fam.startSeed, noiseSeed: fam.noiseSeed, exactStart: true, trackPaths: 1024, snapshots: 60 });
+    fam.run = S.run({ T: 1, eta: fam.eta, steps: 256, count: 1024, startSeed: fam.startSeed, noiseSeed: fam.noiseSeed, exactStart: true, trackPaths: M.K, snapshots: 60 });
     fam.colorList = P.startColors(fam.run.startXs, fam.run.startYs);
     fam.err = S.slotError(fam.run.xs, fam.run.ys);
     $('family-tv').textContent = fmt(fam.err.tv);
@@ -120,7 +120,7 @@
     if (!visible($('family-board'))) return;
     const upto = Math.floor((1 - fr.t) * 256) + 1;
     const path = fam.selected >= 0 ? fam.run.paths[fam.selected].slice(0, upto) : null;
-    scene($('family-board'), { t: fr.t, xs: fr.xs, ys: fr.ys, colors: fam.colors ? fam.colorList : null, revealMap: reveal(fr.xs, fr.ys), selected: fam.selected, path, label: `η = ${fam.eta.toFixed(2)} · t = ${fr.t.toFixed(3)}` });
+    scene($('family-board'), { t: fr.t, xs: fr.xs, ys: fr.ys, colors: fam.colors ? fam.colorList : null, piecePositions: positionsOf(fr), selected: fam.selected, path, label: `η = ${fam.eta.toFixed(2)} · t = ${fr.t.toFixed(3)}` });
     P.bars($('family-bars'), fam.err.frequencies, fam.err.masses, { left: txt('lbl-slots') });
   }
   $('family-eta').addEventListener('input', () => { fam.eta = +$('family-eta').value; flash(['eta', 'randomness']); familyRun(); drawFamily(); });
@@ -133,7 +133,7 @@
     const [wx, wy] = P.point($('family-board'), e);
     const fr = frameAtTime(fam.run, progressToTime(fam.progress, 1));
     let best = Infinity;
-    for (let n = 0; n < Math.min(600, fr.xs.length); n++) { const d = Math.hypot(fr.xs[n] - wx, fr.ys[n] - wy); if (d < best) { best = d; fam.selected = n; } }
+    for (let n = 0; n < M.K; n++) { const d = Math.hypot(fr.xs[n] - wx, fr.ys[n] - wy); if (d < best) { best = d; fam.selected = n; } }
     drawFamily();
   });
   setFocus('eta-family', ['score', 'randomness']);
@@ -169,7 +169,7 @@
     $('lab-progress-out').textContent = `${txt('lbl-noise-time')} ${fr.t.toFixed(3)}`;
     if (!visible($('lab-board'))) return;
     const arrows = lab.arrows && lab.tab === 'score' ? { error: { bias: [lab.bias, 0], smooth: lab.smooth } } : null;
-    scene($('lab-board'), { t: arrows ? 0.02 : fr.t, xs: arrows ? null : fr.xs, ys: fr.ys, revealMap: reveal(fr.xs, fr.ys), arrows, label: arrows ? `s̃ at t = 0.02 · b = (${lab.bias.toFixed(1)}, 0), δ = ${lab.smooth.toFixed(3)}` : `T = ${lab.T.toFixed(2)} · η = ${lab.eta.toFixed(2)} · t = ${fr.t.toFixed(3)}` });
+    scene($('lab-board'), { t: arrows ? 0.02 : fr.t, xs: arrows ? null : fr.xs, ys: fr.ys, piecePositions: arrows ? null : positionsOf(fr), arrows, label: arrows ? `s̃ at t = 0.02 · b = (${lab.bias.toFixed(1)}, 0), δ = ${lab.smooth.toFixed(3)}` : `T = ${lab.T.toFixed(2)} · η = ${lab.eta.toFixed(2)} · t = ${fr.t.toFixed(3)}` });
     P.bars($('lab-bars'), lab.err.frequencies, lab.err.masses, { left: txt('lbl-slots') });
   }
   function labChanged(links, replay = true) {

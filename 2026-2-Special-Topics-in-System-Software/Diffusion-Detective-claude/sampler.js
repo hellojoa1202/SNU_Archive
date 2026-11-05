@@ -56,8 +56,11 @@
     const sd = Math.sqrt(exact ? M.variance(T) : M.G * M.G * T);
     for (let n = 0; n < count; n++) {
       const [z1, z2] = normalPair(r);
+      // The first K points are the tracked pieces: with an exact start, piece k is
+      // drawn from component k, so its tile is also its true origin. Afterwards the
+      // component is drawn at random, as the mixture requires.
+      const k = exact ? (n < M.K ? n : Math.floor(r() * M.K)) : -1;
       if (exact) {
-        const k = Math.floor(r() * M.K);
         xs[n] = M.centers[k][0] + sd * z1;
         ys[n] = M.centers[k][1] + sd * z2;
       } else {
@@ -66,6 +69,17 @@
       }
     }
     return { xs, ys };
+  }
+
+  /** Brownian paths of the 48 pieces under the forward process dx = dw, for the shaking scene. */
+  function shakePaths(steps = 160, seed = 3) {
+    const r = rng(seed);
+    const h = 1 / steps;
+    return M.centers.map(([x, y]) => {
+      const path = [[x, y]];
+      for (let k = 0; k < steps; k++) { const [z1, z2] = normalPair(r); x += Math.sqrt(h) * z1; y += Math.sqrt(h) * z2; path.push([x, y]); }
+      return path;
+    });
   }
 
   /**
@@ -203,7 +217,7 @@
     return [mx / xs.length, my / ys.length];
   }
 
-  const api = { rng, starts, run, slotFrequencies, slotError, spread, ksX, exactDraws, exactSpread, mean };
+  const api = { rng, starts, shakePaths, run, slotFrequencies, slotError, spread, ksX, exactDraws, exactSpread, mean };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.BoardSampler = api;
 })(globalThis);

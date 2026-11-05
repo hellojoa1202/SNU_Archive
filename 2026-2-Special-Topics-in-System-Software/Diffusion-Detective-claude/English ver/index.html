@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -25,7 +25,7 @@
       <button data-lens="contour" aria-pressed="false" data-i18n="lens-contour">Contours</button>
     </div>
     <div class="language-switch" aria-label="Language"><button data-lang="en">EN</button><button data-lang="ko">한국어</button></div>
-    <a class="source-link" href="https://github.com/hellojoa1202/SNU_Archive/tree/main/2026-2-Special-Topics-in-System-Software/Diffusion-Detective" target="_blank" rel="noopener">Source ↗</a>
+    <a class="source-link" href="https://github.com/hellojoa1202/SNU_Archive/tree/main/2026-2-Special-Topics-in-System-Software/Diffusion-Detective-claude" target="_blank" rel="noopener">Source ↗</a>
   </div>
 </header>
 <div class="reading-progress"><div id="reading-progress"></div></div>
@@ -54,7 +54,7 @@
     <div data-i18n="route-2"><small>02 · REVERSE</small><b>Roll the pieces back</b><span>One family of samplers, from ODE to SDE.</span></div>
     <div data-i18n="route-3"><small>03 · APPROXIMATE</small><b>Replace three things</b><span>Prior, score, time grid. One at a time.</span></div>
   </div>
-  <p data-i18n="hero-note" class="caption">Two views of the same density share every control: the puzzle board, where a photograph is revealed as probability mass arrives in each slot, and a contour map of the density itself. Pieces are blank on purpose. The sampler recovers where mass goes, never which piece goes where.</p>
+  <p data-i18n="hero-note" class="caption">Two views of the same density share every control: the puzzle board and a contour map. The 48 pieces are 48 tracked samples, each carrying the tile of the slot it was drawn from; the dots are the remaining samples. A sampler is judged on where the mass goes, not on which piece lands where, and the two can disagree.</p>
 </section>
 
 <!-- 1 -->
@@ -65,7 +65,7 @@
   <div class="equation" role="math" data-equation="marginal">p<sub>t</sub>(x) = <span data-link="mixture">(1/K) Σ<sub>k</sub> N(x ; <span data-link="slots">μ<sub>k</sub></span>, (<span data-link="time">τ² + t</span>) I)</span>,&nbsp;&nbsp;&nbsp; K = 48</div>
   <p class="caption equation-source" data-i18n="forward-source">Perturbation kernel and marginal density · Score SDE notes, PDF p. 18, 21 · with f = 0, g = 1 the Fokker–Planck equation is the heat equation ∂<sub>t</sub>p = ½ Δp (p. 34, 51).</p>
   <div class="experiment">
-    <div class="experiment-heading"><h3 data-i18n="forward-view">Watch the slots blur</h3><span class="mode-label">AUTO + MANUAL</span></div>
+    <div class="experiment-heading"><h3 data-i18n="forward-view">Watch the pieces scatter</h3><span class="mode-label">AUTO + MANUAL</span></div>
     <div class="playback"><button id="forward-play"></button><label class="inline-check"><input type="checkbox" id="forward-arrows"><span data-i18n="forward-arrows">show the score ∇ log p<sub>t</sub></span></label></div>
     <div class="controls">
       <label for="forward-time"><span data-i18n="forward-time">Shaking time t</span><output id="forward-time-out"></output><input type="range" id="forward-time" min="0" max="1" step="0.002" value="0"></label>
@@ -75,7 +75,7 @@
       <div><h3 data-i18n="forward-left">The board at time t</h3><canvas id="forward-board" role="img"></canvas></div>
       <div><h3 data-i18n="forward-right">x-marginal of p<sub>t</sub>, in closed form</h3><canvas id="forward-marginal" role="img"></canvas></div>
     </div>
-    <p data-i18n="forward-legend" class="caption">Highlighted in the equation: the slider moves τ² + t. The pieces fade with the slot contrast, the density ratio between a slot centre and the midpoint to its neighbour. The 48 slots merge into one basin by t ≈ 0.05; the signal-to-noise ratio 1 / t says how much a noisy state still remembers its slot.</p>
+    <p data-i18n="forward-legend" class="caption">Highlighted in the equation: the slider moves τ² + t. Each piece follows its own Brownian path dx = dw, one realisation of the forward process; the contour view shows the law p<sub>t</sub> that all such paths share. The 48 slots merge into one basin by t ≈ 0.05, and the signal-to-noise ratio 1 / t says how much a shaken piece still remembers its slot.</p>
   </div>
 </section>
 
@@ -99,7 +99,7 @@
         <div class="metric-grid"><div><span data-i18n="m-tv">slot error (total variation)</span><output id="family-tv"></output></div><div><span data-i18n="m-spread">spread / exact</span><output id="family-spread"></output></div><div><span data-i18n="m-floor">floor for 1024 exact draws</span><output id="family-floor"></output></div></div>
       </div>
     </div>
-    <p data-i18n="family-legend" class="caption">Dots are 1024 samples, coloured by where they started. At η = 0 the colours arrive as a smooth gradient: solutions of the ODE never cross, so the flow map is a bijection and neighbours stay neighbours. At η = 1 the colours are scrambled, and the slot frequencies are the same. Click a dot to follow it.</p>
+    <p data-i18n="family-legend" class="caption">The 48 pieces are tracked samples; with an exact start, piece k is drawn from component k, so its tile is its true origin. Dots are 976 more samples, coloured by where they started. At η = 0 the colours arrive in a smooth gradient: solutions of the ODE never cross, so the flow map is a bijection. At η = 1 they are scrambled. In both cases pieces land in slots that are not their own while the slot frequencies on the right are right: the sampler matches mass, not identity. Click a piece to follow it.</p>
   </div>
   <p data-i18n="family-bridge" class="transition"><b>Everything above was exact.</b><span>A sampler has none of it: not the terminal law, not the score, not continuous time. The next section replaces them one at a time.</span></p>
 </section>
@@ -148,7 +148,7 @@
         <div class="metric-grid"><div><span data-i18n="m-tv">slot error (total variation)</span><output id="lab-tv"></output><small id="lab-tv-floor"></small></div><div><span data-i18n="m-spread">spread / exact</span><output id="lab-spread"></output><small id="lab-spread-floor"></small></div><div><span data-i18n="m-ks">KS distance, x-marginal</span><output id="lab-ks"></output><small id="lab-ks-floor"></small></div></div>
       </div>
     </div>
-    <p data-i18n="lab-legend" class="caption">2048 samples; 600 are drawn. Each tile of the photograph is revealed in proportion to the mass that reached its slot, so a hole in the picture is a slot that received too little. Slot error asks where the mass went; spread asks how tightly it gathered. Small grey numbers are the values for 2048 exact draws from p₀, the floor of each metric.</p>
+    <p data-i18n="lab-legend" class="caption">2048 samples: the 48 pieces and 552 of the remaining dots are drawn. A piece lying between slots is blur; a piece in the wrong slot is moved mass; an empty slot is missing mass. Slot error asks where the mass went, spread asks how tightly it gathered. Small grey numbers are the values for 2048 exact draws from p₀, the floor of each metric.</p>
   </div>
   <ul class="concept-points">
     <li data-i18n="lab-point-start"><b>Start.</b> The lecture bounds the mismatch by the signal-to-noise ratio: KL(p<sub>T</sub> ‖ N(0, P(T) I)) ≤ ½ SNR(T) E‖x₀‖² (PDF p. 23, 26). Here SNR(T) = 1 / T and the bound is loose by an order of magnitude but has the right trend. The ODE is a bijection and carries whatever is wrong at T to t = 0; the SDE keeps adding noise and pulling back, which lets it forget its start.</li>
@@ -189,7 +189,7 @@
   </ul>
   <div class="notes">
     <h3 data-i18n="limits-title">Where the analogy stops</h3>
-    <p data-i18n="limits-body">Pieces are blank by design: a jigsaw asks which piece goes where, a sampler answers only how much mass goes where. A slot holds a fraction, not one piece. The board changes shape on its own, blurring under the heat equation and sharpening under the reverse process; the contour view is the honest picture of that. Tilt and blur stand in for an unknown network error because their effects can be predicted and checked, not because they are typical. The time grid is uniform; non-uniform spacing is a standard remedy for the stiffness in 3 and is left out as outside the lecture material.</p>
+    <p data-i18n="limits-body">A piece’s tile names where that one sample started, not where it must end: the sampler is judged on mass per slot, and even the exact ODE sends piece k to another slot. A slot holds a fraction of the mass, not one piece. The board changes shape on its own, blurring under the heat equation and sharpening under the reverse process; the contour view is the honest picture of that. Tilt and blur stand in for an unknown network error because their effects can be predicted and checked, not because they are typical. The time grid is uniform; non-uniform spacing is a standard remedy for the stiffness in 3 and is left out as outside the lecture material.</p>
     <h3 data-i18n="scope-title">Model and sources</h3>
     <p data-i18n="scope-body">Toy: 48 Gaussians, τ = 0.06, slot pitch 0.22, forward dx = dw. Closed forms for p<sub>t</sub>, ∇ log p<sub>t</sub>, slot masses and the x-marginal; KL by 140 × 140 quadrature; no neural network. Samplers: the η-family with Euler–Maruyama for η &gt; 0 and Euler or Heun for η = 0, seeded so every run replays. Tests (node --test) check the score against finite differences, the heat equation, the KL bound, slot masses against Monte Carlo, and marginal alignment of the family. Lecture notes: <em>Mathematical Principles of Diffusion Models</em>, Prof. Taesup Moon, Fall 2026 (Score SDE framework; Flow-based perspective; Differential-equations appendix), following Lai, Song, Kim, Mitsufuji and Ermon, <em>The Principles of Diffusion Models</em>, arXiv:2510.21890. Photograph: “Cat August 2010-4”, Alvesgaspar, Wikimedia Commons, CC BY-SA 3.0, cropped and resized.</p>
   </div>
