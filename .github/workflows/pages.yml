@@ -14,9 +14,6 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
-env:
-  PROJECT: 2026-2-Special-Topics-in-System-Software/Diffusion-Detective
-
 jobs:
   deploy:
     environment:
@@ -31,38 +28,52 @@ jobs:
         with:
           node-version: '24'
       - name: Verify JavaScript and mathematics
-        working-directory: ${{ env.PROJECT }}
+        working-directory: 2026-2-Special-Topics-in-System-Software/Diffusion-Detective
         run: |
-          for f in model.js sampler.js equations.js budget.js views.js i18n.js app.js; do node --check "$f"; done
-          node --test model.test.cjs sampler.test.cjs
+          node --check app.js
+          node --check i18n.js
+          node --check math.js
+          node --check studio.js
+          node --check puzzle.js
+          node --check equations.js
+          node --check transport.js
+          node --check comparisons.js
+          node --test math.test.cjs transport.test.cjs
       - name: Assemble website and preserve previous links
         run: |
-          site_project="_site/$PROJECT"
+          site_project="_site/2026-2-Special-Topics-in-System-Software/Diffusion-Detective"
           mkdir -p "$site_project"
-          for f in index.html model.js sampler.js equations.js budget.js views.js i18n.js app.js style.css sweeps.json; do
-            cp "$PROJECT/$f" "$site_project/"
-          done
-          cp -R "$PROJECT/assets" "$site_project/"
-          cp -R "$PROJECT/English ver" "$site_project/"
-          cp -R "$PROJECT/Korean ver" "$site_project/"
-          printf '%s\n' '<!doctype html><html lang="en"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=2026-2-Special-Topics-in-System-Software/Diffusion-Detective/"><title>SNU Archive</title><a href="2026-2-Special-Topics-in-System-Software/Diffusion-Detective/">The Shaken Puzzle Board</a></html>' > _site/index.html
-          printf '%s\n' '<!doctype html><html lang="en"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=Diffusion-Detective/"><title>Diffusion Detective</title><a href="Diffusion-Detective/">The Shaken Puzzle Board</a></html>' > _site/2026-2-Special-Topics-in-System-Software/index.html
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/index.html "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/app.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/i18n.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/studio.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/transport.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/comparisons.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/math.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/style.css "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/puzzle.css "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/puzzle.js "$site_project/"
+          cp 2026-2-Special-Topics-in-System-Software/Diffusion-Detective/equations.js "$site_project/"
+          cp -R "2026-2-Special-Topics-in-System-Software/Diffusion-Detective/assets" "$site_project/"
+          cp -R "2026-2-Special-Topics-in-System-Software/Diffusion-Detective/English ver" "$site_project/"
+          cp -R "2026-2-Special-Topics-in-System-Software/Diffusion-Detective/Korean ver" "$site_project/"
+          printf '%s\n' '<!doctype html><html lang="ko"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=2026-2-Special-Topics-in-System-Software/Diffusion-Detective/"><title>SNU Archive</title><a href="2026-2-Special-Topics-in-System-Software/Diffusion-Detective/">Diffusion Detective</a></html>' > _site/index.html
+          printf '%s\n' '<!doctype html><html lang="ko"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=Diffusion-Detective/"><title>Diffusion Detective</title><a href="Diffusion-Detective/">Diffusion Detective</a></html>' > _site/2026-2-Special-Topics-in-System-Software/index.html
           for language in English Korean; do
             mkdir -p "$site_project/$language"
-            printf '<!doctype html><html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=../%s%%20ver/"><title>The Shaken Puzzle Board</title><a href="../%s%%20ver/">%s ver</a></html>\n' "$language" "$language" "$language" > "$site_project/$language/index.html"
+            printf '<!doctype html><html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=../%s%%20ver/"><title>Diffusion Detective</title><a href="../%s%%20ver/">%s ver</a></html>\n' "$language" "$language" "$language" > "$site_project/$language/index.html"
           done
           touch _site/.nojekyll
       - name: Version browser assets by content
         run: |
           python3 - <<'PY'
-          import os
           from pathlib import Path
           from hashlib import sha256
-          project = Path('_site') / os.environ['PROJECT']
+          project = Path('_site/2026-2-Special-Topics-in-System-Software/Diffusion-Detective')
           for folder in ['English ver', 'Korean ver']:
               page = project / folder / 'index.html'
               html = page.read_text()
-              for filename in ['model.js', 'sampler.js', 'equations.js', 'budget.js', 'views.js', 'i18n.js', 'app.js', 'style.css']:
+              for filename in ['transport.js', 'comparisons.js', 'studio.js', 'app.js', 'math.js', 'i18n.js', 'style.css', 'puzzle.css', 'puzzle.js', 'equations.js']:
                   digest = sha256((project / filename).read_bytes()).hexdigest()[:12]
                   html = html.replace('"../' + filename + '"', '"../' + filename + '?v=' + digest + '"')
               page.write_text(html)

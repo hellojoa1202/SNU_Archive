@@ -1,25 +1,36 @@
 # Project conventions
 
-## What this is
-- Course project for *Special Topics in System Software (Mathematical Principles of Diffusion Models)*, Fall 2026. Topic: **The Shaken Puzzle Board — three approximations of a diffusion sampler** (prior for p_T, learned score for ∇log p_t, time grid for the continuum), measured one at a time on an analytic 48-Gaussian toy, with the η-family (reverse SDE ↔ probability flow ODE) as the fourth dial.
-- Two visual lenses of the same density share one state: **puzzle board** (slots = modes, photo revealed by slot mass) and **landscape** (height −log p_t). The lens switch is global and persists.
-- `English ver/` is the submission; `Korean ver/` is the reading copy. The two HTML files are identical except `<html lang>`; all prose lives in `i18n.js` under one key per element (`data-i18n`). Edit both languages together.
+- English ver/ is the submission version; Korean ver/ is the review version. Their entry points are index.html within each folder.
+- The root index.html preserves previous links and defaults to English ver/.
+- When the user gives feedback in Korean, update both versions together. Their experiments, equations and controls must remain equivalent.
+- Share numerical logic in math.js, interactions in app.js, translations in i18n.js and design in style.css. Do not duplicate computation by language.
+- English ver/index.html and Korean ver/index.html use the same markup except the html language. Keep both in sync. Update English prose in both HTML files and its English ver/Korean entry in i18n.js together.
+- Language changes retain slider values, random seeds, selected pieces, coupling, probe location, clock and solver budget.
+- Keep the scrolling essay layout and small README text using <sub> markup.
+- The project README contains only two execution links, Korean and English. The archive root README stays a plain EWHA-style table without links. The course README is only its small course title.
+- Deploy through this repository's GitHub Pages workflow. Do not update a Sites copy unless requested.
 
-## Code layout (no build step, no framework, no network needed except KaTeX)
-- `model.js` closed forms: mixture density, score, log-density, KL to the Gaussian prior (quadrature), exact slot masses, x-marginal. Slots partition the whole plane (edge slots extend to ∞).
-- `sampler.js` the η-family integrator (Euler–Maruyama for η>0; Euler/Heun for η=0), seeded sfc32 RNG, metrics (slot TV, spread, KS), finite-sample floors.
-- `budget.js` the four sweeps of section 4; `make-sweeps.cjs` writes `sweeps.json` (shown first, recomputable in the browser).
-- `equations.js` every displayed equation with its lecture PDF page. `source: null` = defined on this page. **Display only equations that appear in the supplied lecture PDFs, or that define this page's own toy/metrics, and say which.**
-- `views.js` drawing only; `app.js` controls; `style.css` white surfaces, muted blue `#5c80a8`, red `#ad4b53`.
-- Tests: `node --test model.test.cjs sampler.test.cjs` (score vs finite differences, heat equation, KL bound, slot masses vs Monte Carlo, marginal alignment of the family, reproducibility).
+- The accepted narrative is a brief DDPM/NCSN score connection → reverse SDE / probability flow ODE → FM / CFM. The central question is matching distributions versus matching labeled paths. Two main comparisons, not a survey with equal space for all methods.
+- transport.js provides the exact-score Brownian mixture; comparisons.js compares SDE/ODE and conditional/marginal trajectories. Each pair shares its own marginal family; do not equate the two experiments' probability paths. Diffusion noise time decreases from 1 to 0, while CFM interpolation time increases from 0 to 1.
+- Retain local regression, conditional-mean and loss demonstrations. The photo jigsaw is a visible main-flow analogy inside CFM, with simultaneous photographs and a uniform position-marker strip, plus a two-destination exchange. CNF density/divergence and generation solvers remain expandable supplements.
+- The analytic model uses 48 translated Gaussian components of fixed tau=.16. The same Gaussian offset is carried between paired endpoints. Mixture velocities use posterior weights, not uniform averaging. Changing the permutation preserves endpoint densities, not piece identities. Do not claim exact puzzle assembly by the marginal ODE.
+- Report numerical errors against refined Heun (4096 vs 2048 steps) at equal field-evaluation budgets. Refinement is a consistency check, not a certified error bound.
+- Highlight equation terms on control changes. Keep concise declarative prose, compact typography and the scrolling layout.
 
-## Writing rules
-- Declarative, concrete prose; numbers come from the code (rerun `make-sweeps.cjs` and the exploration before changing a claim). Do not claim measured training behaviour: there is no neural network.
-- Analogy is subordinate to the mathematics: equation titles use mathematical names, the puzzle/landscape words appear in knob subtitles and captions. State where the analogy stops (section 6).
-- Time convention: diffusion clock only (t = 0 data, t = T noise); generation runs T → 0.
-- Section numbering 1–6 with 3.1–3.3; no lecture/chapter numbers in headings (cite PDF pages in equation sources instead).
-- Proposal typography: spaces on both sides of colons (A : B). The proposal PDF with student ID lives outside the repository (workspace `Proposal/`).
+- Use a white page, header, canvas and equation background. The English one-page Times New Roman submission PDF is stored outside the public repository in the workspace Proposal/ folder; do not publish its student identification details.
 
-## Deployment
-- GitHub Pages via `.github/workflows/pages.yml` (tests, then copies the listed files). Add new files to the copy list and to the hashing list.
-- Project README: links first, then the documentation required by the course (topic, usage, implementation, observations, references).
+- Do not label concepts by lecture/chapter numbers; those numbers were personal file labels. Use concept names in both languages. Use 1., 2., 3., 4. for visible section numbering. Apply content feedback to both language versions together.
+
+- Latest requirement: display only equations directly present in the supplied lecture PDFs. course-equations.json records each equation and its exact source slide/PDF page. Do not add model-specific density, assignment-cost, energy, Taylor, flux-integral or observed-order formulas. Keep toy computations in the numerical engine distinct from displayed lecture equations.
+- Mixed interaction modes: the score SDE/ODE scene plays automatically while visible; CFM controls and solver controls are manual. CNF playback is optional and initially paused. Shared time and model edits persist across sections and languages. Keep the optional generation experiment expandable. Do not introduce metaphor titles such as motion score, probability gate, or wind map.
+- course-equations.json is the displayed-equation audit. The current CNF likelihood and instantaneous change-of-variables equations come from flow-based PDF pages 32 and 21. The analytic field stands in for a parameterized neural field; compare mathematical objectives, never claim measured training acceleration or actual neural optimization.
+
+- Visual revision: pure white surfaces, outline-only density contours (no tinted density wash). The CFM photo is an 8 × 6 jigsaw with 48 actual model components. Show start/current/end together; a selected piece links all three. FM includes a linked velocity-space squared-error contour plot. Do not label these graphs as trained results.
+
+- Color preference: use slightly brighter muted blue (#6085ad) and subdued red (#ae4c54), with pure white surfaces. Keep UI, SVGs, canvas plots and bilingual color labels consistent; do not restore vivid cobalt or orange accents.
+
+- Proposal typography: spaces on BOTH sides of every colon, including English labels and titles (A : B).
+
+- The puzzle analogy separates piece identity from positional density. Exchanging destinations preserves endpoint density, not the entire probability path. The always-visible position strip shows uniform component-center dots; the separate plots show smooth densities and sampled clouds. Do not describe the ODE as solving the photograph.
+
+- Do not put the puzzle or its position markers behind toggles. In further directions, include evaluation of other everyday analogies (seat assignments, labeled-parcel sorting) with explicit mathematical correspondence and limitations. Explain marginal/path-law distinctions and conditional-expectation projection using only the supplied notes.
