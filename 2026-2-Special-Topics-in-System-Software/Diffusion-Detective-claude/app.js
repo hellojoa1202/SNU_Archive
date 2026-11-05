@@ -16,6 +16,7 @@
   const YL = [-1.05, 1.05];
   const XLW = [-3.5, 3.5];
   const YLW = [-2.6, 2.6];
+  const GRAY = '#9aa7b4';
 
   /* ------------------------------------------------------------------ helpers */
   const floors = {};
@@ -61,14 +62,15 @@
     flash.timer = setTimeout(restoreFocus, 1500);
   }
 
-  /** A scene: boxed axes, gray contours of p_t, optional arrows, dots, a tracked particle. */
-  function scene(canvas, { t, xs = null, ys = null, color = V.BLUE, arrows = null, selected = -1, path = null, prevPath = null, start = null, max = 600, xlim = XL, ylim = YL }) {
+  /** A scene: boxed axes, gray contours of p_t, optional arrows, trails, dots, a tracked particle. */
+  function scene(canvas, { t, xs = null, ys = null, color = V.BLUE, colors = null, arrows = null, trails = null, trailsUpto = Infinity, selected = -1, path = null, prevPath = null, start = null, max = 600, xlim = XL, ylim = YL }) {
     const f = V.frame(canvas, xlim, ylim);
     V.contours(f, t);
     if (arrows) V.arrows(f, t, arrows.error || null);
+    if (trails) for (const tr of trails) V.line(f, tr.slice(0, trailsUpto), 'rgba(23,40,62,.14)', 0.8);
     if (prevPath) V.line(f, prevPath, '#9fb0c2', 1, [4, 4]);
     if (path) V.line(f, path, color, 1.8);
-    if (xs) V.dots(f, xs, ys, { color, r: 1.8, max });
+    if (xs) V.dots(f, xs, ys, { color, colors, r: 1.8, max });
     if (start) V.dot(f, start, V.INK, 3);
     if (selected >= 0 && xs) { V.dot(f, [xs[selected], ys[selected]], '#fff', 6); V.dot(f, [xs[selected], ys[selected]], color, 4); }
     f.end();
@@ -109,13 +111,14 @@
   setFocus('kernel', ['time']);
 
   /* =================================================================== 2 family */
-  const fam = { progress: 0, playing: !reduced, startSeed: 11, noiseSeed: 23, count: 1024, sde: null, ode: null, prev: null, selected: 0 };
+  const fam = { progress: 0, playing: !reduced, startSeed: 11, noiseSeed: 23, count: 1024, sde: null, ode: null, prev: null, selected: 0, trails: true, colors: false };
   function familyRun(newStarts) {
     if (newStarts || !fam.ode) {
       fam.ode = S.run({ T: 1, eta: 0, steps: 256, count: fam.count, startSeed: fam.startSeed, exactStart: true, trackPaths: fam.count, snapshots: 60 });
       fam.prev = null;
     } else fam.prev = fam.sde;
     fam.sde = S.run({ T: 1, eta: 1, steps: 256, count: fam.count, startSeed: fam.startSeed, noiseSeed: fam.noiseSeed, exactStart: true, trackPaths: fam.count, snapshots: 60 });
+    fam.colorList = V.startColors(fam.sde.startXs, fam.sde.startYs);
     fam.selected = Math.min(fam.selected, fam.count - 1);
   }
   function drawFamily() {
@@ -130,8 +133,9 @@
     const wide = t > 0.25;
     const n = fam.selected;
     const start = [fam.sde.startXs[n], fam.sde.startYs[n]];
-    scene($('sde-board'), { t, xs: a.xs, ys: a.ys, color: V.BLUE, selected: n, path: fam.sde.paths[n].slice(0, upto), prevPath: fam.prev ? fam.prev.paths[n].slice(0, upto) : null, start, xlim: wide ? XLW : XL, ylim: wide ? YLW : YL });
-    scene($('ode-board'), { t, xs: b.xs, ys: b.ys, color: V.RED, selected: n, path: fam.ode.paths[n].slice(0, upto), start, xlim: wide ? XLW : XL, ylim: wide ? YLW : YL });
+    const common = { t, selected: n, start, trailsUpto: upto, xlim: wide ? XLW : XL, ylim: wide ? YLW : YL, colors: fam.colors ? fam.colorList : null };
+    scene($('sde-board'), { ...common, xs: a.xs, ys: a.ys, color: V.BLUE, trails: fam.trails ? fam.sde.paths.slice(0, 40) : null, path: fam.sde.paths[n].slice(0, upto), prevPath: fam.prev ? fam.prev.paths[n].slice(0, upto) : null });
+    scene($('ode-board'), { ...common, xs: b.xs, ys: b.ys, color: V.RED, trails: fam.trails ? fam.ode.paths.slice(0, 40) : null, path: fam.ode.paths[n].slice(0, upto) });
     V.projection($('family-projection'), [{ xs: a.xs, color: V.BLUE, label: 'SDE' }, { xs: b.xs, color: V.RED, label: 'ODE' }], t, wide ? -3.5 : -1.5, wide ? 3.5 : 1.5, { ref: txt('lbl-analytic'), x: txt('lbl-x') });
     $('family-sde-ks').textContent = fmt(S.ksX(a.xs, t));
     $('family-ode-ks').textContent = fmt(S.ksX(b.xs, t));
@@ -142,6 +146,8 @@
   $('family-noise').addEventListener('click', () => { fam.noiseSeed++; flash(['randomness']); familyRun(false); drawFamily(); });
   $('family-starts').addEventListener('click', () => { fam.startSeed++; familyRun(true); drawFamily(); });
   $('family-count').addEventListener('change', () => { fam.count = +$('family-count').value; familyRun(true); drawFamily(); });
+  $('family-trails').addEventListener('change', () => { fam.trails = $('family-trails').checked; drawFamily(); });
+  $('family-colors').addEventListener('change', () => { fam.colors = $('family-colors').checked; drawFamily(); });
   for (const id of ['sde-board', 'ode-board']) {
     $(id).addEventListener('pointerdown', (e) => {
       const t = progressToTime(fam.progress, 1);
@@ -154,22 +160,36 @@
     });
     $(id).addEventListener('keydown', (e) => { if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return; e.preventDefault(); fam.selected = (fam.selected + (e.key === 'ArrowRight' ? 1 : -1) + fam.count) % fam.count; drawFamily(); });
   }
-  setFocus('reverse-sde', ['score', 'randomness']); setFocus('pf-ode', ['score']); setFocus('eta-family', ['eta']);
+  setFocus('reverse-sde', ['score', 'randomness']);
+  setFocus('pf-ode', ['score']);
+  setFocus('eta-family', ['eta']);
 
   /* ====================================================================== 3 lab */
-  const lab = { tab: 'start', T: 1, start: 'exact', bias: 0, smooth: 0, nfe: 128, method: 'auto', eta: 1, count: 2048, noiseSeed: 23, startSeed: 11, progress: 1, playing: false, arrows: false, run: null, timer: null };
+  const lab = { tab: 'start', T: 0.25, start: 'prior', bias: 0, smooth: 0, nfe: 128, method: 'auto', eta: 0, count: 1024, noiseSeed: 23, startSeed: 11, progress: 1, playing: false, arrows: false, run: null, ref: null, timer: null };
   const TAB_LINKS = { start: ['start'], score: ['score-term'], grid: ['grid'] };
-  function labSteps() { const method = lab.eta > 0 ? 'em' : (lab.method === 'auto' ? 'heun' : lab.method); return { method, steps: Math.max(1, method === 'heun' ? Math.round(lab.nfe / 2) : lab.nfe) }; }
+  /** The substituted run uses only the knob of the active tab; the other two stay exact. */
+  function labConfig() {
+    const start = lab.tab === 'start' ? lab.start : 'exact';
+    const error = lab.tab === 'score' ? { bias: [lab.bias, 0], smooth: lab.smooth } : { bias: [0, 0], smooth: 0 };
+    const nfe = lab.tab === 'grid' ? lab.nfe : 256;
+    const method = lab.tab === 'grid' ? lab.method : 'auto';
+    const m = lab.eta > 0 ? 'em' : (method === 'auto' ? 'heun' : method);
+    const steps = Math.max(1, m === 'heun' ? Math.round(nfe / 2) : nfe);
+    return { start, error, steps, method, nfe };
+  }
   function labRun() {
-    const { steps } = labSteps();
+    const cfg = labConfig();
     const t0 = performance.now();
-    lab.run = S.run({ T: lab.T, eta: lab.eta, steps, solver: lab.eta > 0 ? 'auto' : lab.method, count: lab.count, startSeed: lab.startSeed, noiseSeed: lab.noiseSeed, exactStart: lab.start === 'exact', error: { bias: [lab.bias, 0], smooth: lab.smooth }, snapshots: 60 });
-    lab.err = S.slotError(lab.run.xs, lab.run.ys);
-    const fl = floor(lab.count);
-    $('lab-tv').textContent = fmt(lab.err.tv); $('lab-tv-floor').textContent = `${txt('lbl-floor')} ${fmt(fl.tv)}`;
-    $('lab-spread').textContent = fmt(S.spread(lab.run.xs, lab.run.ys) / S.exactSpread(), 2); $('lab-spread-floor').textContent = `${txt('lbl-floor')} ${fmt(fl.spread, 2)}`;
-    $('lab-ks').textContent = fmt(S.ksX(lab.run.xs)); $('lab-ks-floor').textContent = `${txt('lbl-floor')} ${fmt(fl.ks)}`;
-    $('lab-step').textContent = (lab.T / steps).toFixed(4); $('lab-nfe-out').textContent = String(lab.run.nfe);
+    const base = { T: lab.T, eta: lab.eta, count: lab.count, startSeed: lab.startSeed, noiseSeed: lab.noiseSeed, snapshots: 60 };
+    const refSteps = lab.eta > 0 ? 256 : 128;
+    lab.ref = S.run({ ...base, steps: refSteps, solver: 'auto', exactStart: true, error: { bias: [0, 0], smooth: 0 } });
+    lab.run = S.run({ ...base, steps: cfg.steps, solver: lab.eta > 0 ? 'auto' : cfg.method, exactStart: cfg.start === 'exact', error: cfg.error });
+    const e = S.slotError(lab.run.xs, lab.run.ys);
+    const r = S.slotError(lab.ref.xs, lab.ref.ys);
+    $('lab-tv').textContent = fmt(e.tv); $('lab-tv-floor').textContent = `${txt('lbl-floor')} ${fmt(r.tv)}`;
+    $('lab-spread').textContent = fmt(S.spread(lab.run.xs, lab.run.ys) / S.exactSpread(), 2); $('lab-spread-floor').textContent = `${txt('lbl-floor')} ${fmt(S.spread(lab.ref.xs, lab.ref.ys) / S.exactSpread(), 2)}`;
+    $('lab-ks').textContent = fmt(S.ksX(lab.run.xs)); $('lab-ks-floor').textContent = `${txt('lbl-floor')} ${fmt(S.ksX(lab.ref.xs))}`;
+    $('lab-step').textContent = (lab.T / cfg.steps).toFixed(4); $('lab-nfe-out').textContent = String(lab.run.nfe);
     $('lab-status').textContent = `${txt('status-done')} · ${Math.round(performance.now() - t0)} ms`;
   }
   function labReadouts() {
@@ -183,13 +203,18 @@
     if (!lab.run) labRun();
     labReadouts();
     $('lab-progress').value = lab.progress;
-    const fr = frameAtTime(lab.run, progressToTime(lab.progress, lab.T));
+    const t = progressToTime(lab.progress, lab.T);
+    const fr = frameAtTime(lab.run, t);
+    const rf = frameAtTime(lab.ref, t);
     $('lab-progress-out').textContent = `${txt('lbl-noise-time')} ${fr.t.toFixed(3)}`;
-    if (!visible($('lab-board'))) return;
+    if (!visible($('lab-board')) && !visible($('lab-projection'))) return;
     const showField = lab.arrows && lab.tab === 'score';
-    const wide = fr.t > 0.25 && !showField;
-    scene($('lab-board'), { t: showField ? 0.02 : fr.t, xs: showField ? null : fr.xs, ys: fr.ys, arrows: showField ? { error: { bias: [lab.bias, 0], smooth: lab.smooth } } : null, xlim: wide ? XLW : XL, ylim: wide ? YLW : YL });
-    V.projection($('lab-projection'), [{ xs: fr.xs, color: V.BLUE, label: txt('lbl-samples') }], fr.t, wide ? -3.5 : -1.5, wide ? 3.5 : 1.5, { ref: txt('lbl-analytic'), x: txt('lbl-x') });
+    const wide = fr.t > 0.25;
+    const lims = { xlim: wide ? XLW : XL, ylim: wide ? YLW : YL };
+    scene($('ref-board'), { t: rf.t, xs: rf.xs, ys: rf.ys, color: GRAY, ...lims });
+    if (showField) scene($('lab-board'), { t: 0.02, arrows: { error: { bias: [lab.bias, 0], smooth: lab.smooth } } });
+    else scene($('lab-board'), { t: fr.t, xs: fr.xs, ys: fr.ys, color: V.BLUE, ...lims });
+    V.projection($('lab-projection'), [{ xs: rf.xs, color: GRAY, label: txt('lbl-exact-run') }, { xs: fr.xs, color: V.BLUE, label: txt('lbl-substituted') }], fr.t, wide ? -3.5 : -1.5, wide ? 3.5 : 1.5, { ref: txt('lbl-analytic'), x: txt('lbl-x') });
   }
   function labChanged(links, replay = true) {
     flash(links);
@@ -198,14 +223,14 @@
     clearTimeout(lab.timer);
     lab.timer = setTimeout(() => { labRun(); if (replay && !reduced) { lab.progress = 0; lab.playing = true; setPlay($('lab-play'), true); } else lab.progress = 1; drawLab(); }, 50);
   }
-  function selectTab(tab) {
+  function selectTab(tab, rerun = true) {
     lab.tab = tab;
     for (const b of document.querySelectorAll('.tabs [role=tab]')) b.setAttribute('aria-selected', String(b.dataset.tab === tab));
     for (const p of document.querySelectorAll('.tab-panels [data-panel]')) p.hidden = p.dataset.panel !== tab;
     setFocus('oracle', TAB_LINKS[tab]);
     setFocus('em-step', TAB_LINKS[tab]);
     setFocus('kl-bound', tab === 'start' ? ['start'] : []);
-    drawLab();
+    if (rerun) labChanged(TAB_LINKS[tab]);
   }
   for (const b of document.querySelectorAll('.tabs [role=tab]')) b.addEventListener('click', () => selectTab(b.dataset.tab));
   $('lab-T').addEventListener('input', () => { lab.T = +$('lab-T').value; labChanged(['start']); });
@@ -215,14 +240,32 @@
   $('lab-arrows').addEventListener('change', () => { lab.arrows = $('lab-arrows').checked; drawLab(); });
   $('lab-nfe').addEventListener('change', () => { lab.nfe = +$('lab-nfe').value; labChanged(['grid']); });
   $('lab-method').addEventListener('change', () => { lab.method = $('lab-method').value; labChanged(['grid']); });
-  $('lab-eta').addEventListener('input', () => { lab.eta = +$('lab-eta').value; labChanged(['grid']); });
+  $('lab-eta').addEventListener('input', () => { lab.eta = +$('lab-eta').value; labChanged(['eta']); });
   $('lab-progress').addEventListener('input', () => { lab.playing = false; setPlay($('lab-play'), false); lab.progress = +$('lab-progress').value; drawLab(); });
   $('lab-play').addEventListener('click', () => { if (lab.progress >= 1) lab.progress = 0; lab.playing = !lab.playing; setPlay($('lab-play'), lab.playing); });
   $('lab-noise').addEventListener('click', () => { lab.noiseSeed++; labChanged([]); });
+  function syncControls() {
+    $('lab-T').value = lab.T; $('lab-start').value = lab.start; $('lab-bias').value = lab.bias; $('lab-smooth').value = lab.smooth; $('lab-nfe').value = String(lab.nfe); $('lab-method').value = lab.method; $('lab-eta').value = lab.eta; $('lab-arrows').checked = lab.arrows;
+  }
   $('lab-reset').addEventListener('click', () => {
-    Object.assign(lab, { T: 1, start: 'exact', bias: 0, smooth: 0, nfe: 128, method: 'auto', eta: 1, arrows: false });
-    $('lab-T').value = 1; $('lab-start').value = 'exact'; $('lab-bias').value = 0; $('lab-smooth').value = 0; $('lab-nfe').value = '128'; $('lab-method').value = 'auto'; $('lab-eta').value = 1; $('lab-arrows').checked = false;
+    Object.assign(lab, { T: 0.25, start: 'prior', bias: 0, smooth: 0, nfe: 128, method: 'auto', eta: 0, arrows: false });
+    syncControls();
     labChanged([]);
+  });
+  const PRESETS = {
+    'prior-short': { tab: 'start', T: 0.25, start: 'prior', eta: 0 },
+    'prior-short-sde': { tab: 'start', T: 0.25, start: 'prior', eta: 1 },
+    'bias': { tab: 'score', bias: 1, smooth: 0, eta: 1, arrows: false },
+    'smooth': { tab: 'score', bias: 0, smooth: 0.03, eta: 1, arrows: false },
+    'coarse-sde': { tab: 'grid', nfe: 8, method: 'auto', eta: 1 },
+    'coarse-heun': { tab: 'grid', nfe: 16, method: 'heun', eta: 0 },
+  };
+  for (const b of document.querySelectorAll('.presets button')) b.addEventListener('click', () => {
+    const p = PRESETS[b.dataset.preset];
+    Object.assign(lab, p);
+    syncControls();
+    selectTab(p.tab, false);
+    labChanged(TAB_LINKS[p.tab]);
   });
 
   /* =================================================================== 4 budget */
@@ -234,10 +277,11 @@
       { points: d[kind][0].map((p) => [p.x, p[key]]), color: V.BLUE, label: txt('lbl-eta0'), marker: true },
       { points: d[kind][1].map((p) => [p.x, p[key]]), color: V.RED, label: txt('lbl-eta1'), marker: true },
     ] : []);
-    V.plot($('sweep-T'), mk('T', 'tv'), { xlog: true, xlabel: 'T', hline: { y: fl.tv, label: txt('lbl-floor') }, xrange: [0.25, 4], yrange: [0, 0.3], xticks: [0.25, 0.5, 1, 2, 4] });
-    V.plot($('sweep-bias'), mk('bias', 'tv'), { xlabel: 'b_x', hline: { y: fl.tv, label: txt('lbl-floor') }, xrange: [0, 2], yrange: [0, 0.6], xticks: [0, 0.5, 1, 1.5, 2] });
-    V.plot($('sweep-smooth'), mk('smooth', 'spread'), { xlabel: 'δ', hline: { y: fl.spread, label: txt('lbl-floor') }, xrange: [0, 0.1], yrange: [0.8, 3.2], xticks: [0, 0.025, 0.05, 0.075, 0.1] });
-    V.plot($('sweep-nfe'), mk('nfe', 'spread'), { xlog: true, ylog: true, xlabel: txt('lbl-evals'), hline: { y: fl.spread, label: txt('lbl-floor') }, xrange: [8, 512], yrange: [0.5, 30], xticks: [8, 32, 128, 512] });
+    const fl_label = txt('lbl-floor-line');
+    V.plot($('sweep-T'), mk('T', 'tv'), { xlog: true, xlabel: 'T', hline: { y: fl.tv, label: fl_label }, xrange: [0.25, 4], yrange: [0, 0.3], xticks: [0.25, 0.5, 1, 2, 4] });
+    V.plot($('sweep-bias'), mk('bias', 'tv'), { xlabel: 'b_x', hline: { y: fl.tv, label: fl_label }, xrange: [0, 2], yrange: [0, 0.6], xticks: [0, 0.5, 1, 1.5, 2] });
+    V.plot($('sweep-smooth'), mk('smooth', 'spread'), { xlabel: 'δ', hline: { y: fl.spread, label: fl_label }, xrange: [0, 0.1], yrange: [0.8, 3.2], xticks: [0, 0.025, 0.05, 0.075, 0.1] });
+    V.plot($('sweep-nfe'), mk('nfe', 'spread'), { xlog: true, ylog: true, xlabel: txt('lbl-evals'), hline: { y: fl.spread, label: fl_label }, xrange: [8, 512], yrange: [0.5, 30], xticks: [8, 32, 128, 512] });
   }
   async function computeSweeps() {
     if (sw.running) return;
@@ -291,7 +335,8 @@
   }
 
   T.apply();
-  selectTab('start');
+  syncControls();
+  selectTab('start', false);
   onScroll();
   requestAnimationFrame(tick);
 })();
