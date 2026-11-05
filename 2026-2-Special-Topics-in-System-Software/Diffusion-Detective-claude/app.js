@@ -1,20 +1,19 @@
-/* app.js — controls for the four experiments. Numerical work is in model.js,
- * sampler.js and budget.js; drawing in puzzle.js. Equation terms carry data-link
- * names; each experiment keeps the term it shows highlighted and flashes the
- * term a control just changed. */
+/* app.js — controls for the four experiments. Numerical work lives in model.js,
+ * sampler.js and budget.js; drawing in traps.js. Equation terms carry data-link
+ * names: each experiment keeps the term it shows highlighted and flashes the term
+ * a control has just changed. */
 (function () {
   'use strict';
   const M = window.BoardModel;
   const S = window.BoardSampler;
   const B = window.BoardBudget;
-  const P = window.Puzzle;
+  const V = window.Traps;
   const T = window.BoardText;
   const $ = (id) => document.getElementById(id);
   const txt = (k) => T.text(k);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const shared = { lens: 'puzzle' };
 
-  /* ---------------------------------------------------------------- helpers */
+  /* ------------------------------------------------------------------ helpers */
   const floors = {};
   function floor(N) {
     if (!floors[N]) { const d = S.exactDraws(N); floors[N] = { tv: S.slotError(d.xs, d.ys).tv, spread: S.spread(d.xs, d.ys) / S.exactSpread(), ks: S.ksX(d.xs) }; }
@@ -27,7 +26,6 @@
   const progressToTime = (p, Tt) => Tt * Math.pow(1 - p, 3);
   function setPlay(btn, playing) { btn.textContent = playing ? txt('btn-pause') : txt('btn-play'); btn.setAttribute('aria-pressed', String(playing)); }
 
-  /** State at time t, interpolated between the two nearest snapshots of a run. */
   function frameAtTime(run, t) {
     const fr = run.frames;
     if (fr.length === 1) return fr[0];
@@ -43,68 +41,74 @@
   }
   function marginalSeries(t) { const pts = []; for (let i = 0; i <= 240; i++) { const x = -1.6 + 3.2 * i / 240; pts.push([x, M.marginalX(x, t)]); } return pts; }
 
-  /* equation highlighting: persistent focus per equation + a short flash */
-  function focus(equation, names) {
+  /* equation highlighting: a persistent focus per equation and a short flash */
+  const focusState = {};
+  function applyFocus(equation) {
     const eq = document.querySelector(`.equation[data-equation="${equation}"]`);
     if (!eq) return;
+    const names = focusState[equation] || [];
     for (const el of eq.querySelectorAll('[data-link]')) el.classList.toggle('active', names.includes(el.dataset.link));
   }
+  function setFocus(equation, names) { focusState[equation] = names; applyFocus(equation); }
+  function restoreFocus() { for (const eq of Object.keys(focusState)) applyFocus(eq); }
   function flash(names) {
-    for (const el of document.querySelectorAll('.equation [data-link]')) if (names.includes(el.dataset.link)) el.classList.add('active', 'flash');
+    for (const el of document.querySelectorAll('.equation [data-link]')) if (names.includes(el.dataset.link)) el.classList.add('active');
     clearTimeout(flash.timer);
-    flash.timer = setTimeout(() => { for (const el of document.querySelectorAll('.equation .flash')) { el.classList.remove('flash'); if (!el.dataset.keep) el.classList.remove('active'); } restoreFocus(); }, 1500);
+    flash.timer = setTimeout(restoreFocus, 1500);
   }
-  const focusState = {};
-  function setFocus(equation, names) { focusState[equation] = names; focus(equation, names); }
-  function restoreFocus() { for (const [eq, names] of Object.entries(focusState)) focus(eq, names); }
 
-  /** Draw one scene: board (or contours), the other samples as dots, then the 48 tracked pieces. */
-  function scene(canvas, { t, xs = null, ys = null, colors = null, piecePositions = null, arrows = null, selected = -1, path = null, label = '' }) {
-    const f = P.frame(canvas);
-    if (shared.lens === 'contour') { P.contours(f, t); P.board(f, 0.6); } else P.board(f, 1);
-    if (arrows) P.arrows(f, t, arrows.error || null, 'rgba(23,40,62,.42)');
-    if (path) P.line(f, path, P.RED, 1.6);
+  /** One scene: light contours (dimmed by `light`), trap sites, optional arrows, trails, particles. */
+  function scene(canvas, { t, light = 1, xs = null, ys = null, colors = null, arrows = null, trails = null, trailsUpto = Infinity, selected = -1, path = null, label = '', max = 600 }) {
+    const f = V.frame(canvas);
+    V.contours(f, t, light);
+    V.sites(f, 0.35 + 0.65 * light);
+    if (arrows) V.arrows(f, t, arrows.error || null);
+    if (trails) for (const tr of trails) V.line(f, tr.slice(0, trailsUpto), 'rgba(23,40,62,.16)', 0.8);
+    if (path) V.line(f, path, V.RED, 1.6);
     let shown = 0;
-    if (xs && xs.length > M.K) {
-      const rest = { xs: xs.subarray(M.K), ys: ys.subarray(M.K) };
-      shown = P.dots(f, rest.xs, rest.ys, { colors: colors ? colors.slice(M.K) : null, color: shared.lens === 'contour' ? P.BLUE : 'rgba(96,133,173,.75)', r: 1.8, max: 552 });
-    }
-    if (piecePositions) P.pieces(f, piecePositions, 1, selected);
-    if (label) P.text(f, label + (xs && xs.length > M.K ? `  ·  48 + ${shown} / ${xs.length}` : ''), [P.WINDOW.x0 + 0.03, P.WINDOW.y1 - 0.05], P.INK, 10);
+    if (xs) shown = V.dots(f, xs, ys, { colors, r: 2.1, max });
+    if (selected >= 0 && xs) { V.dot(f, [xs[selected], ys[selected]], '#fff', 6); V.dot(f, [xs[selected], ys[selected]], V.RED, 4); }
+    if (label) V.text(f, label + (xs && shown < xs.length ? `  ·  ${shown} / ${xs.length}` : ''), [V.WINDOW.x0 + 0.03, V.WINDOW.y1 - 0.05], V.INK, 10);
     return f;
   }
-  const positionsOf = (fr) => Array.from({ length: M.K }, (_, k) => [fr.xs[k], fr.ys[k]]);
 
-  /* ================================================================ 1 forward */
-  const fw = { t: 0, playing: !reduced, arrows: false, seed: 3, paths: S.shakePaths(160, 3) };
-  function shakenPositions(t) {
+  /* ================================================================== 1 forward */
+  const fw = { t: 0, playing: !reduced, arrows: false, seed: 3, paths: null };
+  function forwardPaths() { fw.paths = S.brownianPaths(384, 160, fw.seed); }
+  function forwardPositions(t) {
+    if (!fw.paths) forwardPaths();
     const steps = fw.paths[0].length - 1;
     const u = Math.min(1, t) * steps;
     const i = Math.min(steps - 1, Math.floor(u));
     const w = u - i;
-    return fw.paths.map((p) => [p[i][0] + w * (p[i + 1][0] - p[i][0]), p[i][1] + w * (p[i + 1][1] - p[i][1])]);
+    const xs = new Float64Array(fw.paths.length);
+    const ys = new Float64Array(fw.paths.length);
+    fw.paths.forEach((p, n) => { xs[n] = p[i][0] + w * (p[i + 1][0] - p[i][0]); ys[n] = p[i][1] + w * (p[i + 1][1] - p[i][1]); });
+    return { xs, ys };
   }
   function drawForward() {
     $('forward-time').value = timeToSlider(fw.t);
     $('forward-time-out').textContent = fw.t.toFixed(4);
     $('forward-variance').textContent = fmt(M.variance(fw.t), 4);
-    $('forward-contrast').textContent = fmt(P.slotContrast(fw.t), 3);
+    $('forward-contrast').textContent = fmt(V.trapContrast(fw.t), 3);
     $('forward-snr').textContent = fw.t > 1e-4 ? fmt(M.snr(fw.t), 2) : '∞';
     if (!visible($('forward-board'))) return;
-    scene($('forward-board'), { t: fw.t, piecePositions: shakenPositions(fw.t), arrows: fw.arrows ? {} : null, label: `t = ${fw.t.toFixed(4)}` });
+    const pos = forwardPositions(fw.t);
+    scene($('forward-board'), { t: fw.t, light: 1, xs: pos.xs, ys: pos.ys, arrows: fw.arrows ? {} : null, label: `t = ${fw.t.toFixed(4)}`, max: 384 });
     const pts = marginalSeries(fw.t);
-    P.plot($('forward-marginal'), [{ points: pts, color: P.BLUE, label: txt('lbl-marginal'), fill: true }], { xlabel: 'x', yrange: [0, Math.max(0.5, 1.08 * Math.max(...pts.map((p) => p[1])))] });
+    V.plot($('forward-marginal'), [{ points: pts, color: V.BLUE, label: txt('lbl-marginal'), fill: true }], { xlabel: 'x', yrange: [0, Math.max(0.5, 1.08 * Math.max(...pts.map((p) => p[1])))] });
   }
   $('forward-time').addEventListener('input', () => { fw.playing = false; setPlay($('forward-play'), false); fw.t = sliderToTime(+$('forward-time').value); flash(['time']); drawForward(); });
-  $('forward-play').addEventListener('click', () => { if (fw.t >= 1) { fw.t = 0; fw.seed++; fw.paths = S.shakePaths(160, fw.seed); } fw.playing = !fw.playing; setPlay($('forward-play'), fw.playing); });
+  $('forward-play').addEventListener('click', () => { if (fw.t >= 1) fw.t = 0; fw.playing = !fw.playing; setPlay($('forward-play'), fw.playing); });
+  $('forward-again').addEventListener('click', () => { fw.seed++; forwardPaths(); fw.t = 0; fw.playing = !reduced; setPlay($('forward-play'), fw.playing); drawForward(); });
   $('forward-arrows').addEventListener('change', () => { fw.arrows = $('forward-arrows').checked; flash(['mixture']); drawForward(); });
   setFocus('marginal', ['time']);
 
-  /* ================================================================= 2 family */
-  const fam = { eta: 1, progress: 0, playing: !reduced, startSeed: 11, noiseSeed: 23, colors: true, run: null, selected: -1 };
+  /* =================================================================== 2 family */
+  const fam = { eta: 1, progress: 0, playing: !reduced, startSeed: 11, noiseSeed: 23, colors: true, trails: true, run: null, selected: -1 };
   function familyRun() {
-    fam.run = S.run({ T: 1, eta: fam.eta, steps: 256, count: 1024, startSeed: fam.startSeed, noiseSeed: fam.noiseSeed, exactStart: true, trackPaths: M.K, snapshots: 60 });
-    fam.colorList = P.startColors(fam.run.startXs, fam.run.startYs);
+    fam.run = S.run({ T: 1, eta: fam.eta, steps: 256, count: 1024, startSeed: fam.startSeed, noiseSeed: fam.noiseSeed, exactStart: true, trackPaths: 1024, snapshots: 60 });
+    fam.colorList = V.startColors(fam.run.startXs, fam.run.startYs);
     fam.err = S.slotError(fam.run.xs, fam.run.ys);
     $('family-tv').textContent = fmt(fam.err.tv);
     $('family-spread').textContent = fmt(S.spread(fam.run.xs, fam.run.ys) / S.exactSpread(), 2);
@@ -120,8 +124,8 @@
     if (!visible($('family-board'))) return;
     const upto = Math.floor((1 - fr.t) * 256) + 1;
     const path = fam.selected >= 0 ? fam.run.paths[fam.selected].slice(0, upto) : null;
-    scene($('family-board'), { t: fr.t, xs: fr.xs, ys: fr.ys, colors: fam.colors ? fam.colorList : null, piecePositions: positionsOf(fr), selected: fam.selected, path, label: `η = ${fam.eta.toFixed(2)} · t = ${fr.t.toFixed(3)}` });
-    P.bars($('family-bars'), fam.err.frequencies, fam.err.masses, { left: txt('lbl-slots') });
+    scene($('family-board'), { t: fr.t, xs: fr.xs, ys: fr.ys, colors: fam.colors ? fam.colorList : null, trails: fam.trails ? fam.run.paths.slice(0, 24) : null, trailsUpto: upto, selected: fam.selected, path, label: `η = ${fam.eta.toFixed(2)} · t = ${fr.t.toFixed(3)}` });
+    V.bars($('family-bars'), fam.err.frequencies, fam.err.masses, { left: txt('lbl-slots') });
   }
   $('family-eta').addEventListener('input', () => { fam.eta = +$('family-eta').value; flash(['eta', 'randomness']); familyRun(); drawFamily(); });
   $('family-progress').addEventListener('input', () => { fam.playing = false; setPlay($('family-play'), false); fam.progress = +$('family-progress').value; drawFamily(); });
@@ -129,16 +133,17 @@
   $('family-noise').addEventListener('click', () => { fam.noiseSeed++; flash(['randomness']); familyRun(); drawFamily(); });
   $('family-starts').addEventListener('click', () => { fam.startSeed++; familyRun(); drawFamily(); });
   $('family-colors').addEventListener('change', () => { fam.colors = $('family-colors').checked; drawFamily(); });
+  $('family-trails').addEventListener('change', () => { fam.trails = $('family-trails').checked; drawFamily(); });
   $('family-board').addEventListener('pointerdown', (e) => {
-    const [wx, wy] = P.point($('family-board'), e);
+    const [wx, wy] = V.point($('family-board'), e);
     const fr = frameAtTime(fam.run, progressToTime(fam.progress, 1));
     let best = Infinity;
-    for (let n = 0; n < M.K; n++) { const d = Math.hypot(fr.xs[n] - wx, fr.ys[n] - wy); if (d < best) { best = d; fam.selected = n; } }
+    for (let n = 0; n < Math.min(600, fr.xs.length); n++) { const d = Math.hypot(fr.xs[n] - wx, fr.ys[n] - wy); if (d < best) { best = d; fam.selected = n; } }
     drawFamily();
   });
   setFocus('eta-family', ['score', 'randomness']);
 
-  /* ==================================================================== 3 lab */
+  /* ====================================================================== 3 lab */
   const lab = { tab: 'start', T: 1, start: 'exact', bias: 0, smooth: 0, nfe: 128, method: 'auto', eta: 1, count: 2048, noiseSeed: 23, startSeed: 11, progress: 1, playing: false, arrows: false, run: null, timer: null };
   const TAB_LINKS = { start: ['start'], score: ['score-term'], grid: ['grid'] };
   function labSteps() { const method = lab.eta > 0 ? 'em' : (lab.method === 'auto' ? 'heun' : lab.method); return { method, steps: Math.max(1, method === 'heun' ? Math.round(lab.nfe / 2) : lab.nfe) }; }
@@ -168,9 +173,13 @@
     const fr = frameAtTime(lab.run, progressToTime(lab.progress, lab.T));
     $('lab-progress-out').textContent = `${txt('lbl-noise-time')} ${fr.t.toFixed(3)}`;
     if (!visible($('lab-board'))) return;
-    const arrows = lab.arrows && lab.tab === 'score' ? { error: { bias: [lab.bias, 0], smooth: lab.smooth } } : null;
-    scene($('lab-board'), { t: arrows ? 0.02 : fr.t, xs: arrows ? null : fr.xs, ys: fr.ys, piecePositions: arrows ? null : positionsOf(fr), arrows, label: arrows ? `s̃ at t = 0.02 · b = (${lab.bias.toFixed(1)}, 0), δ = ${lab.smooth.toFixed(3)}` : `T = ${lab.T.toFixed(2)} · η = ${lab.eta.toFixed(2)} · t = ${fr.t.toFixed(3)}` });
-    P.bars($('lab-bars'), lab.err.frequencies, lab.err.masses, { left: txt('lbl-slots') });
+    const showField = lab.arrows && lab.tab === 'score';
+    scene($('lab-board'), {
+      t: showField ? 0.02 : fr.t, xs: showField ? null : fr.xs, ys: fr.ys,
+      arrows: showField ? { error: { bias: [lab.bias, 0], smooth: lab.smooth } } : null,
+      label: showField ? `s̃ at t = 0.02 · b = (${lab.bias.toFixed(1)}, 0), δ = ${lab.smooth.toFixed(3)}` : `T = ${lab.T.toFixed(2)} · η = ${lab.eta.toFixed(2)} · t = ${fr.t.toFixed(3)}`,
+    });
+    V.bars($('lab-bars'), lab.err.frequencies, lab.err.masses, { left: txt('lbl-slots') });
   }
   function labChanged(links, replay = true) {
     flash(links);
@@ -205,19 +214,19 @@
     labChanged([]);
   });
 
-  /* ================================================================= 4 budget */
+  /* =================================================================== 4 budget */
   const sw = { data: null, running: false };
   function drawSweeps() {
     const d = sw.data;
     const fl = floor(2048);
     const mk = (kind, key) => (d && d[kind] ? [
-      { points: d[kind][0].map((p) => [p.x, p[key]]), color: P.BLUE, label: txt('lbl-eta0'), marker: true },
-      { points: d[kind][1].map((p) => [p.x, p[key]]), color: P.RED, label: txt('lbl-eta1'), marker: true },
+      { points: d[kind][0].map((p) => [p.x, p[key]]), color: V.BLUE, label: txt('lbl-eta0'), marker: true },
+      { points: d[kind][1].map((p) => [p.x, p[key]]), color: V.RED, label: txt('lbl-eta1'), marker: true },
     ] : []);
-    P.plot($('sweep-T'), mk('T', 'tv'), { xlog: true, xlabel: txt('lbl-T'), ylabel: txt('lbl-tv'), hline: { y: fl.tv, label: txt('lbl-floor') }, xrange: [0.25, 4], yrange: [0, 0.3] });
-    P.plot($('sweep-bias'), mk('bias', 'tv'), { xlabel: txt('lbl-tilt'), ylabel: txt('lbl-tv'), hline: { y: fl.tv, label: txt('lbl-floor') }, xrange: [0, 2], yrange: [0, 0.7] });
-    P.plot($('sweep-smooth'), mk('smooth', 'spread'), { xlabel: txt('lbl-blur'), ylabel: txt('lbl-spread'), hline: { y: fl.spread, label: txt('lbl-floor') }, xrange: [0, 0.1], yrange: [0.8, 3.2] });
-    P.plot($('sweep-nfe'), mk('nfe', 'spread'), { xlog: true, ylog: true, xlabel: txt('lbl-evals'), ylabel: txt('lbl-spread'), hline: { y: fl.spread, label: txt('lbl-floor') }, xrange: [8, 512], yrange: [0.5, 30] });
+    V.plot($('sweep-T'), mk('T', 'tv'), { xlog: true, xlabel: txt('lbl-T'), ylabel: txt('lbl-tv'), hline: { y: fl.tv, label: txt('lbl-floor') }, xrange: [0.25, 4], yrange: [0, 0.3] });
+    V.plot($('sweep-bias'), mk('bias', 'tv'), { xlabel: txt('lbl-tilt'), ylabel: txt('lbl-tv'), hline: { y: fl.tv, label: txt('lbl-floor') }, xrange: [0, 2], yrange: [0, 0.7] });
+    V.plot($('sweep-smooth'), mk('smooth', 'spread'), { xlabel: txt('lbl-blur'), ylabel: txt('lbl-spread'), hline: { y: fl.spread, label: txt('lbl-floor') }, xrange: [0, 0.1], yrange: [0.8, 3.2] });
+    V.plot($('sweep-nfe'), mk('nfe', 'spread'), { xlog: true, ylog: true, xlabel: txt('lbl-evals'), ylabel: txt('lbl-spread'), hline: { y: fl.spread, label: txt('lbl-floor') }, xrange: [8, 512], yrange: [0.5, 30] });
   }
   async function computeSweeps() {
     if (sw.running) return;
@@ -241,16 +250,8 @@
   $('sweep-run').addEventListener('click', computeSweeps);
   fetch(new URL('sweeps.json', document.currentScript ? document.currentScript.src : location.href)).then((r) => (r.ok ? r.json() : null)).then((json) => { if (json && !sw.data) { sw.data = json; $('sweep-status').textContent = txt('status-pre'); drawSweeps(); } }).catch(() => {});
 
-  /* ============================================================ chrome & loop */
+  /* ============================================================== chrome & loop */
   function drawAll() { drawForward(); drawFamily(); drawLab(); drawSweeps(); }
-  function setLens(lens) {
-    shared.lens = lens;
-    for (const b of document.querySelectorAll('.lens-switch button')) b.setAttribute('aria-pressed', String(b.dataset.lens === lens));
-    try { localStorage.setItem('board-lens', lens); } catch (e) { /* ignore */ }
-    drawAll();
-  }
-  try { const l = localStorage.getItem('board-lens'); if (l === 'puzzle' || l === 'contour') shared.lens = l; } catch (e) { /* ignore */ }
-  for (const b of document.querySelectorAll('.lens-switch button')) { b.setAttribute('aria-pressed', String(b.dataset.lens === shared.lens)); b.addEventListener('click', () => setLens(b.dataset.lens)); }
   for (const b of document.querySelectorAll('.language-switch button')) b.addEventListener('click', () => T.setLanguage(b.dataset.lang));
   window.addEventListener('languagechange', () => { setPlay($('forward-play'), fw.playing); setPlay($('family-play'), fam.playing); setPlay($('lab-play'), lab.playing); restoreFocus(); if (lab.run) labRun(); drawAll(); });
 
@@ -265,7 +266,6 @@
     drawAll();
   }
   for (const ev of ['scroll', 'resize']) window.addEventListener(ev, () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; onScroll(); }); }, { passive: true });
-  window.addEventListener('puzzlephotoload', drawAll);
 
   let last = 0;
   function tick(now) {
@@ -279,7 +279,6 @@
     requestAnimationFrame(tick);
   }
 
-  // boot
   T.apply();
   selectTab('start');
   onScroll();

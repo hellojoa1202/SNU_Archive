@@ -71,15 +71,20 @@
     return { xs, ys };
   }
 
-  /** Brownian paths of the 48 pieces under the forward process dx = dw, for the shaking scene. */
-  function shakePaths(steps = 160, seed = 3) {
-    const r = rng(seed);
+  /** Brownian paths under the forward process dx = dw, started from exact draws of p_0 (the laser-off scene). */
+  function brownianPaths(count = 384, steps = 160, seed = 3) {
+    const r = rng(seed + 1000);
+    const start = exactDraws(count, seed);
     const h = 1 / steps;
-    return M.centers.map(([x, y]) => {
+    const paths = [];
+    for (let n = 0; n < count; n++) {
+      let x = start.xs[n];
+      let y = start.ys[n];
       const path = [[x, y]];
       for (let k = 0; k < steps; k++) { const [z1, z2] = normalPair(r); x += Math.sqrt(h) * z1; y += Math.sqrt(h) * z2; path.push([x, y]); }
-      return path;
-    });
+      paths.push(path);
+    }
+    return paths;
   }
 
   /**
@@ -217,7 +222,7 @@
     return [mx / xs.length, my / ys.length];
   }
 
-  const api = { rng, starts, shakePaths, run, slotFrequencies, slotError, spread, ksX, exactDraws, exactSpread, mean };
+  const api = { rng, starts, brownianPaths, run, slotFrequencies, slotError, spread, ksX, exactDraws, exactSpread, mean };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.BoardSampler = api;
 })(globalThis);
