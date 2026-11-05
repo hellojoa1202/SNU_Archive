@@ -17,7 +17,7 @@
     <tr>
       <td><sub>2026-2</sub></td>
       <td><sub>시스템소프트웨어특강</sub></td>
-      <td><sub>Diffusion Detective: 확산의 주파수 해석과 역과정</sub></td>
+      <td><sub>The Shaken Puzzle Board: 확산 샘플러의 세 가지 근사 (Diffusion Detective)</sub></td>
       <td><sub>개인</sub></td>
     </tr>
   </tbody>

@@ -1,138 +1,496 @@
-/* One analytic field, three objective constructions, optional generation solvers. */
-(function(){
-'use strict';
-const M=FlowMath,V=PuzzleView,S=CourseStudio,$=id=>document.getElementById(id),tr=(en,ko)=>DiffusionI18n.text(en,ko);
-const budgets=[16,32,64,128,256],distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]),fmt=(x,n=3)=>Number(x).toFixed(n);
-let model=M.create(),revision=0,activeSection='score',queued=false,dragging=false,lastTick=0,lastDraw=0,optionLanguage='';
-let population=null,materialGrid=null,meshCache=null,comparisonCache=null,areaCache=null;
-const refs=new Map(),traces=new Map(),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const state={time:0,selected:22,budget:32,probe:[0,0],prediction:[.6,0],pairing:0,initial:0,playing:false,axis:0,speed:1,active:'density-integral',sampleSeed:17};
-let solverResult=null,cnfResult=null,lossRange=1.3;
-const optionList=Array.from({length:model.a.length},(_,i)=>'<option value="'+i+'">'+(i+1)+'</option>').join('');
-document.querySelectorAll('.piece-select').forEach(e=>e.innerHTML=optionList);$('destination').innerHTML=optionList;
-function highlight(key){state.active=key;document.querySelectorAll('[data-link]').forEach(e=>e.classList.toggle('active',e.dataset.link.split(' ').includes(key)));}
-function invalidate(){revision++;refs.clear();traces.clear();population=null;materialGrid=null;meshCache=null;comparisonCache=null;areaCache=null;}
-function reference(){const i=state.selected;if(!refs.has(i)){const fine=M.integrate(model,model.a[i],'heun',4096),coarse=M.integrate(model,model.a[i],'heun',2048);refs.set(i,{fine,delta:distance(fine.end,coarse.end)});}return refs.get(i);}
-function trace(){if(!traces.has(state.selected))traces.set(state.selected,M.likelihoodTrace(model,model.a[state.selected],2048));return traces.get(state.selected);}
-function cloud(){if(!population)population=M.samples(model,48).map(x=>M.integrate(model,x,'heun',1024).path);return population;}
-function meshData(){
- if(!materialGrid){materialGrid=[];
-  // A curve has several material points: its edges are not assumed to stay straight.
-  for(let j=0;j<5;j++)materialGrid.push(Array.from({length:33},(_,i)=>[-1.15+i*2.3/32,-.7+j*.35]).map(x=>M.integrate(model,x,'heun',512).path));
-  for(let i=0;i<7;i++)materialGrid.push(Array.from({length:25},(_,j)=>[-1.15+i*2.3/6,-.7+j*1.4/24]).map(x=>M.integrate(model,x,'heun',512).path));
- }
- const key=revision+':'+state.selected;
- if(meshCache?.key!==key){const a=model.a[state.selected],points=[];for(const [u,v,du,dv] of [[-1,-1,2,0],[1,-1,0,2],[1,1,-2,0],[-1,1,0,-2]])for(let k=0;k<5;k++)points.push([a[0]+.06*(u+du*k/5),a[1]+.06*(v+dv*k/5)]);
-  const patch=points.map(x=>M.integrate(model,x,'heun',1024).path);meshCache={key,patch};
- }
- return{grid:materialGrid,cloud:cloud(),patch:meshCache.patch,trace:trace()};
-}
-function comparison(){const key=revision+':'+state.selected;if(comparisonCache?.key===key)return comparisonCache;const ref=reference();const rows=budgets.map(budget=>{const e=M.integrate(model,model.a[state.selected],'euler',budget),h=M.integrate(model,model.a[state.selected],'heun',budget/2);return{budget,e,h,eError:distance(e.end,ref.fine.end),hError:distance(h.end,ref.fine.end)};});return comparisonCache={key,rows};}
-function areaProfiles(){const key=revision+':'+state.selected+':'+state.axis+':'+state.budget;if(areaCache?.key!==key)areaCache={key,profiles:[M.quadrature(model,model.a[state.selected],'euler',state.budget,state.axis),M.quadrature(model,model.a[state.selected],'heun',state.budget/2,state.axis)]};return areaCache.profiles;}
-function setPairing(p){state.pairing=p;model.pi=Array.from({length:model.a.length},(_,i)=>p===1?(i+8)%model.a.length:p===2?model.a.length-1-i:i);invalidate();}
-function setInitial(p){state.initial=p;const base=M.create();model.a=base.a.map((a,i)=>p===1?[Math.cos(i*2*Math.PI/model.a.length)*.88,Math.sin(i*2*Math.PI/model.a.length)*.62]:p===2?[a[0]*.45-.55,a[1]*.8]:a);invalidate();}
-function pause(){if(activeSection==='cnf')state.playing=false;}
-function chart(id,lines,opts={}){
- const canvas=$(id),r=canvas.getBoundingClientRect();if(r.width<1)return;const d=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*d);canvas.height=Math.round(r.height*d);const c=canvas.getContext('2d');c.scale(d,d);c.fillStyle='#fff';c.fillRect(0,0,r.width,r.height);
- const left=49,right=r.width-18,top=28,bottom=r.height-42,xlim=opts.xlim||[0,1],ylim=opts.ylim||[0,1];
- const map=p=>[left+(p[0]-xlim[0])/(xlim[1]-xlim[0])*(right-left),bottom-(p[1]-ylim[0])/(ylim[1]-ylim[0])*(bottom-top)];
- c.font='10px Arial';c.strokeStyle='#e4e9ed';c.fillStyle='#6d7d89';c.textAlign='right';
- for(const value of opts.yticks||[0,.5,1]){const y=map([0,value])[1];c.beginPath();c.moveTo(left,y);c.lineTo(right,y);c.stroke();c.fillText(opts.yformat?opts.yformat(value):String(value),left-7,y+3);}
- c.textAlign='center';for(const value of opts.xticks||[0,.5,1]){const x=map([value,0])[0];c.fillText(opts.xformat?opts.xformat(value):String(value),x,bottom+18);}
- c.fillText(opts.xlabel||tr('Time','시간'),(left+right)/2,r.height-7);c.textAlign='left';c.fillText(opts.ylabel||'',left,13);
- c.save();c.beginPath();c.rect(left,top,right-left,bottom-top);c.clip();
- for(const line of lines){c.strokeStyle=line.color;c.lineWidth=line.width||1.7;c.setLineDash(line.dash||[]);c.beginPath();line.points.forEach((p,i)=>{const [x,y]=map(p);i?c.lineTo(x,y):c.moveTo(x,y);});c.stroke();c.setLineDash([]);if(opts.dots)for(const p of line.points){c.beginPath();c.arc(...map(p),3,0,Math.PI*2);c.fillStyle=line.color;c.fill();}}
- if(opts.endpoints)for(const line of lines.filter(l=>!l.dash)){const p=line.points.at(-1);if(p){c.beginPath();c.arc(...map(p),3.5,0,Math.PI*2);c.fillStyle=line.color;c.fill();}}
- if(opts.mark!==undefined){const x=map([opts.mark,0])[0];c.strokeStyle='#8696a1';c.lineWidth=1;c.setLineDash([3,4]);c.beginPath();c.moveTo(x,top);c.lineTo(x,bottom);c.stroke();}c.restore();
-}
-function cnf(){
- const data=meshData(),r=S.mesh(model,{...state,revision},data),trc=data.trace;
- $('density-integrated').textContent=fmt(r.integrated,5);$('density-exact').textContent=fmt(r.direct,5);$('density-gap').textContent=Math.abs(r.integrated-r.direct).toExponential(2);cnfResult={...r,error:Math.abs(r.integrated-r.direct)};
- const all=Array.from({length:101},(_,k)=>{const t=k/100;return[t,M.scalarAt(trc.logp,t),M.logDensity(model,M.at(trc.path,t),t)];});
- const values=all.flatMap(p=>p.slice(1)),lo=Math.min(...values),hi=Math.max(...values),pad=Math.max(.08,(hi-lo)*.12),low=lo-pad,high=hi+pad;
- const points=all.filter(p=>p[0]<state.time);points.push([state.time,r.integrated,r.direct]);
- chart('density-chart',[{points:all.map(p=>[p[0],p[1]]),color:'#d0d9e2',width:1,dash:[2,4]},{points:points.map(p=>[p[0],p[1]]),color:V.blue,width:2.6},{points:points.map(p=>[p[0],p[2]]),color:V.red,width:1.2,dash:[4,4]}],{ylim:[low,high],yticks:[low,(low+high)/2,high],yformat:x=>fmt(x,2),ylabel:tr('Log density along the trajectory','궤적을 따른 로그밀도'),mark:state.time,endpoints:true});
-}
-function fm(){S.regression(model,{...state,revision});S.velocityLoss(model,state);$('fm-error').textContent=fmt(M.conditionalRisk(model,state.probe,state.time,state.prediction).excess,4);}
-function cfm(){
- if(visible('plan-canvas'))S.pairboard(model,state);
- if(visible('positions-canvas'))S.positions(model,state);
- const fieldFrame=V.frame($('field-canvas'));V.heat(fieldFrame,model,state.time,revision);
- for(let y=-.65;y<=.65;y+=.26)for(let x=-1.15;x<=1.15;x+=.28)V.arrow(fieldFrame,[x,y],M.field(model,[x,y],state.time),'#cad6df',.6,.22);
- const info=M.field(model,state.probe,state.time,true),rank=info.weights.map((w,i)=>({i,w})).sort((a,b)=>b.w-a.w),colors=['#ae4c54','#32877b','#9b73a9'];
- for(let j=2;j>=0;j--){const{i,w}=rank[j];V.arrow(fieldFrame,state.probe,info.components[i].map(v=>v*w),colors[j],2.2,.44);}V.arrow(fieldFrame,state.probe,info.v,V.blue,2.8,.44);V.dot(fieldFrame,state.probe,V.ink,4);
- $('weights').innerHTML=rank.slice(0,3).map(({i,w},j)=>'<div><span style="color:'+colors[j]+'">'+tr('Pair ','끝점 쌍 ')+(i+1)+'</span><span class="weight-track"><span style="width:'+(w*100)+'%;background:'+colors[j]+'"></span></span><output>'+fmt(w*100,1)+'%</output></div>').join('');
- $('field-live').textContent=tr('Probability in remaining pairs: ','나머지 끝점 쌍의 확률: ')+fmt(Math.max(0,1-rank.slice(0,3).reduce((a,b)=>a+b.w,0))*100,1)+'%';
- const risk=S.loss(model,state);lossRange=risk.range;$('risk-total').textContent=fmt(risk.total,4);$('risk-excess').textContent=fmt(risk.excess,4);$('risk-variance').textContent=fmt(risk.irreducible,4);
-}
-function solver(){
- if(!$('solver-details').open)return;
- const f=V.frame($('solver-canvas')),ref=reference(),rows=comparison().rows,{e,h}=rows.find(r=>r.budget===state.budget);
- V.line(f,ref.fine.path,'#9ba8b2',1.5,[4,4]);V.line(f,e.path,V.red,1.8);V.line(f,h.path,V.blue,1.8);for(const p of e.path)V.dot(f,p,V.red,1.5);for(const p of h.path)V.dot(f,p,V.blue,1.5);V.dot(f,model.a[state.selected],V.ink,4);V.dot(f,e.end,V.red,4);V.dot(f,h.end,V.blue,4);
- const eError=distance(e.end,ref.fine.end),hError=distance(h.end,ref.fine.end);$('euler-error').textContent=eError.toExponential(2);$('heun-error').textContent=hError.toExponential(2);$('reference-check').textContent=ref.delta.toExponential(2);$('solver-live').textContent='Euler: '+state.budget+tr(' steps','단계')+' · Heun: '+state.budget/2+tr(' steps','단계')+' · '+state.budget+tr(' evaluations each','회씩 평가');
- const all=rows.flatMap(r=>[Math.log10(Math.max(1e-12,r.eError)),Math.log10(Math.max(1e-12,r.hError))]),low=Math.floor(Math.min(...all)),high=Math.max(low+1,Math.ceil(Math.max(...all))),ticks=Array.from({length:high-low+1},(_,i)=>low+i);
- chart('error-chart',[{points:rows.map(r=>[Math.log2(r.budget),Math.log10(Math.max(1e-12,r.eError))]),color:V.red},{points:rows.map(r=>[Math.log2(r.budget),Math.log10(Math.max(1e-12,r.hError))]),color:V.blue}],{xlim:[4,8],ylim:[low,high],xticks:[4,5,6,7,8],yticks:ticks.filter((_,i)=>i%Math.ceil(ticks.length/5)===0),xformat:x=>String(2**x),yformat:y=>'1e'+y,xlabel:tr('Field evaluations','속도장 평가 횟수'),ylabel:tr('Endpoint error','끝점 오차'),mark:Math.log2(state.budget),dots:true});
- solverResult={eError,hError,referenceDelta:ref.delta,eulerNfe:e.nfe,heunNfe:h.nfe};const profiles=areaProfiles();S.quadrature(model,state,ref,profiles);$('euler-area').textContent=fmt(profiles[0].area,5);$('heun-area').textContent=fmt(profiles[1].area,5);$('reference-area').textContent=fmt(ref.fine.end[state.axis]-model.a[state.selected][state.axis],5);
-}
-function sync(){
+/* app.js — wires the controls to the model, the sampler and the painters.
+ * Sections:
+ *   1  board    forward process, time slider, lens
+ *   2  family   eta-family with exact ingredients, colours by start
+ *   3  lab      the three substitutions, plus 3.1 prior / 3.2 score / 3.3 grid figures
+ *   4  budget   sweeps (precomputed sweeps.json, recomputable here)
+ * Shared state that survives language and lens changes lives in `shared`. */
+(function () {
+  'use strict';
+  const M = window.BoardModel;
+  const S = window.BoardSampler;
+  const V = window.BoardView;
+  const Bars = window.BarsView;
+  const Plot = window.Plot;
+  const T = window.BoardText;
+  const EQ = window.BoardEquations;
+  const B = window.BoardBudget;
+  const $ = (id) => document.getElementById(id);
+  const tr = (en, ko) => T.tr(en, ko);
+  const txt = (key) => T.text(key);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const BLUE = V.colors.BLUE;
+  const RED = V.colors.RED;
 
- $('header-play').hidden=activeSection!=='cnf';$('header-play').textContent=state.playing?'Ⅱ':'▶';$('header-play').setAttribute('aria-label',state.playing?tr('Pause animation','애니메이션 일시정지'):tr('Play animation','애니메이션 재생'));
- $('play-toggle').textContent=state.playing?tr('Pause','일시정지'):tr('Play','재생');$('play-toggle').setAttribute('aria-pressed',String(state.playing));$('speed').value=state.speed;
- if(optionLanguage!==DiffusionI18n.language){optionLanguage=DiffusionI18n.language;
-  $('pairing').innerHTML=tr(['Original pairing','Shift destinations','Reverse destinations','Custom pairing'],['기본 대응','도착점 순환','도착점 역순','직접 지정']).map((name,i)=>'<option value="'+i+'"'+(i===3?' disabled':'')+'>'+name+'</option>').join('');
-  $('initial').innerHTML=tr(['Scattered centers','Ring of centers','Compact centers'],['흩어진 중심','고리 배치','밀집 배치']).map((name,i)=>'<option value="'+i+'">'+name+'</option>').join('');
-  $('coordinate').options[0].textContent=tr('Horizontal','가로');$('coordinate').options[1].textContent=tr('Vertical','세로');
- }
- $('pairing').value=state.pairing;$('initial').value=state.initial;$('coordinate').value=state.axis;$('budget').value=state.budget;
- document.querySelectorAll('.time-control').forEach(e=>e.value=state.time);document.querySelectorAll('[data-time]').forEach(e=>e.textContent=fmt(state.time));document.querySelectorAll('.piece-select').forEach(e=>e.value=state.selected);$('destination').value=model.pi[state.selected];
- const offset=state.prediction[0]-M.field(model,state.probe,state.time)[0];$('candidate-offset').min=-Math.max(2,Math.ceil(Math.abs(offset)));$('candidate-offset').max=Math.max(2,Math.ceil(Math.abs(offset)));$('candidate-offset').value=offset;$('candidate-offset-out').textContent=fmt(offset,2);
- for(const[j,axis]of ['x','y'].entries()){const range=Math.max(2,Math.ceil(Math.abs(state.prediction[j])));$('prediction-'+axis).min=-range;$('prediction-'+axis).max=range;$('prediction-'+axis).value=state.prediction[j];$('prediction-'+axis+'-out').textContent=fmt(state.prediction[j],2);}
- highlight(state.active);
-}
-function visible(id){const r=$(id).getBoundingClientRect();return r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight+160;}
-function render(all=false){sync();if(!dragging&&visible('mesh-canvas'))cnf();if(visible('fm-canvas')||visible('velocity-canvas'))fm();if(all||visible('cfm'))cfm();if(!dragging&&(all||visible('solver')))solver();window.dispatchEvent(new Event('flowrender'));}
-function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;render();});}
-function tick(now){const dt=lastTick?Math.min((now-lastTick)/1000,.1):0;lastTick=now;
- if(state.playing&&activeSection==='cnf'&&visible('mesh-canvas')&&!document.hidden){state.time=(state.time+dt*state.speed/20)%1;if(now-lastDraw>100){lastDraw=now;highlight('density-integral');render();}}
- requestAnimationFrame(tick);
-}
-for(const id of ['play-toggle','header-play'])$(id).addEventListener('click',()=>{state.playing=!state.playing;schedule();});
-$('replay').addEventListener('click',()=>{state.time=0;state.playing=true;schedule();});$('speed').addEventListener('change',()=>{state.speed=Number($('speed').value);});
-for(const el of document.querySelectorAll('.time-control'))el.addEventListener('input',()=>{pause();state.time=Number(el.value);highlight(activeSection==='cnf'?'density-integral':'time');schedule();});
-for(const el of document.querySelectorAll('.piece-select'))el.addEventListener('change',()=>{state.selected=Number(el.value);highlight(activeSection==='cnf'?'initial-density':'connection');schedule();});
-$('puzzle-swap').addEventListener('click',()=>{const other=(state.selected+Math.floor(model.a.length/2))%model.a.length;M.swap(model,state.selected,model.pi[other]);state.pairing=3;state.time=1;invalidate();highlight('connection');schedule();});
-$('puzzle-reset').addEventListener('click',()=>{setPairing(0);state.time=1;highlight('connection');schedule();});
-$('pairing').addEventListener('change',()=>{setPairing(Number($('pairing').value));highlight('connection');schedule();});$('initial').addEventListener('change',()=>{setInitial(Number($('initial').value));highlight('connection');schedule();});
-$('destination').addEventListener('change',()=>{M.swap(model,state.selected,Number($('destination').value));state.pairing=3;invalidate();highlight('connection');schedule();});
-for(const[j,axis]of ['x','y'].entries())$('prediction-'+axis).addEventListener('input',()=>{state.prediction[j]=Number($('prediction-'+axis).value);highlight('prediction');schedule();});
-for(const id of ['use-target','use-mean'])$(id).addEventListener('click',()=>{state.prediction=M.field(model,state.probe,state.time);highlight('prediction');schedule();});
-$('sample-position').addEventListener('click',()=>{state.sampleSeed++;const n=state.sampleSeed;state.time=((n*37)%97+1)/100;const pair=M.trainingPair(model,state.time,n%model.a.length,n);state.probe=pair.position;highlight('target');schedule();});
-$('candidate-offset').addEventListener('input',()=>{state.prediction[0]=M.field(model,state.probe,state.time)[0]+Number($('candidate-offset').value);highlight('prediction');schedule();});
-let dragStage=0;const planCanvas=$('plan-canvas');planCanvas.addEventListener('pointerdown',e=>{const hit=S.pairPoint(e),p=hit.point,all=model.a.map((_,i)=>({i,d:distance(hit.stage===0?model.a[i]:hit.stage===2?model.b[model.pi[i]]:M.component(model,i,state.time).mu,p)})).sort((a,b)=>a.d-b.d);if(all[0].d>.19)return;state.selected=all[0].i;dragging=hit.stage===0||(hit.stage===1&&state.time<.001);if(dragging){dragStage=hit.stage;planCanvas.setPointerCapture(e.pointerId);}highlight('connection');schedule();});
-planCanvas.addEventListener('pointermove',e=>{if(!dragging)return;const p=S.pairPoint(e,dragStage).point;model.a[state.selected]=[Math.max(-1.18,Math.min(1.18,p[0])),Math.max(-.7,Math.min(.7,p[1]))];invalidate();schedule();});
-for(const ev of ['pointerup','pointercancel','lostpointercapture'])planCanvas.addEventListener(ev,()=>{if(dragging){dragging=false;schedule();}});
-const fmCanvas=$('fm-canvas');let movingPrediction=false;
-function changePrediction(e){const p=V.point(fmCanvas,e);state.prediction=p.map((x,j)=>Math.max(-2,Math.min(2,(x-state.probe[j])/.38)));highlight('prediction');schedule();}
-fmCanvas.addEventListener('pointerdown',e=>{const p=V.point(fmCanvas,e),tip=state.probe.map((x,j)=>x+.38*state.prediction[j]);if(distance(p,tip)<.12){movingPrediction=true;fmCanvas.setPointerCapture(e.pointerId);changePrediction(e);}else{state.probe=p;highlight('target');schedule();}});
-fmCanvas.addEventListener('pointermove',e=>{if(movingPrediction)changePrediction(e);});for(const ev of ['pointerup','pointercancel','lostpointercapture'])fmCanvas.addEventListener(ev,()=>movingPrediction=false);
-const velocityCanvas=$('velocity-canvas');let draggingVelocity=false;
-function setVelocity(e){state.prediction=S.velocityPoint(e);highlight('prediction');schedule();}
-velocityCanvas.addEventListener('pointerdown',e=>{draggingVelocity=true;velocityCanvas.setPointerCapture(e.pointerId);setVelocity(e);});
-velocityCanvas.addEventListener('pointermove',e=>{if(draggingVelocity)setVelocity(e);});
-for(const ev of ['pointerup','pointercancel','lostpointercapture'])velocityCanvas.addEventListener(ev,()=>draggingVelocity=false);
-velocityCanvas.addEventListener('keydown',e=>{const d={ArrowLeft:[-.03,0],ArrowRight:[.03,0],ArrowUp:[0,-.03],ArrowDown:[0,.03]}[e.key];if(!d)return;e.preventDefault();state.prediction=state.prediction.map((x,j)=>x+d[j]);highlight('prediction');schedule();});
-$('field-canvas').addEventListener('pointerdown',e=>{state.probe=V.point($('field-canvas'),e);highlight('probe');schedule();});
-$('loss-canvas').addEventListener('pointerdown',e=>{const r=$('loss-canvas').getBoundingClientRect(),offset=Math.max(-lossRange,Math.min(lossRange,((e.clientX-r.left-48)/(r.width-70)*2-1)*lossRange));state.prediction[0]=M.field(model,state.probe,state.time)[0]+offset;highlight('prediction');schedule();});
-for(const[id,kind]of [['plan-canvas','connection'],['fm-canvas','target'],['field-canvas','probe'],['loss-canvas','prediction']])$(id).addEventListener('keydown',e=>{const delta={ArrowLeft:[-.03,0],ArrowRight:[.03,0],ArrowUp:[0,-.03],ArrowDown:[0,.03]}[e.key];if(!delta)return;e.preventDefault();
- if(kind==='connection'){model.a[state.selected]=model.a[state.selected].map((x,j)=>Math.max(j?-.7:-1.18,Math.min(j?.7:1.18,x+delta[j])));invalidate();}
- else if(kind==='prediction')state.prediction[0]+=delta[0];else state.probe=state.probe.map((x,j)=>x+delta[j]);highlight(kind);schedule();});
-$('budget').addEventListener('change',()=>{state.budget=Number($('budget').value);highlight('euler');schedule();});$('coordinate').addEventListener('change',()=>{state.axis=Number($('coordinate').value);highlight('integral');schedule();});
-const quad=$('quadrature-canvas');quad.addEventListener('pointermove',e=>{if(e.pointerType==='touch'&&!e.buttons)return;const r=quad.getBoundingClientRect();state.time=Math.max(0,Math.min(.9999,(e.clientX-r.left-48)/(r.width-68)));highlight(e.clientY-r.top<r.height/2?'euler':'correct');schedule();});quad.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();state.time=Math.max(0,Math.min(.9999,state.time+(e.key==='ArrowLeft'?-1:1)/state.budget));highlight('integral');schedule();});
-document.querySelectorAll('details').forEach(e=>e.addEventListener('toggle',schedule));
-function updateSection(){let best='';for(const section of document.querySelectorAll('section.chapter')){if(section.id==='notes')continue;const r=section.getBoundingClientRect();if(r.top<innerHeight*.45&&r.bottom>100)best=section.id;}
- if(best)activeSection=best;document.querySelectorAll('.contents a').forEach(a=>a.classList.toggle('active',a.hash==='#'+activeSection));schedule();}
-window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-innerHeight;$('reading-progress').style.width=(h?scrollY/h*100:0)+'%';updateSection();},{passive:true});
-for(const event of ['diffusionlanguagechange','puzzlephotoload','resize'])window.addEventListener(event,()=>{optionLanguage='';schedule();});
-window.FlowLab={modelState:()=>({model,time:state.time,selected:state.selected,revision}),snapshot:()=>({...state,probe:state.probe.slice(),prediction:state.prediction.slice(),model:JSON.parse(JSON.stringify(model)),revision,activeSection,loaded:V.loaded,cnf:cnfResult,risk:M.conditionalRisk(model,state.probe,state.time,state.prediction),solver:solverResult,areas:areaProfiles().map(p=>({area:p.area,displacement:p.displacement,nfe:p.nfe}))}),highlight};
-render();updateSection();requestAnimationFrame(tick);
+  const shared = { lens: 'puzzle' };
+  const FLOOR_N = {}; // finite-sample floors per N, computed once
+
+  function floors(N) {
+    if (!FLOOR_N[N]) {
+      const d = S.exactDraws(N);
+      FLOOR_N[N] = { tv: S.slotError(d.xs, d.ys).tv, spread: S.spread(d.xs, d.ys), ks: S.ksX(d.xs) };
+    }
+    return FLOOR_N[N];
+  }
+  const EXACT_SPREAD = () => S.exactSpread(); // the spread of p_0 itself, from 20 000 exact draws
+
+  /* ------------------------------------------------------------ equations */
+  function renderEquations() {
+    const hasKatex = typeof window.katex !== 'undefined';
+    for (const box of document.querySelectorAll('.equation[data-eq]')) {
+      const e = EQ[box.dataset.eq];
+      if (!e) continue;
+      box.innerHTML = '';
+      const math = document.createElement('div');
+      if (hasKatex) {
+        try { window.katex.render(e.tex, math, { displayMode: true, throwOnError: false }); }
+        catch (err) { math.className = 'tex-fallback'; math.textContent = e.tex; }
+      } else { math.className = 'tex-fallback'; math.textContent = e.tex; }
+      box.appendChild(math);
+      const src = document.createElement('div');
+      src.className = 'source';
+      src.textContent = e.source ? `${e.source[0]} · PDF p. ${e.source.slice(1).join(', ')}` : txt('src-defined');
+      box.appendChild(src);
+    }
+    // the sources table in section 6
+    const table = $('sources-table');
+    if (table) {
+      const rows = Object.entries(EQ).map(([id, e]) => `<tr><td><code>${id}</code></td><td>${e.source ? `${e.source[0]} · p. ${e.source.slice(1).join(', ')}` : txt('src-defined')}</td></tr>`).join('');
+      table.innerHTML = `<thead><tr><th>${txt('src-col-eq')}</th><th>${txt('src-col-src')}</th></tr></thead><tbody>${rows}</tbody>`;
+    }
+  }
+
+  function renderInlineMath(rootEl) {
+    if (typeof window.katex === 'undefined') return;
+    const walker = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, null);
+    const nodes = [];
+    while (walker.nextNode()) if (walker.currentNode.nodeValue.includes('\\(')) nodes.push(walker.currentNode);
+    for (const node of nodes) {
+      const parts = node.nodeValue.split(/(\\\(.+?\\\))/);
+      if (parts.length < 2) continue;
+      const frag = document.createDocumentFragment();
+      for (const part of parts) {
+        if (part.startsWith('\\(') && part.endsWith('\\)')) {
+          const span = document.createElement('span');
+          try { window.katex.render(part.slice(2, -2), span, { throwOnError: false }); } catch (e) { span.textContent = part; }
+          frag.appendChild(span);
+        } else frag.appendChild(document.createTextNode(part));
+      }
+      node.parentNode.replaceChild(frag, node);
+    }
+  }
+
+  /** Light the equations and knob groups related to a control for a moment. */
+  function light(ids) {
+    for (const el of document.querySelectorAll('.lit')) el.classList.remove('lit');
+    for (const id of ids) {
+      for (const el of document.querySelectorAll(`.equation[data-eq="${id}"], .knobs fieldset[data-knob="${id}"]`)) el.classList.add('lit');
+    }
+    clearTimeout(light.timer);
+    light.timer = setTimeout(() => { for (const el of document.querySelectorAll('.lit')) el.classList.remove('lit'); }, 1600);
+  }
+
+  /* -------------------------------------------------------------- helpers */
+  function visible(el) {
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.bottom > -80 && r.top < innerHeight + 80;
+  }
+  function fmt(v, d = 3) { return Number.isFinite(v) ? v.toFixed(d) : '–'; }
+  function setPlay(btn, playing) { btn.textContent = playing ? txt('btn-pause') : txt('btn-play'); btn.setAttribute('aria-pressed', String(playing)); }
+  function marginalSeries(t, lo = -1.6, hi = 1.6, n = 241) {
+    const pts = [];
+    for (let i = 0; i < n; i++) { const x = lo + (hi - lo) * i / (n - 1); pts.push([x, M.marginalX(x, t)]); }
+    return pts;
+  }
+  function histogramSeries(xs, lo, hi, bins = 64) {
+    const h = (hi - lo) / bins;
+    const counts = new Array(bins).fill(0);
+    for (const x of xs) { const i = Math.floor((x - lo) / h); if (i >= 0 && i < bins) counts[i]++; }
+    const pts = [];
+    for (let i = 0; i < bins; i++) { const d = counts[i] / xs.length / h; pts.push([lo + i * h, d], [lo + (i + 1) * h, d]); }
+    return pts;
+  }
+  /** Slider position u in [0,1] <-> time: a cubic map gives the sharpening near t = 0 room. */
+  const sliderToTime = (u, T = 1) => T * Math.pow(u, 3);
+  const timeToSlider = (t, T = 1) => Math.cbrt(Math.max(0, t / T));
+  /** Progress p in [0,1] of a generation run <-> its time (p = 1 is t = 0). */
+  const progressToTime = (p, T) => T * Math.pow(1 - p, 3);
+
+  /** State of a run at time t, interpolated between the two nearest snapshots. */
+  function frameAtTime(run, t) {
+    const frames = run.frames; // times decrease from T to 0
+    if (frames.length === 1) return frames[0];
+    let i = 0;
+    while (i < frames.length - 2 && frames[i + 1].t > t) i++;
+    const a = frames[i];
+    const b = frames[i + 1];
+    const w = a.t === b.t ? 1 : Math.min(1, Math.max(0, (a.t - t) / (a.t - b.t)));
+    const xs = new Float64Array(a.xs.length);
+    const ys = new Float64Array(a.xs.length);
+    for (let n = 0; n < xs.length; n++) { xs[n] = a.xs[n] + w * (b.xs[n] - a.xs[n]); ys[n] = a.ys[n] + w * (b.ys[n] - a.ys[n]); }
+    return { t: a.t + w * (b.t - a.t), xs, ys };
+  }
+  const frameAt = (run, p, T = 1) => frameAtTime(run, progressToTime(p, T));
+
+  function reveal(xs, ys) {
+    const f = S.slotFrequencies(xs, ys);
+    const m = M.slotMasses(0);
+    return Array.from(f, (v, k) => Math.min(1, v / m[k]));
+  }
+  function metricsInto(prefix, xs, ys, N) {
+    const e = S.slotError(xs, ys);
+    const sp = S.spread(xs, ys) / EXACT_SPREAD();
+    const ks = S.ksX(xs);
+    const fl = floors(N);
+    $(prefix + '-tv').textContent = fmt(e.tv);
+    $(prefix + '-spread').textContent = fmt(sp, 2);
+    $(prefix + '-ks').textContent = fmt(ks);
+    const flTv = $(prefix + '-tv-floor');
+    if (flTv) { flTv.textContent = `(${txt('lbl-floor')} ${fmt(fl.tv)})`; $(prefix + '-spread-floor').textContent = `(${txt('lbl-floor')} ${fmt(fl.spread / EXACT_SPREAD(), 2)})`; $(prefix + '-ks-floor').textContent = `(${txt('lbl-floor')} ${fmt(fl.ks)})`; }
+    const flAll = $(prefix + '-floor');
+    if (flAll) flAll.textContent = `${fmt(fl.tv)} · ${fmt(fl.spread / EXACT_SPREAD(), 2)} · ${fmt(fl.ks)}`;
+    return e;
+  }
+
+  /* ============================================================ 1. board */
+  const board = { t: 0, playing: !reduced, arrows: false, last: 0 };
+  function drawBoardSection() {
+    if (!visible($('board-forward')) && !visible($('board-marginal'))) return;
+    V.drawScene($('board-forward'), { lens: shared.lens, t: board.t, arrows: board.arrows, label: `t = ${board.t.toFixed(3)}` });
+    Plot.draw($('board-marginal'), [{ points: marginalSeries(board.t), color: BLUE, label: txt('lbl-marginal'), fill: true }], { xlabel: 'x', yrange: [0, Math.max(0.6, 1.05 * Math.max(...marginalSeries(board.t).map((p) => p[1])))] });
+    $('board-variance').textContent = fmt(M.variance(board.t), 4);
+    $('board-contrast').textContent = fmt(V.slotContrast(board.t), 3);
+    $('board-snr').textContent = board.t > 0 ? fmt(M.snr(board.t), 2) : '∞';
+    $('board-time').value = timeToSlider(board.t);
+    $('board-time-out').textContent = board.t.toFixed(4);
+  }
+  $('board-time').addEventListener('input', () => { board.playing = false; setPlay($('board-play'), false); board.t = sliderToTime(+$('board-time').value); light(['kernel', 'marginal', 'fokker-planck']); drawBoardSection(); });
+  $('board-play').addEventListener('click', () => { if (board.t >= 1) board.t = 0; board.playing = !board.playing; setPlay($('board-play'), board.playing); });
+  $('board-arrows').addEventListener('change', () => { board.arrows = $('board-arrows').checked; light(['landscape']); drawBoardSection(); });
+
+  /* =========================================================== 2. family */
+  const family = { eta: 1, progress: 0, playing: !reduced, startSeed: 11, noiseSeed: 23, colors: true, paths: true, run: null, selected: -1, colorList: null };
+  function familyRun() {
+    family.run = S.run({ T: 1, eta: family.eta, steps: 256, count: 1024, startSeed: family.startSeed, noiseSeed: family.noiseSeed, exactStart: true, trackPaths: 24, snapshots: 60 });
+    family.colorList = V.startColors(family.run.startXs, family.run.startYs);
+    const e = metricsInto('family', family.run.xs, family.run.ys, 1024);
+    family.bars = e;
+  }
+  function drawFamily() {
+    if (!family.run) familyRun();
+    if (!visible($('family-board')) && !visible($('family-bars'))) return;
+    const fr = frameAt(family.run, family.progress);
+    const upto = Math.floor((1 - fr.t) * 256) + 1;
+    const f = V.drawScene($('family-board'), {
+      lens: shared.lens, t: fr.t, xs: fr.xs, ys: fr.ys, colors: family.colors ? family.colorList : null,
+      paths: family.paths ? family.run.paths : null, pathsUpto: upto, reveal: reveal(fr.xs, fr.ys),
+      label: `η = ${family.eta.toFixed(2)} · t = ${fr.t.toFixed(3)}`,
+    });
+    if (family.selected >= 0) {
+      const n = family.selected;
+      const path = family.run.paths[n];
+      if (path) V.drawPaths(f, [path], { upto, color: RED, width: 2 });
+      V.drawPieces(f, [fr.xs[n]], [fr.ys[n]], { lens: 'landscape', color: RED, size: 5 });
+    }
+    Bars.draw($('family-bars'), family.bars.frequencies, family.bars.masses, { labelLeft: txt('lbl-slots') });
+    $('family-eta-out').textContent = family.eta.toFixed(2);
+    $('family-progress').value = family.progress;
+    $('family-progress-out').textContent = `${txt('lbl-time-t')} ${fr.t.toFixed(3)}`;
+  }
+  $('family-eta').addEventListener('input', () => { family.eta = +$('family-eta').value; light(['eta-family', 'toy-step']); familyRun(); drawFamily(); });
+  $('family-progress').addEventListener('input', () => { family.playing = false; setPlay($('family-play'), false); family.progress = +$('family-progress').value; drawFamily(); });
+  $('family-play').addEventListener('click', () => { if (family.progress >= 1) family.progress = 0; family.playing = !family.playing; setPlay($('family-play'), family.playing); });
+  $('family-noise').addEventListener('click', () => { family.noiseSeed++; light(['reverse-sde']); familyRun(); drawFamily(); });
+  $('family-starts').addEventListener('click', () => { family.startSeed++; familyRun(); drawFamily(); });
+  $('family-colors').addEventListener('change', () => { family.colors = $('family-colors').checked; light(['flow-map', 'noncross']); drawFamily(); });
+  $('family-paths').addEventListener('change', () => { family.paths = $('family-paths').checked; drawFamily(); });
+  $('family-board').addEventListener('pointerdown', (e) => {
+    const canvas = $('family-board');
+    const f = V.frameOf(canvas);
+    const r = canvas.getBoundingClientRect();
+    const [wx, wy] = f.unmap(e.clientX - r.left, e.clientY - r.top);
+    const fr = frameAt(family.run, family.progress);
+    let best = Infinity;
+    for (let n = 0; n < 24; n++) { const d = Math.hypot(fr.xs[n] - wx, fr.ys[n] - wy); if (d < best) { best = d; family.selected = n; } }
+    drawFamily();
+  });
+
+  /* ============================================================== 3. lab */
+  const lab = {
+    T: 1, start: 'exact', bias: 0, smooth: 0, nfe: 128, solver: 'auto', eta: 1, count: 2048,
+    noiseSeed: 23, startSeed: 11, progress: 1, playing: false, run: null, timer: null,
+  };
+  function labSteps() {
+    const method = lab.eta > 0 ? 'em' : (lab.solver === 'auto' ? 'heun' : lab.solver);
+    return { method, steps: Math.max(1, method === 'heun' ? Math.round(lab.nfe / 2) : lab.nfe) };
+  }
+  function labRun() {
+    const { steps } = labSteps();
+    const t0 = performance.now();
+    lab.run = S.run({
+      T: lab.T, eta: lab.eta, steps, solver: lab.eta > 0 ? 'auto' : lab.solver, count: lab.count,
+      startSeed: lab.startSeed, noiseSeed: lab.noiseSeed, exactStart: lab.start === 'exact',
+      error: { bias: [lab.bias, 0], smooth: lab.smooth }, trackPaths: 0, snapshots: 60,
+    });
+    lab.bars = metricsInto('lab', lab.run.xs, lab.run.ys, lab.count);
+    $('lab-step').textContent = `h = ${(lab.T / steps).toFixed(4)} · ${lab.run.nfe}`;
+    $('lab-snr').textContent = `${fmt(M.snr(lab.T), 2)} · KL ≤ ${fmt(M.klBound(lab.T), 3)}`;
+    $('lab-status').textContent = `${txt('status-done')} ${Math.round(performance.now() - t0)} ms`;
+  }
+  function drawLab() {
+    if (!lab.run) labRun();
+    if (!visible($('lab-board')) && !visible($('lab-bars'))) return;
+    const fr = frameAt(lab.run, lab.progress, lab.T);
+    V.drawScene($('lab-board'), { lens: shared.lens, t: fr.t, xs: fr.xs, ys: fr.ys, reveal: reveal(fr.xs, fr.ys), label: `T = ${lab.T.toFixed(2)} · η = ${lab.eta.toFixed(2)} · t = ${fr.t.toFixed(3)}` });
+    Bars.draw($('lab-bars'), lab.bars.frequencies, lab.bars.masses, { labelLeft: txt('lbl-slots') });
+    $('lab-progress').value = lab.progress;
+    $('lab-progress-out').textContent = `${txt('lbl-time-t')} ${fr.t.toFixed(3)}`;
+  }
+  function labChanged(lights, replay = true) {
+    light(lights);
+    $('lab-T-out').textContent = lab.T.toFixed(2);
+    $('lab-bias-out').textContent = lab.bias.toFixed(1);
+    $('lab-smooth-out').textContent = lab.smooth.toFixed(3);
+    $('lab-eta-out').textContent = lab.eta.toFixed(2);
+    $('lab-solver').disabled = lab.eta > 0;
+    $('lab-status').textContent = txt('status-running');
+    clearTimeout(lab.timer);
+    lab.timer = setTimeout(() => {
+      labRun();
+      if (replay && !reduced) { lab.progress = 0; lab.playing = true; setPlay($('lab-play'), true); } else { lab.progress = 1; }
+      drawLab();
+    }, 60);
+  }
+  $('lab-T').addEventListener('input', () => { lab.T = +$('lab-T').value; $('prior-T').value = lab.T; drawPrior(); labChanged(['prior', 'snr', 'kl-bound']); });
+  for (const r of document.querySelectorAll('input[name=lab-start]')) r.addEventListener('change', () => { lab.start = r.value; labChanged(['prior', 'substitutions']); });
+  $('lab-bias').addEventListener('input', () => { lab.bias = +$('lab-bias').value; labChanged(['score', 'perturbed']); });
+  $('lab-smooth').addEventListener('input', () => { lab.smooth = +$('lab-smooth').value; labChanged(['score', 'perturbed']); });
+  $('lab-nfe').addEventListener('change', () => { lab.nfe = +$('lab-nfe').value; labChanged(['grid', 'em', 'euler-ode', 'heun']); });
+  $('lab-solver').addEventListener('change', () => { lab.solver = $('lab-solver').value; labChanged(['grid', 'heun']); });
+  $('lab-eta').addEventListener('input', () => { lab.eta = +$('lab-eta').value; labChanged(['process', 'eta-family', 'toy-step']); });
+  $('lab-count').addEventListener('change', () => { lab.count = +$('lab-count').value; labChanged(['metrics'], false); });
+  $('lab-noise').addEventListener('click', () => { lab.noiseSeed++; labChanged(['toy-step']); });
+  $('lab-progress').addEventListener('input', () => { lab.playing = false; setPlay($('lab-play'), false); lab.progress = +$('lab-progress').value; drawLab(); });
+  $('lab-play').addEventListener('click', () => { if (lab.progress >= 1) lab.progress = 0; lab.playing = !lab.playing; setPlay($('lab-play'), lab.playing); });
+  $('lab-reset').addEventListener('click', () => {
+    Object.assign(lab, { T: 1, start: 'exact', bias: 0, smooth: 0, nfe: 128, solver: 'auto', eta: 1 });
+    $('lab-T').value = 1; $('prior-T').value = 1; $('lab-bias').value = 0; $('lab-smooth').value = 0; $('lab-nfe').value = '128'; $('lab-solver').value = 'auto'; $('lab-eta').value = 1;
+    document.querySelector('input[name=lab-start][value=exact]').checked = true;
+    drawPrior();
+    labChanged(['substitutions']);
+  });
+
+  /* 3.1 prior */
+  const klCurve = (() => {
+    const Ts = [];
+    for (let e = Math.log(0.25); e <= Math.log(4) + 1e-9; e += (Math.log(4) - Math.log(0.25)) / 10) Ts.push(Math.exp(e));
+    return { Ts, bound: Ts.map((t) => [t, M.klBound(t)]), numeric: null };
+  })();
+  function drawPrior() {
+    const Tv = +$('prior-T').value;
+    $('prior-T-out').textContent = Tv.toFixed(2);
+    if (!visible($('prior-marginal')) && !visible($('prior-kl'))) return;
+    if (!klCurve.numeric) klCurve.numeric = klCurve.Ts.map((t) => [t, M.klNumeric(t, 110)]);
+    const lo = -3.2 * Math.sqrt(Tv) - 0.9;
+    const hi = -lo;
+    const pT = [];
+    const prior = [];
+    for (let i = 0; i <= 240; i++) {
+      const x = lo + (hi - lo) * i / 240;
+      pT.push([x, M.marginalX(x, Tv)]);
+      prior.push([x, Math.exp(-x * x / (2 * Tv)) / Math.sqrt(2 * Math.PI * Tv)]);
+    }
+    Plot.draw($('prior-marginal'), [
+      { points: pT, color: BLUE, label: txt('lbl-pT'), width: 1.8 },
+      { points: prior, color: RED, dash: [5, 4], label: txt('lbl-prior') },
+    ], { xlabel: 'x', yrange: [0, 1.1 * Math.max(...pT.map((p) => p[1]), ...prior.map((p) => p[1]))] });
+    Plot.draw($('prior-kl'), [
+      { points: klCurve.bound, color: RED, dash: [5, 4], label: txt('lbl-bound') },
+      { points: klCurve.numeric, color: BLUE, label: txt('lbl-klnum'), marker: true },
+    ], { xlog: true, ylog: true, xlabel: 'T', vline: Tv, marginLeft: 50 });
+    const klNow = M.klNumeric(Tv, 90);
+    $('prior-readout').textContent = `SNR(T) = ${fmt(M.snr(Tv), 2)} · KL ≤ ${fmt(M.klBound(Tv), 3)} · KL = ${fmt(klNow, 4)}`;
+  }
+  $('prior-T').addEventListener('input', () => { lab.T = +$('prior-T').value; $('lab-T').value = lab.T; light(['snr', 'kl-bound', 'prior']); drawPrior(); labChanged(['snr', 'kl-bound', 'prior'], false); });
+
+  /* 3.2 score */
+  function drawScore() {
+    const t = sliderToTime(+$('score-time').value);
+    const bias = +$('score-bias').value;
+    const smooth = +$('score-smooth').value;
+    $('score-time-out').textContent = t.toFixed(4);
+    $('score-bias-out').textContent = bias.toFixed(1);
+    $('score-smooth-out').textContent = smooth.toFixed(3);
+    if (!visible($('score-exact'))) return;
+    V.drawScene($('score-exact'), { lens: shared.lens, t, arrows: true, label: `${txt('lbl-exact-field')} · t = ${t.toFixed(3)}` });
+    V.drawScene($('score-perturbed'), { lens: shared.lens, t, arrows: true, error: { bias: [bias, 0], smooth }, label: `${txt('lbl-perturbed-field')} · b = (${bias.toFixed(1)}, 0), δ = ${smooth.toFixed(3)}` });
+  }
+  for (const id of ['score-time', 'score-bias', 'score-smooth']) $(id).addEventListener('input', () => { light(['perturbed', 'dsm-min']); drawScore(); });
+  $('score-apply').addEventListener('click', () => {
+    lab.bias = +$('score-bias').value; lab.smooth = +$('score-smooth').value;
+    $('lab-bias').value = lab.bias; $('lab-smooth').value = lab.smooth;
+    labChanged(['score', 'perturbed']);
+    $('lab').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  });
+
+  /* 3.3 grid */
+  const grid = { data: null, running: false };
+  async function computeGrid() {
+    if (grid.running) return;
+    grid.running = true;
+    $('grid-status').textContent = txt('status-running');
+    const nfes = [8, 16, 32, 64, 128, 256, 512];
+    const methods = [['em', 1], ['euler', 0], ['heun', 0]];
+    const out = { em: [], euler: [], heun: [] };
+    const t0 = performance.now();
+    for (const nfe of nfes) {
+      for (const [method, eta] of methods) {
+        await new Promise((r) => setTimeout(r, 0));
+        const steps = method === 'heun' ? nfe / 2 : nfe;
+        const run = S.run({ T: 1, eta, steps, solver: eta > 0 ? 'auto' : method, count: 2048, exactStart: true });
+        out[method].push({ nfe, spread: S.spread(run.xs, run.ys) / EXACT_SPREAD(), ks: S.ksX(run.xs) });
+        $('grid-status').textContent = `${txt('status-running')} ${nfe} · ${method}`;
+      }
+    }
+    grid.data = out;
+    grid.running = false;
+    $('grid-status').textContent = `${txt('status-done')} ${Math.round(performance.now() - t0)} ms`;
+    drawGrid();
+  }
+  function drawGrid() {
+    if (!grid.data && !grid.running && visible($('grid-spread'))) setTimeout(computeGrid, 300);
+    if (!grid.data) {
+      Plot.draw($('grid-spread'), [], { xlog: true, xlabel: txt('lbl-evals'), xrange: [8, 512], yrange: [0.5, 4], ylabel: txt('lbl-spread-ratio') });
+      Plot.draw($('grid-ks'), [], { xlog: true, xlabel: txt('lbl-evals'), xrange: [8, 512], yrange: [0.01, 0.3], ylog: true, ylabel: txt('lbl-ks') });
+      return;
+    }
+    const fl = floors(2048);
+    const series = (key) => [
+      { points: grid.data.em.map((d) => [d.nfe, d[key]]), color: RED, label: txt('lbl-em'), marker: true },
+      { points: grid.data.euler.map((d) => [d.nfe, d[key]]), color: BLUE, label: txt('lbl-euler'), marker: true },
+      { points: grid.data.heun.map((d) => [d.nfe, d[key]]), color: '#2f7f74', label: txt('lbl-heun'), marker: true },
+    ];
+    Plot.draw($('grid-spread'), series('spread'), { xlog: true, ylog: true, xlabel: txt('lbl-evals'), ylabel: txt('lbl-spread-ratio'), hlines: [{ y: fl.spread / EXACT_SPREAD(), label: txt('lbl-floor') }] });
+    Plot.draw($('grid-ks'), series('ks'), { xlog: true, ylog: true, xlabel: txt('lbl-evals'), ylabel: txt('lbl-ks'), hlines: [{ y: fl.ks, label: txt('lbl-floor') }] });
+  }
+  $('grid-run').addEventListener('click', computeGrid);
+
+  /* =========================================================== 4. budget */
+  const sweep = { data: null, running: false };
+  const SWEEP = B.SWEEP;
+  async function computeSweeps() {
+    if (sweep.running) return;
+    sweep.running = true;
+    const out = { T: { 0: [], 1: [] }, bias: { 0: [], 1: [] }, smooth: { 0: [], 1: [] }, nfe: { 0: [], 1: [] } };
+    const t0 = performance.now();
+    let done = 0;
+    const total = B.total();
+    for (const kind of Object.keys(SWEEP)) {
+      for (const eta of [0, 1]) {
+        for (const value of SWEEP[kind].values) {
+          await new Promise((r) => setTimeout(r, 0));
+          out[kind][eta].push(B.runOnce(kind, value, eta));
+          done++;
+          $('sweep-status').textContent = `${txt('status-running')} ${done}/${total}`;
+          if (done % 4 === 0) { sweep.data = out; drawSweeps(); }
+        }
+      }
+    }
+    sweep.data = out;
+    sweep.running = false;
+    $('sweep-status').textContent = `${txt('status-done')} ${(Math.round(performance.now() - t0) / 1000).toFixed(1)} s`;
+    drawSweeps();
+  }
+  function drawSweeps() {
+    const d = sweep.data;
+    const fl = floors(2048);
+    const mk = (kind, key, o) => {
+      const s = [];
+      if (d && d[kind]) {
+        s.push({ points: d[kind][0].map((p) => [p.x, p[key]]), color: BLUE, label: txt('lbl-eta0'), marker: true });
+        s.push({ points: d[kind][1].map((p) => [p.x, p[key]]), color: RED, label: txt('lbl-eta1'), marker: true });
+      }
+      return [s, o];
+    };
+    let [s, o] = mk('T', 'tv', { xlog: true, xlabel: txt('lbl-T'), ylabel: txt('lbl-tv'), hlines: [{ y: fl.tv, label: txt('lbl-floor') }], xrange: [0.25, 4], yrange: [0, 0.3] });
+    Plot.draw($('sweep-T'), s, o);
+    [s, o] = mk('bias', 'tv', { xlabel: txt('lbl-tilt'), ylabel: txt('lbl-tv'), hlines: [{ y: fl.tv, label: txt('lbl-floor') }], xrange: [0, 2], yrange: [0, 0.7] });
+    Plot.draw($('sweep-bias'), s, o);
+    [s, o] = mk('smooth', 'spread', { xlabel: txt('lbl-blur'), ylabel: txt('lbl-spread-ratio'), hlines: [{ y: fl.spread / EXACT_SPREAD(), label: txt('lbl-floor') }], xrange: [0, 0.1], yrange: [0.8, 3.2] });
+    Plot.draw($('sweep-smooth'), s, o);
+    [s, o] = mk('nfe', 'spread', { xlog: true, ylog: true, xlabel: txt('lbl-evals'), ylabel: txt('lbl-spread-ratio'), hlines: [{ y: fl.spread / EXACT_SPREAD(), label: txt('lbl-floor') }], xrange: [8, 512] });
+    Plot.draw($('sweep-nfe'), s, o);
+  }
+  $('sweep-run').addEventListener('click', computeSweeps);
+  fetch(new URL('sweeps.json', document.currentScript ? document.currentScript.src : location.href)).then((r) => (r.ok ? r.json() : null)).then((json) => {
+    if (json && !sweep.data) { sweep.data = json; $('sweep-status').textContent = txt('status-precomputed'); drawSweeps(); }
+  }).catch(() => { /* the button still works */ });
+
+  /* ======================================================= chrome & loop */
+  function setLens(lens) {
+    shared.lens = lens;
+    for (const b of document.querySelectorAll('.lens-switch button')) b.setAttribute('aria-pressed', String(b.dataset.lens === lens));
+    try { localStorage.setItem('board-lens', lens); } catch (e) { /* ignore */ }
+    drawAll();
+  }
+  for (const b of document.querySelectorAll('.lens-switch button')) b.addEventListener('click', () => setLens(b.dataset.lens));
+  for (const b of document.querySelectorAll('.language-switch button')) b.addEventListener('click', () => T.setLanguage(b.dataset.lang));
+  try { const l = localStorage.getItem('board-lens'); if (l === 'puzzle' || l === 'landscape') shared.lens = l; } catch (e) { /* ignore */ }
+  for (const b of document.querySelectorAll('.lens-switch button')) b.setAttribute('aria-pressed', String(b.dataset.lens === shared.lens));
+
+  function drawAll() {
+    drawBoardSection();
+    drawFamily();
+    drawLab();
+    drawPrior();
+    drawScore();
+    drawGrid();
+    drawSweeps();
+  }
+  function relabel() {
+    setPlay($('board-play'), board.playing);
+    setPlay($('family-play'), family.playing);
+    setPlay($('lab-play'), lab.playing);
+    renderEquations();
+    renderInlineMath(document.querySelector('main'));
+    renderInlineMath(document.querySelector('.topbar'));
+    renderInlineMath(document.querySelector('.contents'));
+    if (lab.run) metricsInto('lab', lab.run.xs, lab.run.ys, lab.count);
+    if (family.run) metricsInto('family', family.run.xs, family.run.ys, 1024);
+    drawAll();
+  }
+  window.addEventListener('languagechange', relabel);
+
+  // reading progress and active section
+  const navLinks = Array.from(document.querySelectorAll('.contents nav a'));
+  function onScroll() {
+    const h = document.documentElement;
+    $('reading-progress').style.width = `${100 * h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight)}%`;
+    let active = null;
+    for (const link of navLinks) { const sec = document.querySelector(link.getAttribute('href')); if (sec && sec.getBoundingClientRect().top < 140) active = link; }
+    for (const link of navLinks) link.classList.toggle('active', link === active);
+    drawAll();
+  }
+  let queued = false;
+  for (const ev of ['scroll', 'resize']) window.addEventListener(ev, () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; onScroll(); }); }, { passive: true });
+  window.addEventListener('boardphotoload', drawAll);
+
+  let last = 0;
+  function tick(now) {
+    const dt = last ? Math.min((now - last) / 1000, 0.1) : 0;
+    last = now;
+    if (!document.hidden) {
+      if (board.playing && visible($('board-forward'))) { board.t = sliderToTime(Math.min(1, timeToSlider(board.t) + dt / 14)); if (board.t >= 1) { board.playing = false; setPlay($('board-play'), false); } drawBoardSection(); }
+      if (family.playing && visible($('family-board'))) { family.progress = Math.min(1, family.progress + dt / 10); if (family.progress >= 1) { family.playing = false; setPlay($('family-play'), false); } drawFamily(); }
+      if (lab.playing && visible($('lab-board'))) { lab.progress = Math.min(1, lab.progress + dt / 6); if (lab.progress >= 1) { lab.playing = false; setPlay($('lab-play'), false); } drawLab(); }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // boot (T.apply() fires 'languagechange', which runs relabel and the first draw)
+  $('lab-solver').disabled = lab.eta > 0;
+  $('lab-T-out').textContent = lab.T.toFixed(2); $('lab-bias-out').textContent = lab.bias.toFixed(1); $('lab-smooth-out').textContent = lab.smooth.toFixed(3); $('lab-eta-out').textContent = lab.eta.toFixed(2);
+  T.apply();
+  onScroll();
+  requestAnimationFrame(tick);
 })();
