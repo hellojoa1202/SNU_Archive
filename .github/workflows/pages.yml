@@ -88,6 +88,14 @@ jobs:
                   digest = sha256((project / filename).read_bytes()).hexdigest()[:12]
                   html = html.replace('"../' + filename + '"', '"../' + filename + '?v=' + digest + '"')
               page.write_text(html)
+          preview = Path('_site/2026-2-Special-Topics-in-System-Software/Diffusion-Detective-claude')
+          for folder in ['English ver', 'Korean ver']:
+              page = preview / folder / 'index.html'
+              html = page.read_text()
+              for filename in ['model.js', 'sampler.js', 'budget.js', 'traps.js', 'i18n.js', 'app.js', 'style.css']:
+                  digest = sha256((preview / filename).read_bytes()).hexdigest()[:12]
+                  html = html.replace('"../' + filename + '"', '"../' + filename + '?v=' + digest + '"')
+              page.write_text(html)
           PY
       - name: Configure Pages
         uses: actions/configure-pages@v6

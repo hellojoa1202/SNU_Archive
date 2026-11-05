@@ -106,7 +106,7 @@
   $('forward-play').addEventListener('click', () => { if (fw.t >= 1) fw.t = 0; fw.playing = !fw.playing; setPlay($('forward-play'), fw.playing); });
   $('forward-again').addEventListener('click', () => { fw.seed++; forwardPaths(); fw.t = 0; fw.playing = !reduced; setPlay($('forward-play'), fw.playing); drawForward(); });
   $('forward-arrows').addEventListener('change', () => { fw.arrows = $('forward-arrows').checked; flash(['mixture']); drawForward(); });
-  setFocus('marginal', ['time']);
+  setFocus('kernel', ['time']);
 
   /* =================================================================== 2 family */
   const fam = { progress: 0, playing: !reduced, startSeed: 11, noiseSeed: 23, count: 1024, sde: null, ode: null, prev: null, selected: 0 };
@@ -154,7 +154,7 @@
     });
     $(id).addEventListener('keydown', (e) => { if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return; e.preventDefault(); fam.selected = (fam.selected + (e.key === 'ArrowRight' ? 1 : -1) + fam.count) % fam.count; drawFamily(); });
   }
-  setFocus('eta-family', ['score', 'randomness']);
+  setFocus('reverse-sde', ['score', 'randomness']); setFocus('pf-ode', ['score']); setFocus('eta-family', ['eta']);
 
   /* ====================================================================== 3 lab */
   const lab = { tab: 'start', T: 1, start: 'exact', bias: 0, smooth: 0, nfe: 128, method: 'auto', eta: 1, count: 2048, noiseSeed: 23, startSeed: 11, progress: 1, playing: false, arrows: false, run: null, timer: null };
@@ -202,15 +202,16 @@
     lab.tab = tab;
     for (const b of document.querySelectorAll('.tabs [role=tab]')) b.setAttribute('aria-selected', String(b.dataset.tab === tab));
     for (const p of document.querySelectorAll('.tab-panels [data-panel]')) p.hidden = p.dataset.panel !== tab;
-    setFocus('step', TAB_LINKS[tab]);
-    setFocus('surrogate', tab === 'score' ? ['score-term'] : []);
+    setFocus('oracle', TAB_LINKS[tab]);
+    setFocus('em-step', TAB_LINKS[tab]);
+    setFocus('kl-bound', tab === 'start' ? ['start'] : []);
     drawLab();
   }
   for (const b of document.querySelectorAll('.tabs [role=tab]')) b.addEventListener('click', () => selectTab(b.dataset.tab));
   $('lab-T').addEventListener('input', () => { lab.T = +$('lab-T').value; labChanged(['start']); });
   $('lab-start').addEventListener('change', () => { lab.start = $('lab-start').value; labChanged(['start']); });
-  $('lab-bias').addEventListener('input', () => { lab.bias = +$('lab-bias').value; labChanged(['tilt', 'score-term']); });
-  $('lab-smooth').addEventListener('input', () => { lab.smooth = +$('lab-smooth').value; labChanged(['blur', 'score-term']); });
+  $('lab-bias').addEventListener('input', () => { lab.bias = +$('lab-bias').value; labChanged(['score-term']); });
+  $('lab-smooth').addEventListener('input', () => { lab.smooth = +$('lab-smooth').value; labChanged(['score-term']); });
   $('lab-arrows').addEventListener('change', () => { lab.arrows = $('lab-arrows').checked; drawLab(); });
   $('lab-nfe').addEventListener('change', () => { lab.nfe = +$('lab-nfe').value; labChanged(['grid']); });
   $('lab-method').addEventListener('change', () => { lab.method = $('lab-method').value; labChanged(['grid']); });

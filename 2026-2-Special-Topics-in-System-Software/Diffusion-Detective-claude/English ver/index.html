@@ -58,8 +58,10 @@
   <div class="chapter-number">1. THE FORWARD PROCESS</div>
   <h2 data-i18n="forward-title">The forward SDE and its marginals</h2>
   <p data-i18n="forward-intro">The forward process is the variance-exploding instance dx = dw, with f = 0 and g = 1, so σ²(t) = t. Under an affine drift the perturbation kernel is Gaussian, p<sub>t</sub>(x<sub>t</sub> | x<sub>0</sub>) = N(x<sub>0</sub>, t I), and the marginal is the data mixture with every component widened by t. The density solves the heat equation ∂<sub>t</sub>p = ½ Δp; the samples below are one realisation of the SDE whose law it is.</p>
-  <div class="equation" role="math" data-equation="marginal">p<sub>t</sub>(x) = <span data-link="mixture">(1/K) Σ<sub>k</sub> N(x ; μ<sub>k</sub>, (<span data-link="time">τ² + t</span>) I)</span>,&nbsp;&nbsp;&nbsp; K = 48</div>
-  <p class="caption equation-source" data-i18n="forward-source">Perturbation kernel and marginal density · Score SDE notes, PDF p. 18, 21 · Fokker–Planck and heat equation p. 34, 51.</p>
+  <div class="equation" role="math" data-equation="kernel">p<sub>t</sub>(x<sub>t</sub> | x<sub>0</sub>) = N(x<sub>t</sub> ; x<sub>0</sub>, [<span data-link="time">σ²(t) − σ²(0)</span>] I)</div>
+  <p class="caption equation-source" data-i18n="kernel-source">Computing the kernel: NCSN (variance exploding) · Score SDE notes, PDF p. 18 · here σ²(t) = t.</p>
+  <div class="equation" role="math" data-equation="marginal">p<sub>t</sub>(x<sub>t</sub>) = <span data-link="mixture">∫ p<sub>t</sub>(x<sub>t</sub> | x<sub>0</sub>) p<sub>data</sub>(x<sub>0</sub>) dx<sub>0</sub></span></div>
+  <p class="caption equation-source" data-i18n="forward-source">Marginal densities · Score SDE notes, PDF p. 21 · with p<sub>data</sub> a mixture of 48 Gaussians of variance τ², the integral is the same mixture with variance τ² + t; the Fokker–Planck equation with f = 0 is the heat equation ∂<sub>t</sub>p = ½ Δp (p. 34, 51).</p>
   <div class="experiment">
     <div class="experiment-heading"><h3 data-i18n="forward-view">Samples of the forward SDE and the marginal p<sub>t</sub></h3><span class="mode-label">AUTO + MANUAL</span></div>
     <div class="playback"><button id="forward-play"></button><button id="forward-again"><span data-i18n="btn-again">New realisation</span></button><label class="inline-check"><input type="checkbox" id="forward-arrows"><span data-i18n="forward-arrows">score ∇ log p<sub>t</sub></span></label></div>
@@ -80,8 +82,12 @@
   <div class="chapter-number">2. GENERATION</div>
   <h2 data-i18n="family-title">Reverse-time SDE and probability flow ODE share the marginals</h2>
   <p data-i18n="family-intro">Both generative equations are certified the same way: write the Fokker–Planck equation of the candidate, check that the forward marginals solve it, and let uniqueness do the rest. They are the two ends of a one-parameter family. For every η ≥ 0 the process below passes through the same marginals, because the extra ½ η² g² of score in the drift cancels exactly the extra ½ η² g² Δp that the noise adds to the Fokker–Planck equation. η = 1 is the reverse-time SDE, η = 0 the probability flow ODE.</p>
-  <div class="equation" role="math" data-equation="eta-family">dx̄ = [ f − <span data-link="eta">(1 + η²)/2</span> g² <span data-link="score">∇ log p<sub>t</sub>(x̄)</span> ] dt + <span data-link="randomness">η g dw̄</span></div>
-  <p class="caption equation-source" data-i18n="family-source">One marginal family, many processes · Score SDE notes, PDF p. 78 · reverse-time SDE p. 63, probability flow ODE p. 73.</p>
+  <div class="equation" role="math" data-equation="reverse-sde">dx̄(t) = [ f(x̄(t), t) − <span data-link="score">g(t)² ∇ log p<sub>t</sub>(x̄(t))</span> ] dt + <span data-link="randomness">g(t) dw̄(t)</span>,&nbsp;&nbsp;&nbsp; x̄(T) ∼ p<sub>T</sub></div>
+  <p class="caption equation-source" data-i18n="reverse-source">Reverse-time SDE · Score SDE notes, PDF p. 63.</p>
+  <div class="equation" role="math" data-equation="pf-ode">dx̃(t)/dt = f(x̃(t), t) − <span data-link="score">½ g(t)² ∇ log p<sub>t</sub>(x̃(t))</span></div>
+  <p class="caption equation-source" data-i18n="pfode-source">Probability flow ODE · Score SDE notes, PDF p. 73.</p>
+  <div class="equation" role="math" data-equation="eta-family">dx̄(t) = [ f − <span data-link="eta">(1 + η²)/2</span> g² <span data-link="score">∇ log p<sub>t</sub></span> ] dt + <span data-link="randomness">η g dw̄(t)</span>,&nbsp;&nbsp;&nbsp; η ≥ 0</div>
+  <p class="caption equation-source" data-i18n="family-source">One marginal family, many processes · Score SDE notes, PDF p. 78 · η = 1 is the reverse-time SDE, η = 0 the probability flow ODE.</p>
   <div class="experiment">
     <div class="experiment-heading"><h3 data-i18n="family-view">Follow one particle. Compare the whole population.</h3><span class="mode-label">AUTO + MANUAL</span></div>
     <div class="playback"><button id="family-play"></button><button id="family-noise"><span data-i18n="btn-noise">New noise, same starts</span></button><button id="family-starts"><span data-i18n="btn-starts">New initial sample</span></button></div>
@@ -106,10 +112,13 @@
   <div class="chapter-number">3. THE THREE APPROXIMATIONS</div>
   <h2 data-i18n="lab-title">Prior, score, discretization: one substitution at a time</h2>
   <p data-i18n="lab-intro">With f = 0 and g = 1 one backward step of the family is a single line, and a sampler changes exactly three things in it: the law of x<sub>T</sub>, the score it evaluates, and the step h. The lecture lists the substitutions, p<sub>prior</sub> for p<sub>T</sub>, s<sub>ϕ</sub> for ∇ log p<sub>t</sub>, a grid for the continuum, and notes that they are the only three. Here each is switched on alone while the other two stay exact.</p>
-  <div class="equation" role="math" data-equation="step"><span data-link="start">x<sub>T</sub> ∼ N(0, T I)</span>,&nbsp;&nbsp;&nbsp; x ← x + (1 + η²)/2 · <span data-link="score-term">s̃(x, t)</span> · <span data-link="grid">h</span> + η <span data-link="grid">√h</span> z,&nbsp;&nbsp; z ∼ N(0, I)</div>
-  <p class="caption equation-source" data-i18n="lab-source">From the oracle to the model · Score SDE notes, PDF p. 86 · Euler–Maruyama step p. 87.</p>
-  <div class="equation" role="math" data-equation="surrogate"><span data-link="score-term">s̃(x, t) = ∇ log p<sub><span data-link="blur">t + δ</span></sub>(x) + <span data-link="tilt">b</span></span></div>
-  <p class="caption equation-source" data-i18n="lab-source2">Defined on this page. A trained score is a regression estimate (denoising score matching, p. 83–84) whose error is unknown; two controlled errors stand in for it: δ ≥ 0 evaluates the score at a later, smoother time, b adds a constant vector.</p>
+  <div class="equation" role="math" data-equation="oracle">dx̄ = [ f(x̄, t) − g²(t) <span data-link="score-term">s<sub>ϕ<sup>×</sup></sub>(x̄, t)</span> ] dt + g(t) dw̄,&nbsp;&nbsp;&nbsp; dx̃/dt = f(x̃, t) − ½ g²(t) <span data-link="score-term">s<sub>ϕ<sup>×</sup></sub>(x̃, t)</span>,&nbsp;&nbsp;&nbsp; <span data-link="start">x̄(T), x̃(T) ∼ p<sub>prior</sub></span></div>
+  <p class="caption equation-source" data-i18n="lab-source">From the oracle to the model · Score SDE notes, PDF p. 86 · the prior for p<sub>T</sub>, the model for the score, and, next, the discretization of the equation: “three approximations, and they are the only three”.</p>
+  <div class="equation" role="math" data-equation="em-step">x<sub>t−Δt</sub> ← x<sub>t</sub> − [ f(x<sub>t</sub>, t) − g²(t) <span data-link="score-term">s<sub>ϕ<sup>×</sup></sub>(x<sub>t</sub>, t)</span> ] <span data-link="grid">Δt</span> + g(t) <span data-link="grid">√Δt</span> z</div>
+  <p class="caption equation-source" data-i18n="em-source">Euler–Maruyama step of the reverse-time SDE · Score SDE notes, PDF p. 87 · the Euler step of the probability flow ODE drops the noise and halves the score term; Heun adds a second evaluation per step (appendix p. 16).</p>
+  <div class="equation" role="math" data-equation="kl-bound"><span data-link="start">D<sub>KL</sub>(p<sub>T</sub> ‖ N(0, P(T) I)) ≤ ½ SNR(T) E‖x<sub>0</sub>‖²</span>,&nbsp;&nbsp;&nbsp; SNR(T) = E(0→T)² / P(T)</div>
+  <p class="caption equation-source" data-i18n="kl-source">The residue is the signal-to-noise ratio; from the kernels to the marginal · Score SDE notes, PDF p. 23, 26 · here E ≡ 1 and P(T) = T, so SNR(T) = 1 / T.</p>
+  <p class="caption" data-i18n="lab-source2">The score error is not something the toy can take from a trained network, so two controlled errors stand in for s<sub>ϕ<sup>×</sup></sub> − ∇ log p<sub>t</sub>: a smoothing δ ≥ 0, which evaluates the exact score at the later time t + δ, and a constant bias b. The score a sampler sees is then ∇ log p<sub>t+δ</sub>(x) + b. This substitute is defined on this page; denoising score matching (p. 83–84) is why the learned score is a regression estimate in the first place.</p>
   <div class="experiment">
     <div class="experiment-heading"><h3 data-i18n="lab-view">Switch one substitution on</h3><span class="mode-label">MANUAL</span></div>
     <div class="tabs" role="tablist">
