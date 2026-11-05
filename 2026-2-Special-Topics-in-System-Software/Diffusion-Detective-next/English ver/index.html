@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Interactive course notes: the three approximations every diffusion sampler makes, measured one at a time on a puzzle-board toy.">
+<title>The Shaken Puzzle Board</title>
+<link rel="stylesheet" href="../style.css">
+<script defer src="../model.js"></script>
+<script defer src="../sampler.js"></script>
+<script defer src="../budget.js"></script>
+<script defer src="../puzzle.js"></script>
+<script defer src="../i18n.js"></script>
+<script defer src="../app.js"></script>
+</head>
+<body>
+<a data-i18n="skip" class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="#main"><span class="brand-symbol">∿</span>diffusion<span>detective</span></a>
+  <span class="top-caption">PRIOR · SCORE · TIME GRID</span>
+  <div class="header-actions">
+    <div class="lens-switch" role="group" aria-label="View">
+      <button data-lens="puzzle" aria-pressed="true" data-i18n="lens-puzzle">Puzzle</button>
+      <button data-lens="contour" aria-pressed="false" data-i18n="lens-contour">Contours</button>
+    </div>
+    <div class="language-switch" aria-label="Language"><button data-lang="en">EN</button><button data-lang="ko">한국어</button></div>
+    <a class="source-link" href="https://github.com/hellojoa1202/SNU_Archive/tree/main/2026-2-Special-Topics-in-System-Software/Diffusion-Detective" target="_blank" rel="noopener">Source ↗</a>
+  </div>
+</header>
+<div class="reading-progress"><div id="reading-progress"></div></div>
+
+<div class="page">
+<aside class="contents">
+  <div class="eyebrow">CONTENTS</div>
+  <nav>
+    <a href="#forward"><span>1.</span><span data-i18n="nav-forward">Shaking the board</span></a>
+    <a href="#family"><span>2.</span><span data-i18n="nav-family">Rolling back</span></a>
+    <a href="#lab"><span>3.</span><span data-i18n="nav-lab">Three substitutions</span></a>
+    <a href="#budget"><span>4.</span><span data-i18n="nav-budget">Error budget</span></a>
+    <a href="#flow"><span>5.</span><span data-i18n="nav-flow">Flow matching</span></a>
+  </nav>
+  <p>2026 FALL<br>Special Topics in<br>System Software</p>
+</aside>
+
+<main id="main">
+<section class="hero">
+  <div class="eyebrow">INTERACTIVE COURSE NOTES</div>
+  <h1 data-i18n="hero-title">The Shaken<br><span>Puzzle Board.</span></h1>
+  <p data-i18n="hero-lead" class="hero-lead">Three approximations of a diffusion sampler, measured one at a time.</p>
+  <p data-i18n="hero-body" class="abstract">On paper the reverse-time SDE and the probability flow ODE are exact. A sampler replaces three things it does not have: the true terminal law, the true score, and continuous time. This page builds a toy where everything else is known in closed form, so that each replacement can be switched on alone and its effect on the generated distribution can be seen.</p>
+  <div class="method-route">
+    <div data-i18n="route-1"><small>01 · FORWARD</small><b>Shake the board</b><span>48 slots blur under the heat equation.</span></div>
+    <div data-i18n="route-2"><small>02 · REVERSE</small><b>Roll the pieces back</b><span>One family of samplers, from ODE to SDE.</span></div>
+    <div data-i18n="route-3"><small>03 · APPROXIMATE</small><b>Replace three things</b><span>Prior, score, time grid. One at a time.</span></div>
+  </div>
+  <p data-i18n="hero-note" class="caption">Two views of the same density share every control: the puzzle board, where a photograph is revealed as probability mass arrives in each slot, and a contour map of the density itself. Pieces are blank on purpose. The sampler recovers where mass goes, never which piece goes where.</p>
+</section>
+
+<!-- 1 -->
+<section id="forward" class="chapter">
+  <div class="chapter-number">1. THE FORWARD PROCESS</div>
+  <h2 data-i18n="forward-title">Shaking the board</h2>
+  <p data-i18n="forward-intro">The data distribution is an equal mixture of 48 Gaussians, one per slot of an 8 × 6 board, each of width τ = 0.06. The forward process is the variance-exploding SDE dx = dw: zero drift, unit diffusion. Because the drift is affine, the marginal at time t is the same mixture with every component widened by t. Nothing has to be simulated to know it.</p>
+  <div class="equation" role="math" data-equation="marginal">p<sub>t</sub>(x) = <span data-link="mixture">(1/K) Σ<sub>k</sub> N(x ; <span data-link="slots">μ<sub>k</sub></span>, (<span data-link="time">τ² + t</span>) I)</span>,&nbsp;&nbsp;&nbsp; K = 48</div>
+  <p class="caption equation-source" data-i18n="forward-source">Perturbation kernel and marginal density · Score SDE notes, PDF p. 18, 21 · with f = 0, g = 1 the Fokker–Planck equation is the heat equation ∂<sub>t</sub>p = ½ Δp (p. 34, 51).</p>
+  <div class="experiment">
+    <div class="experiment-heading"><h3 data-i18n="forward-view">Watch the slots blur</h3><span class="mode-label">AUTO + MANUAL</span></div>
+    <div class="playback"><button id="forward-play"></button><label class="inline-check"><input type="checkbox" id="forward-arrows"><span data-i18n="forward-arrows">show the score ∇ log p<sub>t</sub></span></label></div>
+    <div class="controls">
+      <label for="forward-time"><span data-i18n="forward-time">Shaking time t</span><output id="forward-time-out"></output><input type="range" id="forward-time" min="0" max="1" step="0.002" value="0"></label>
+      <div class="metric-grid compact"><div><span data-i18n="m-variance">component variance τ² + t</span><output id="forward-variance"></output></div><div><span data-i18n="m-contrast">slot contrast</span><output id="forward-contrast"></output></div><div><span>SNR(t) = 1 / t</span><output id="forward-snr"></output></div></div>
+    </div>
+    <div class="scene-pair">
+      <div><h3 data-i18n="forward-left">The board at time t</h3><canvas id="forward-board" role="img"></canvas></div>
+      <div><h3 data-i18n="forward-right">x-marginal of p<sub>t</sub>, in closed form</h3><canvas id="forward-marginal" role="img"></canvas></div>
+    </div>
+    <p data-i18n="forward-legend" class="caption">Highlighted in the equation: the slider moves τ² + t. The pieces fade with the slot contrast, the density ratio between a slot centre and the midpoint to its neighbour. The 48 slots merge into one basin by t ≈ 0.05; the signal-to-noise ratio 1 / t says how much a noisy state still remembers its slot.</p>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="family" class="chapter">
+  <div class="chapter-number">2. GENERATION</div>
+  <h2 data-i18n="family-title">Rolling back: one family of samplers</h2>
+  <p data-i18n="family-intro">The reverse-time SDE and the probability flow ODE are the two ends of one line. For every η ≥ 0 the process below has the same marginals as the forward process: the extra score in the drift cancels exactly the extra diffusion that the noise adds to the Fokker–Planck equation. η = 1 is the reverse SDE, η = 0 the probability flow ODE.</p>
+  <div class="equation" role="math" data-equation="eta-family">dx̄ = [ f − <span data-link="eta">(1 + η²)/2</span> g² <span data-link="score">∇ log p<sub>t</sub>(x̄)</span> ] dt + <span data-link="randomness">η g dw̄</span></div>
+  <p class="caption equation-source" data-i18n="family-source">One marginal family, many processes · Score SDE notes, PDF p. 78 · reverse-time SDE p. 63, probability flow ODE p. 73.</p>
+  <div class="experiment">
+    <div class="experiment-heading"><h3 data-i18n="family-view">Same slots, different paths</h3><span class="mode-label">AUTO + MANUAL</span></div>
+    <div class="playback"><button id="family-play"></button><button id="family-noise"><span data-i18n="btn-noise">New noise</span></button><button id="family-starts"><span data-i18n="btn-starts">New starts</span></button><label class="inline-check"><input type="checkbox" id="family-colors" checked><span data-i18n="family-colors">colour by start</span></label></div>
+    <div class="controls">
+      <label for="family-eta"><span>η</span><output id="family-eta-out"></output><input type="range" id="family-eta" min="0" max="1.5" step="0.05" value="1"></label>
+      <label for="family-progress"><span data-i18n="progress">Generation progress</span><output id="family-progress-out"></output><input type="range" id="family-progress" min="0" max="1" step="0.004" value="0"></label>
+    </div>
+    <div class="scene-pair">
+      <div><h3 data-i18n="family-left">Pieces rolling back (exact start, exact score, 256 steps)</h3><canvas id="family-board" tabindex="0" role="img"></canvas></div>
+      <div><h3 data-i18n="family-right">Slot frequencies against the exact slot masses</h3><canvas id="family-bars" class="bars" role="img"></canvas>
+        <div class="metric-grid"><div><span data-i18n="m-tv">slot error (total variation)</span><output id="family-tv"></output></div><div><span data-i18n="m-spread">spread / exact</span><output id="family-spread"></output></div><div><span data-i18n="m-floor">floor for 1024 exact draws</span><output id="family-floor"></output></div></div>
+      </div>
+    </div>
+    <p data-i18n="family-legend" class="caption">Dots are 1024 samples, coloured by where they started. At η = 0 the colours arrive as a smooth gradient: solutions of the ODE never cross, so the flow map is a bijection and neighbours stay neighbours. At η = 1 the colours are scrambled, and the slot frequencies are the same. Click a dot to follow it.</p>
+  </div>
+  <p data-i18n="family-bridge" class="transition"><b>Everything above was exact.</b><span>A sampler has none of it: not the terminal law, not the score, not continuous time. The next section replaces them one at a time.</span></p>
+</section>
+
+<!-- 3 -->
+<section id="lab" class="chapter">
+  <div class="chapter-number">3. THE THREE APPROXIMATIONS</div>
+  <h2 data-i18n="lab-title">Three substitutions, one at a time</h2>
+  <p data-i18n="lab-intro">With f = 0 and g = 1 one backward step of the family is a single line. A sampler changes three things in it: where x starts, which score it reads, and how large the step h is. The lecture notes name these as the only three approximations, and this toy keeps every other quantity exact so that each can be measured alone.</p>
+  <div class="equation" role="math" data-equation="step"><span data-link="start">x<sub>T</sub> ∼ N(0, T I)</span>,&nbsp;&nbsp;&nbsp; x ← x + (1 + η²)/2 · <span data-link="score-term">s̃(x, t)</span> · <span data-link="grid">h</span> + η <span data-link="grid">√h</span> z,&nbsp;&nbsp; z ∼ N(0, I)</div>
+  <p class="caption equation-source" data-i18n="lab-source">From the oracle to the model · Score SDE notes, PDF p. 86 (the three substitutions) · Euler–Maruyama step p. 87.</p>
+  <div class="equation" role="math" data-equation="surrogate"><span data-link="score-term">s̃(x, t) = ∇ log p<sub><span data-link="blur">t + δ</span></sub>(x) + <span data-link="tilt">b</span></span></div>
+  <p class="caption equation-source" data-i18n="lab-source2">Defined on this page: a learned score is a regression estimate (denoising score matching, p. 83–84) whose error is unknown; the blur δ and the tilt b are two controlled errors in its place.</p>
+  <div class="experiment">
+    <div class="experiment-heading"><h3 data-i18n="lab-view">Switch one substitution on</h3><span class="mode-label">MANUAL</span></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="start" aria-selected="true"><b data-i18n="tab-start">Start</b><span data-i18n="tab-start-sub">the board was not shaken long enough</span></button>
+      <button role="tab" data-tab="score" aria-selected="false"><b data-i18n="tab-score">Score</b><span data-i18n="tab-score-sub">a tilted or blurred map of the slots</span></button>
+      <button role="tab" data-tab="grid" aria-selected="false"><b data-i18n="tab-grid">Grid</b><span data-i18n="tab-grid-sub">pieces jump instead of rolling</span></button>
+    </div>
+    <div class="tab-panels">
+      <div class="controls three" data-panel="start">
+        <label for="lab-T"><span data-i18n="lab-T">Terminal time T</span><output id="lab-T-out"></output><input type="range" id="lab-T" min="0.25" max="4" step="0.05" value="1"></label>
+        <label><span data-i18n="lab-start-law">Start from</span><select id="lab-start"><option value="exact" data-i18n="opt-exact">p_T itself (exact)</option><option value="prior" data-i18n="opt-prior">N(0, T I), the prior</option></select></label>
+        <div class="metric-grid compact"><div><span>SNR(T) = 1 / T</span><output id="lab-snr"></output></div><div><span data-i18n="m-klbound">KL bound ½ SNR(T) E‖x₀‖²</span><output id="lab-klbound"></output></div><div><span data-i18n="m-kl">KL(p<sub>T</sub> ‖ N(0, T I)), quadrature</span><output id="lab-kl"></output></div></div>
+      </div>
+      <div class="controls three" data-panel="score" hidden>
+        <label for="lab-bias"><span data-i18n="lab-bias">Tilt b<sub>x</sub></span><output id="lab-bias-out"></output><input type="range" id="lab-bias" min="-2" max="2" step="0.1" value="0"></label>
+        <label for="lab-smooth"><span data-i18n="lab-smooth">Blur δ</span><output id="lab-smooth-out"></output><input type="range" id="lab-smooth" min="0" max="0.1" step="0.002" value="0"></label>
+        <label class="inline-check tall"><input type="checkbox" id="lab-arrows"><span data-i18n="lab-arrows">draw the perturbed score field at t = 0.02</span></label>
+      </div>
+      <div class="controls three" data-panel="grid" hidden>
+        <label><span data-i18n="lab-nfe">Score evaluations</span><select id="lab-nfe"><option>8</option><option>16</option><option>32</option><option>64</option><option selected>128</option><option>256</option><option>512</option></select></label>
+        <label><span data-i18n="lab-method">Method</span><select id="lab-method"><option value="auto" data-i18n="opt-auto">Euler–Maruyama (η &gt; 0) / Heun (η = 0)</option><option value="euler" data-i18n="opt-euler">Euler, η = 0 only</option><option value="heun" data-i18n="opt-heun">Heun, η = 0 only</option></select></label>
+        <div class="metric-grid compact"><div><span data-i18n="m-step">step h = T / steps</span><output id="lab-step"></output></div><div><span data-i18n="m-nfe">evaluations spent</span><output id="lab-nfe-out"></output></div></div>
+      </div>
+    </div>
+    <div class="controls">
+      <label for="lab-eta"><span data-i18n="lab-eta">Process η (0 = ODE, 1 = reverse SDE)</span><output id="lab-eta-out"></output><input type="range" id="lab-eta" min="0" max="1.5" step="0.05" value="1"></label>
+      <label for="lab-progress"><span data-i18n="progress">Generation progress</span><output id="lab-progress-out"></output><input type="range" id="lab-progress" min="0" max="1" step="0.004" value="1"></label>
+    </div>
+    <div class="playback"><button id="lab-play"></button><button id="lab-noise"><span data-i18n="btn-noise">New noise</span></button><button id="lab-reset"><span data-i18n="btn-reset">Reset to exact</span></button><span class="live-note" id="lab-status"></span></div>
+    <div class="scene-pair">
+      <div><h3 data-i18n="lab-left">The picture a sampler assembles</h3><canvas id="lab-board" role="img"></canvas></div>
+      <div><h3 data-i18n="lab-right">Slot frequencies against the exact slot masses</h3><canvas id="lab-bars" class="bars" role="img"></canvas>
+        <div class="metric-grid"><div><span data-i18n="m-tv">slot error (total variation)</span><output id="lab-tv"></output><small id="lab-tv-floor"></small></div><div><span data-i18n="m-spread">spread / exact</span><output id="lab-spread"></output><small id="lab-spread-floor"></small></div><div><span data-i18n="m-ks">KS distance, x-marginal</span><output id="lab-ks"></output><small id="lab-ks-floor"></small></div></div>
+      </div>
+    </div>
+    <p data-i18n="lab-legend" class="caption">2048 samples; 600 are drawn. Each tile of the photograph is revealed in proportion to the mass that reached its slot, so a hole in the picture is a slot that received too little. Slot error asks where the mass went; spread asks how tightly it gathered. Small grey numbers are the values for 2048 exact draws from p₀, the floor of each metric.</p>
+  </div>
+  <ul class="concept-points">
+    <li data-i18n="lab-point-start"><b>Start.</b> The lecture bounds the mismatch by the signal-to-noise ratio: KL(p<sub>T</sub> ‖ N(0, P(T) I)) ≤ ½ SNR(T) E‖x₀‖² (PDF p. 23, 26). Here SNR(T) = 1 / T and the bound is loose by an order of magnitude but has the right trend. The ODE is a bijection and carries whatever is wrong at T to t = 0; the SDE keeps adding noise and pulling back, which lets it forget its start.</li>
+    <li data-i18n="lab-point-score"><b>Score.</b> A tilt moves mass between slots and shifts the picture sideways; a blur keeps the slot frequencies and widens every well. The family multiplies the score, and hence the tilt, by (1 + η²)/2, so in this toy the SDE is <em>more</em> sensitive to a constant tilt than the ODE. The usual robustness argument for stochastic sampling concerns errors that fluctuate and average out, which a tilt does not.</li>
+    <li data-i18n="lab-point-grid"><b>Grid.</b> The field is stiff: ‖∇ log p<sub>t</sub>‖ grows like 1 / (τ² + t), so the last steps near t = 0 are the hard ones. At equal evaluations Euler on the ODE is the most accurate up to about 128; Heun overshoots the wells on coarse grids and pays off only from 256 on; Euler–Maruyama needs √h ≪ τ in its last step or its own noise blurs the wells.</li>
+  </ul>
+</section>
+
+<!-- 4 -->
+<section id="budget" class="chapter">
+  <div class="chapter-number">4. PUTTING IT TOGETHER</div>
+  <h2 data-i18n="budget-title">The error budget</h2>
+  <p data-i18n="budget-intro">Each panel sweeps one knob with the other two substitutions switched off, for both ends of the family: the probability flow ODE with Heun (η = 0, blue) and the reverse SDE with Euler–Maruyama (η = 1, red). The T sweep holds the step size h = 1/128 fixed so that a longer shake is not confused with a coarser grid. 2048 samples per point; the dashed line is the floor for 2048 exact draws.</p>
+  <div class="experiment">
+    <div class="experiment-heading"><h3 data-i18n="budget-view">One knob at a time</h3><span class="mode-label">PRECOMPUTED · RECOMPUTABLE</span></div>
+    <div class="sweep-grid">
+      <div><h3 data-i18n="sw-T">Start from N(0, T I) · slot error vs T</h3><canvas id="sweep-T" role="img"></canvas></div>
+      <div><h3 data-i18n="sw-bias">Tilt · slot error vs b<sub>x</sub></h3><canvas id="sweep-bias" role="img"></canvas></div>
+      <div><h3 data-i18n="sw-smooth">Blur · spread ratio vs δ</h3><canvas id="sweep-smooth" role="img"></canvas></div>
+      <div><h3 data-i18n="sw-nfe">Grid · spread ratio vs evaluations</h3><canvas id="sweep-nfe" role="img"></canvas></div>
+    </div>
+    <div class="experiment-bottom"><button id="sweep-run"><span data-i18n="btn-recompute">Recompute in this browser</span></button><span class="live-note" id="sweep-status"></span></div>
+  </div>
+  <p data-i18n="budget-note" class="caption">The budget is not additive. A tilt that moves mass to the wrong slot cannot be repaired by more steps, and a coarse grid cannot be repaired by a longer shake. The two substitutions that move mass (start, tilt) and the two that blur it (blur, grid) separate cleanly in the two metrics.</p>
+</section>
+
+<!-- 5 -->
+<section id="flow" class="chapter">
+  <div class="chapter-number">5. THE SAME THREE, ELSEWHERE</div>
+  <h2 data-i18n="flow-title">What flow matching changes, and what it does not</h2>
+  <p data-i18n="flow-intro">Flow matching never writes a score, yet for a Gaussian source the field it learns is one: the conditional velocity is an affine function of the conditional score, and averaging over the posterior turns it into the marginal score. With the matched schedule α<sub>s</sub> = b<sub>T−s</sub>, σ<sub>s</sub> = a<sub>T−s</sub> the flow-matching ODE is a probability flow ODE on (0, T).</p>
+  <div class="equation" role="math" data-equation="fm">v<sub>t</sub>(x) = <span data-link="fm-drift">(ḃ<sub>t</sub> / b<sub>t</sub>) x</span> + <span data-link="fm-score">a<sub>t</sub>² (ḃ<sub>t</sub>/b<sub>t</sub> − ȧ<sub>t</sub>/a<sub>t</sub>) ∇ log p<sub>t</sub>(x)</span></div>
+  <p class="caption equation-source" data-i18n="flow-source">And the marginal velocity is a marginal score · Flow-based notes, PDF p. 64 · identification on the open interval p. 69, 74.</p>
+  <ul class="concept-points">
+    <li data-i18n="flow-point-1"><b>The start</b> is no longer an approximation: the interpolant reaches the prior exactly at t = 0 because b₀ = 0. The price is paid by the matched diffusion, whose coefficients diverge at that endpoint; a diffusion cannot reach N(0, I) in finite time.</li>
+    <li data-i18n="flow-point-2"><b>The score</b> error becomes a velocity error. Conditional flow matching regresses on ȧ<sub>t</sub>x₀ + ḃ<sub>t</sub>x<sub>T</sub> and its minimiser is the marginal velocity, by the same conditional-expectation argument that makes denoising score matching work.</li>
+    <li data-i18n="flow-point-3"><b>The grid</b> is unchanged. Straight conditional paths do not make the marginal trajectories straight; the solver still follows a curve.</li>
+  </ul>
+  <div class="notes">
+    <h3 data-i18n="limits-title">Where the analogy stops</h3>
+    <p data-i18n="limits-body">Pieces are blank by design: a jigsaw asks which piece goes where, a sampler answers only how much mass goes where. A slot holds a fraction, not one piece. The board changes shape on its own, blurring under the heat equation and sharpening under the reverse process; the contour view is the honest picture of that. Tilt and blur stand in for an unknown network error because their effects can be predicted and checked, not because they are typical. The time grid is uniform; non-uniform spacing is a standard remedy for the stiffness in 3 and is left out as outside the lecture material.</p>
+    <h3 data-i18n="scope-title">Model and sources</h3>
+    <p data-i18n="scope-body">Toy: 48 Gaussians, τ = 0.06, slot pitch 0.22, forward dx = dw. Closed forms for p<sub>t</sub>, ∇ log p<sub>t</sub>, slot masses and the x-marginal; KL by 140 × 140 quadrature; no neural network. Samplers: the η-family with Euler–Maruyama for η &gt; 0 and Euler or Heun for η = 0, seeded so every run replays. Tests (node --test) check the score against finite differences, the heat equation, the KL bound, slot masses against Monte Carlo, and marginal alignment of the family. Lecture notes: <em>Mathematical Principles of Diffusion Models</em>, Prof. Taesup Moon, Fall 2026 (Score SDE framework; Flow-based perspective; Differential-equations appendix), following Lai, Song, Kim, Mitsufuji and Ermon, <em>The Principles of Diffusion Models</em>, arXiv:2510.21890. Photograph: “Cat August 2010-4”, Alvesgaspar, Wikimedia Commons, CC BY-SA 3.0, cropped and resized.</p>
+  </div>
+</section>
+</main>
+</div>
+<footer><span>DIFFUSION DETECTIVE</span><span>SNU · SPECIAL TOPICS IN SYSTEM SOFTWARE · 2026</span></footer>
+</body>
+</html>

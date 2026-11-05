@@ -1,0 +1,11 @@
+Cat August 2010-4.jpg
+Author: Alvesgaspar
+Source: https://commons.wikimedia.org/wiki/File:Cat_August_2010-4.jpg
+Original photograph: https://upload.wikimedia.org/wikipedia/commons/1/15/Cat_August_2010-4.jpg
+License: Creative Commons Attribution-ShareAlike 3.0 Unported
+https://creativecommons.org/licenses/by-sa/3.0/
+
+board-photo.jpg is a derivative: the original was center-cropped to 4:3 and
+resized to 960 x 720 pixels. The website prints it under the puzzle board and
+reveals each tile in proportion to the probability mass that lands in that slot.
+This adaptation is distributed under the same CC BY-SA 3.0 license.

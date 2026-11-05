@@ -39,6 +39,11 @@ jobs:
           node --check transport.js
           node --check comparisons.js
           node --test math.test.cjs transport.test.cjs
+      - name: Verify the next version
+        working-directory: 2026-2-Special-Topics-in-System-Software/Diffusion-Detective-next
+        run: |
+          for f in model.js sampler.js budget.js puzzle.js i18n.js app.js; do node --check "$f"; done
+          node --test model.test.cjs sampler.test.cjs
       - name: Assemble website and preserve previous links
         run: |
           site_project="_site/2026-2-Special-Topics-in-System-Software/Diffusion-Detective"
@@ -63,6 +68,13 @@ jobs:
             mkdir -p "$site_project/$language"
             printf '<!doctype html><html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=../%s%%20ver/"><title>Diffusion Detective</title><a href="../%s%%20ver/">%s ver</a></html>\n' "$language" "$language" "$language" > "$site_project/$language/index.html"
           done
+          next_src="2026-2-Special-Topics-in-System-Software/Diffusion-Detective-next"
+          next_site="_site/$next_src"
+          mkdir -p "$next_site"
+          for f in index.html model.js sampler.js budget.js puzzle.js i18n.js app.js style.css sweeps.json; do cp "$next_src/$f" "$next_site/"; done
+          cp -R "$next_src/assets" "$next_site/"
+          cp -R "$next_src/English ver" "$next_site/"
+          cp -R "$next_src/Korean ver" "$next_site/"
           touch _site/.nojekyll
       - name: Version browser assets by content
         run: |
