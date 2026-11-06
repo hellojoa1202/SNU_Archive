@@ -14,4 +14,4 @@ This folder is the independent ver3 version. The other versions are preserved in
 
 - Preserve SNU Archive, other courses and sibling versions. Always update English submission and Korean review versions together. Work on main; the three versions live in separate folders, not branches.
 
-- Latest site revision : keep the three mathematical experiments primary; pedestrian tracking is a concise fourth bonus section with linked controls. Use brighter sky blue (#73b9df) for plot marks and darker blue (#3e7496) for readable text. Update canvas, CSS, and bilingual legends consistently.
+- Latest site revision : the three mathematical experiments remain primary. The fourth bonus is a finite parcel-assignment diagram, illustrating endpoint counts versus identity only; do not claim intermediate marginal alignment or SDE/ODE dynamics for it. Use declarative academic prose, without guided-reading prompts. Use #73b9df for plot marks and #3e7496 for readable text.

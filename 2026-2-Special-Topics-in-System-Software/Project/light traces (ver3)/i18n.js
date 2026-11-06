@@ -8,8 +8,8 @@ const LightText = {
     "ko": "같은 분포, 서로 다른 경로."
   },
   "intro": {
-    "en": "How can stochastic sampling and a deterministic flow produce the same distributions? Compare their paths, derive the Flow Matching velocity through conditional averaging, and examine what survives when the score is approximate.",
-    "ko": "확률적 샘플링과 결정적 흐름은 어떻게 같은 분포를 만들 수 있을까요? 두 과정의 경로를 비교하고, 조건부 평균으로 Flow Matching 속도를 구성한 뒤, score가 근사값일 때 이 관계가 어떻게 달라지는지 살펴봅니다."
+    "en": "Reverse SDE and probability flow ODE relate stochastic paths to deterministic transport. This experiment compares their time marginals, constructs the Gaussian Flow Matching velocity by conditional averaging, and measures the effects of score and integration errors.",
+    "ko": "역방향 SDE와 Probability Flow ODE는 확률적 경로와 결정적 수송을 연결합니다. 이 실험은 두 과정의 시점별 주변분포를 비교하고, 조건부 평균으로 Gaussian Flow Matching 속도를 구성하며, score 근사와 수치 적분 오차의 영향을 분석합니다."
   },
   "r1": {
     "en": "Compare paths and density",
@@ -96,8 +96,8 @@ const LightText = {
     "ko": "경로의 접선에서 평균 속도로"
   },
   "lead2": {
-    "en": "A geometric view of Flow Matching : each endpoint pair gives a path tangent; conditional averaging gives one velocity at each position and time.",
-    "ko": "Flow Matching을 기하학적으로 봅니다. 끝점 쌍마다 경로의 접선이 정해지고, 조건부 평균은 각 위치와 시간에 하나의 속도를 부여합니다."
+    "en": "Each endpoint pair determines a path and a tangent velocity. Conditioning on the current position and time, then averaging these tangents, defines the marginal velocity field.",
+    "ko": "끝점 쌍마다 경로와 접선 속도가 정해집니다. 현재 위치와 시간을 조건으로 접선 속도를 평균하면 주변분포를 수송하는 속도장이 정의됩니다."
   },
   "probeX": {
     "en": "Observation x",
@@ -120,8 +120,8 @@ const LightText = {
     "ko": "같은 속도를 구하는 두 방식"
   },
   "geocaption": {
-    "en": "Drag the observation point or use the position sliders. Thin paths and velocity arrows share posterior weights through opacity. The red tangent marks the conditional mean direction.",
-    "ko": "관측점을 드래그하거나 위치 슬라이더를 조절할 수 있습니다. 경로와 속도 화살표의 진하기는 같은 사후 가중치에 대응합니다. 빨간 접선은 조건부 평균 방향입니다."
+    "en": "The observation point sets the conditioning event. Path and arrow opacity encode posterior weights; the red tangent is their conditional mean.",
+    "ko": "관측점은 조건부 분포의 기준 위치입니다. 경로와 화살표의 진하기는 사후 가중치에 대응하며, 빨간 접선은 조건부 평균입니다."
   },
   "velcaption": {
     "en": "Grey arrows : conditional velocities. Red : their weighted mean. Blue ring : the velocity computed from the score identity. Both use the same velocity scale.",
@@ -136,12 +136,12 @@ const LightText = {
     "ko": "평균 속도는 원래 끝점 쌍을 개별적으로 보존하지 않습니다. 조건부 경로와 평균 ODE가 공유하는 것은 분포입니다. 선형 스케줄을 사용하며, 끝점 계수의 특이성을 피해 0.05 ≤ t ≤ 0.95만 계산합니다."
   },
   "h3": {
-    "en": "When the score is no longer exact",
-    "ko": "Score가 정확하지 않다면"
+    "en": "Sampling with approximate scores",
+    "ko": "근사 score를 사용한 샘플링"
   },
   "lead3": {
-    "en": "Introduce the same horizontal score bias into both samplers. Then refine the integration grid to separate sensitivity to score error from numerical effects.",
-    "ko": "두 샘플러의 score에 같은 수평 방향 편향을 넣습니다. 계산 간격도 바꾸어 score 오차의 영향과 수치 계산의 영향을 살펴봅니다."
+    "en": "A shared horizontal score bias perturbs both samplers. The integration grid controls discretization independently of this field perturbation.",
+    "ko": "두 샘플러에 동일한 수평 score 편향을 적용합니다. 적분 격자는 이 장의 변화와 별도로 이산화 정도를 결정합니다."
   },
   "bias": {
     "en": "Score bias",
@@ -180,8 +180,8 @@ const LightText = {
     "ko": "Probability Flow ODE · 현재 설정"
   },
   "errorcaption": {
-    "en": "Rows share the displayed grid time and coordinate scale. Change the time slider or drag the graph cursor to compare evolution. Dashed contours show the analytic density. Sections 1 and 2 keep the exact score.",
-    "ko": "두 행은 표시된 격자 시각과 좌표 척도를 공유합니다. 시간 슬라이더나 그래프 커서를 움직여 변화 과정을 비교할 수 있습니다. 점선 등고선은 해석적 밀도이며, 앞의 두 장면은 정확한 score를 유지합니다."
+    "en": "Both rows share the displayed grid time and coordinate scale. Dashed contours show the analytic density. The time slider and graph cursor select the common snapshot; sections 1 and 2 retain the exact score.",
+    "ko": "두 행은 격자 시각과 좌표 척도를 공유합니다. 점선은 해석적 밀도이며 시간 슬라이더와 그래프 커서는 공통 비교 시각을 나타냅니다. 앞의 두 장면은 정확한 score를 유지합니다."
   },
   "errortitle": {
     "en": "Distribution discrepancy over time",
@@ -200,8 +200,8 @@ const LightText = {
     "ko": "두 샘플러는 초기 표본을 공유합니다. SDE의 스텝 수를 바꿀 때도 같은 세밀한 격자의 브라운 증분을 합산해 사용합니다. 차이는 유한 표본, 이산화, score 오차에서 생길 수 있으며 확률항이 항상 유리하다고 가정하지 않습니다."
   },
   "takeaway": {
-    "en": "What stays the same?",
-    "ko": "무엇이 같고, 무엇이 다른가?"
+    "en": "Relations between the three experiments",
+    "ko": "세 실험의 관계"
   },
   "summary": {
     "en": "SDE ↔ ODE : the same marginals, different paths. Gaussian FM ↔ the matching probability flow ODE : the same exact velocity. Approximate scores : neither equality is automatic.",
@@ -235,65 +235,41 @@ const LightText = {
     "en": "Changing the grid changes Δs and h in the numerical updates. It does not change the underlying continuous-time equation. The SDE update reads diffusion time backwards; Heun follows generation time.",
     "ko": "격자를 바꾸면 수치 업데이트의 Δs와 h가 달라집니다. 연속 시간 방정식 자체는 그대로입니다. SDE는 확산 시간을 거꾸로 읽고, Heun은 생성 시간을 따라 계산합니다."
   },
-  "occupancyTitle": {
-    "en": "Bonus : the same experiment as pedestrian tracking",
-    "ko": "보너스 : 같은 실험을 보행자 추적으로 읽으면"
-  },
-  "occupancyIntro": {
-    "en": "An overhead view shows occupancy; a tracking record shows an individual route. Below, the same simulated samples are placed on a schematic concourse to distinguish these two observations.",
-    "ko": "위에서 본 장면은 공간의 점유 상태를, 추적 기록은 한 개체의 동선을 보여줍니다. 같은 실험 표본을 대합실 평면에 놓아 두 관측의 차이를 읽어봅니다."
-  },
-  "occupancyMap": {
-    "en": "Occupancy at the selected time · ODE",
-    "ko": "선택 시각의 점유 상태 · ODE"
-  },
-  "occupancyTrack": {
-    "en": "One tracked identity · SDE / ODE",
-    "ko": "한 개체의 동선 · SDE / ODE"
-  },
-  "occupancyCaption": {
-    "en": "Scrub time or select an identity. Left : ODE positions, with the selected sample ringed. Right : that sample’s SDE route in sky blue and ODE route in red; rings show current positions. These controls also update the main experiments.",
-    "ko": "시간을 움직이거나 개체를 선택하세요. 왼쪽은 ODE 위치와 선택한 표본, 오른쪽은 해당 표본의 SDE 동선(하늘색)과 ODE 동선(빨강)입니다. 원은 현재 위치입니다. 본문의 실험도 같은 시간·표본으로 갱신됩니다."
-  },
-  "occupancyLimit": {
-    "en": "This is a visual analogy, with no pedestrian dynamics or physical scale. Matching occupancy distributions does not specify individual routes.",
-    "ko": "보행자 동역학이나 물리적 척도를 도입한 모형은 아닙니다. 점유 분포가 같다는 것만으로 개별 동선이 정해지지는 않습니다."
-  },
   "read1Title": {
-    "en": "How to read the two equations",
-    "ko": "두 방정식을 읽는 방법"
+    "en": "Score, drift and stochastic forcing",
+    "ko": "Score·drift·확률항의 관계"
   },
   "read1Body": {
     "en": "The score is the spatial gradient of log density at a fixed time. It describes local relative density increase, not the direction to a particular target sample. In the reverse SDE, the drift and Brownian term jointly determine the evolving distribution. The probability flow ODE reproduces that distribution by changing the drift as well as removing the stochastic term; simply deleting noise from the SDE would give a different equation.",
     "ko": "Score는 한 시각에서 로그 밀도의 공간 기울기입니다. 국소적으로 상대 밀도가 증가하는 방향을 나타내며, 특정 목표 표본을 향하는 방향은 아닙니다. 역방향 SDE에서는 drift와 브라운 운동 항이 함께 분포의 변화를 결정합니다. Probability Flow ODE는 확률항을 없애는 동시에 drift를 바꾸어 같은 분포 변화를 재현합니다. SDE에서 잡음만 삭제한 식과는 다릅니다."
   },
   "read1Check": {
-    "en": "Read the histograms as finite-sample estimates of a common law, not identical point sets. Then follow one sample : agreement of distributions does not imply agreement of trajectories. The claim requires the exact score, the corresponding initial law and well-posed continuous-time dynamics.",
-    "ko": "히스토그램은 공통 분포의 유한 표본 추정치이며, 두 점 집합 자체가 같다는 뜻은 아닙니다. 이어서 한 표본을 추적해 보세요. 분포의 일치는 경로의 일치를 뜻하지 않습니다. 이 성질은 정확한 score, 대응하는 초기 분포, 잘 정의된 연속 시간 동역학을 전제로 합니다."
+    "en": "The two histograms estimate a common distribution from finite samples. They need not coincide as point sets. Marginal alignment requires the exact score, a corresponding initial law and well-posed continuous-time dynamics; it does not imply equality of sample paths.",
+    "ko": "두 히스토그램은 공통 분포의 유한 표본 추정치입니다. 점 집합 자체가 일치할 필요는 없습니다. 주변분포의 일치는 정확한 score, 대응하는 초기 분포, 잘 정의된 연속 시간 동역학을 전제로 하며 표본 경로의 일치를 뜻하지 않습니다."
   },
   "read2Title": {
-    "en": "Why condition on position and time?",
-    "ko": "왜 위치와 시간을 조건으로 평균하는가?"
+    "en": "Conditional averaging and the regression target",
+    "ko": "조건부 평균과 회귀 목표"
   },
   "read2Body": {
     "en": "An endpoint pair specifies both an interpolated position and its tangent velocity. Different pairs can be compatible with the same observed position and time, so position alone does not reveal a unique conditional tangent. The expectation averages these possibilities using their posterior probabilities given the observation. It is not an equal average over target clusters.",
     "ko": "끝점 쌍이 정해지면 보간 위치와 그 경로의 접선 속도가 정해집니다. 서로 다른 끝점 쌍이 같은 시각의 같은 관측 위치와 양립할 수 있으므로, 현재 위치만으로 개별 접선 속도가 하나로 정해지지는 않습니다. 조건부 기댓값은 관측 위치가 주어졌을 때 각 가능성의 사후확률로 속도를 평균합니다. 목표 군집을 동일한 비중으로 평균하는 연산이 아닙니다."
   },
   "read2Check": {
-    "en": "Move the observation point between clusters and inspect the changing arrow weights. The red mean and blue score-based ring coincide because both evaluate the same exact field. Under squared-error Flow Matching, this conditional mean is the population regression target. The display computes it analytically; it does not show a fitted network or a training result.",
-    "ko": "관측점을 군집 사이로 옮기며 화살표의 가중치 변화를 확인하세요. 빨간 평균과 파란 score 기반 원이 겹치는 것은 같은 정확한 속도장을 계산하기 때문입니다. 제곱오차를 사용하는 Flow Matching에서 이 조건부 평균은 모집단 회귀의 목표입니다. 여기서는 이를 해석적으로 계산하며, 학습된 신경망이나 훈련 결과를 표시하지 않습니다."
+    "en": "The observation point determines the posterior weights and therefore the mean tangent. The red mean and sky-blue score-based ring coincide because they evaluate the same exact field. For squared-error Flow Matching, the conditional mean is the population regression target. The displayed result is analytic, without a fitted network.",
+    "ko": "관측 위치에 따라 사후 가중치와 평균 접선이 달라집니다. 빨간 평균과 하늘색 score 기반 원은 같은 정확한 속도장을 계산하므로 겹칩니다. 제곱오차를 사용하는 Flow Matching에서 조건부 평균은 모집단 회귀의 목표입니다. 이 결과는 해석적 계산이며 신경망 학습 결과는 아닙니다."
   },
   "bridgeRead": {
     "en": "In the interpolation, a controls the Gaussian-source contribution and b the target-endpoint contribution; the dots denote time derivatives. The bridge equation rewrites the posterior average as a linear term plus a score correction. Its Gaussian-source and independence assumptions matter : it is not an identity for every possible coupling or interpolation.",
     "ko": "보간식의 a는 가우시안 출발점의 비중, b는 목표 끝점의 비중이며, 위의 점은 시간 미분입니다. 연결식은 사후 평균을 선형항과 score 보정항으로 다시 쓴 것입니다. 가우시안 출발점과 독립성 가정이 필요하므로, 임의의 결합이나 보간에 무조건 적용되는 항등식은 아닙니다."
   },
   "read3Title": {
-    "en": "A controlled comparison, not a ranking",
-    "ko": "순위를 매기기보다 오차의 원인을 비교하기"
+    "en": "Score approximation and discretization",
+    "ko": "Score 근사와 이산화"
   },
   "read3Body": {
-    "en": "First set bias to zero and change the step count : the field is exact, but finite sampling and discretization remain. Then hold the step count fixed and introduce a bias. This changes the field itself; increasing the number of steps cannot generally repair that change. The same score perturbation enters the SDE and ODE with different coefficients, so it need not produce the same distribution error.",
-    "ko": "먼저 편향을 0으로 두고 스텝 수를 바꾸세요. 속도장의 근거가 되는 score는 정확하지만 유한 표본과 이산화 오차가 남습니다. 다음으로 스텝 수를 고정한 채 편향을 넣으세요. 이는 장 자체를 바꾸므로, 스텝 수를 늘리는 것만으로 일반적으로 복구할 수 없습니다. 같은 score 편향도 SDE와 ODE에 서로 다른 계수로 들어가므로 분포 오차가 같을 필요는 없습니다."
+    "en": "At zero bias, discrepancies remain due to finite sampling and numerical integration. A nonzero bias changes the score itself, so grid refinement alone cannot generally restore the exact dynamics. The same score perturbation enters the SDE and ODE with different coefficients and can produce different distribution errors.",
+    "ko": "편향이 0이어도 유한 표본과 수치 적분에 따른 차이가 남습니다. 편향이 생기면 score 자체가 달라지므로 격자를 세분화하는 것만으로 정확한 동역학을 일반적으로 복구할 수 없습니다. 동일한 score 편향도 SDE와 ODE에 서로 다른 계수로 들어가며 분포 오차에 미치는 영향이 다를 수 있습니다."
   },
   "read3Check": {
     "en": "The CDF metric asks how much the fraction of samples to the left of a threshold differs from the analytic reference, taking the largest gap over thresholds. A small value only supports horizontal-coordinate agreement. The 1,024-step reference is also numerical and contains sampling variability; one seed does not establish that either sampler is universally more robust.",
@@ -303,49 +279,69 @@ const LightText = {
     "en": "The analytic model makes the reference distribution and score available at every time. This lets us test mathematical correspondences separately from neural-network training. A Gaussian source is interpolated toward a smooth three-component target; the displayed interval stops short of the singular endpoints. The point clouds, density plots and velocity construction all refer to this one family.",
     "ko": "해석적 모형을 사용하면 매 시각의 기준 분포와 score를 계산할 수 있습니다. 따라서 신경망 학습의 영향을 섞지 않고 수학적 대응 관계를 확인할 수 있습니다. 가우시안 출발 분포를 세 성분의 매끄러운 목표 분포로 보간하되, 계수가 특이해지는 끝점은 제외합니다. 점 구름·밀도 그래프·속도 구성은 모두 이 하나의 분포족을 다룹니다."
   },
-  "bonusTime": {
-    "en": "Snapshot time",
-    "ko": "관측 시각"
-  },
-  "bonusIdentity": {
-    "en": "Tracked identity",
-    "ko": "추적할 개체"
-  },
-  "bonusPosition": {
-    "en": "Position → sample",
-    "ko": "위치 → 표본"
-  },
-  "bonusDensity": {
-    "en": "Occupancy → marginal distribution",
-    "ko": "점유 → 주변분포"
-  },
-  "bonusPath": {
-    "en": "Route → sample path",
-    "ko": "동선 → 표본 경로"
-  },
   "question1": {
-    "en": "Question : what is actually equal?",
-    "ko": "질문 : 정확히 무엇이 같다는 뜻일까?"
+    "en": "Marginal distributions and path laws",
+    "ko": "주변분포와 경로의 법칙"
   },
   "explain1": {
     "en": "A time marginal describes the position of a randomly chosen sample at one fixed time. A path law also includes dependence across times. The SDE and probability flow ODE can match the former while differing in the latter. Even starting from the same position, Brownian increments create a new source of randomness along the SDE route; the ODE route is fixed by its initial value and velocity field.",
     "ko": "시점별 주변분포는 한 시각을 고정했을 때 무작위 표본의 위치가 따르는 분포입니다. 경로의 법칙에는 서로 다른 시각의 위치 사이 의존성까지 포함됩니다. SDE와 Probability Flow ODE는 전자를 공유하면서 후자는 다를 수 있습니다. 같은 위치에서 출발해도 SDE에는 이동 중 브라운 증분이라는 추가 무작위성이 생기며, ODE의 경로는 초기값과 속도장으로 정해집니다."
   },
   "question2": {
-    "en": "Question : what does the mean field preserve?",
-    "ko": "질문 : 평균 속도장은 무엇을 보존할까?"
+    "en": "Probability transport under the mean field",
+    "ko": "평균 속도장과 확률 수송"
   },
   "explain2": {
     "en": "Conditional averaging preserves the probability transport needed for the evolving marginal density. It does not assign each particle its original target endpoint. The grey arrows are representative compatible tangents, and their opacity encodes posterior weight. Integrating the red mean gives a new family of trajectories. The score identity computes that same mean field under the stated Gaussian assumptions, rather than recovering the endpoint labels.",
     "ko": "조건부 평균은 주변밀도를 변화시키는 데 필요한 확률 수송을 보존합니다. 각 입자에 원래의 목표 끝점을 다시 배정하는 것은 아닙니다. 회색 화살표는 관측과 양립하는 대표 접선들이고 진하기는 사후 가중치를 나타냅니다. 빨간 평균을 적분하면 새로운 경로들이 만들어집니다. Score 관계식은 명시한 가우시안 가정 아래 같은 평균 속도장을 계산하는 방식이며, 끝점의 개체 대응을 복원하는 방식은 아닙니다."
   },
   "question3": {
-    "en": "Question : which source of discrepancy changed?",
-    "ko": "질문 : 어떤 오차 요인이 달라졌을까?"
+    "en": "Controlled sources of discrepancy",
+    "ko": "오차 요인의 분리"
   },
   "explain3": {
-    "en": "The bias changes the score used by the samplers, while the time grid changes the numerical approximation to their dynamics. Initial samples and the underlying Brownian realization are shared, so changing the step count does not draw an unrelated SDE experiment. Compare the reference and current rows at the same time. Early or late bias tests when the dynamics are sensitive; it does not isolate a universal advantage of stochastic or deterministic sampling.",
-    "ko": "편향은 샘플러에 들어가는 score를 바꾸고, 시간 격자는 동역학의 수치 근사를 바꿉니다. 초기 표본과 바탕이 되는 브라운 운동 실현을 공유하므로, 스텝 수를 바꾼다고 무관한 SDE 실험을 새로 뽑지는 않습니다. 같은 시각의 기준 행과 현재 설정 행을 비교하세요. 전반·후반 편향은 어느 시기에 동역학이 민감한지 살펴보는 장치이며, 확률적·결정적 샘플링의 보편적인 우열을 분리해 주지는 않습니다."
+    "en": "Score bias changes the sampler field; the time grid changes its numerical approximation. Initial samples and the underlying Brownian realization are shared across settings. Reference and perturbed rows use the same displayed time. Early and late bias isolate temporal sensitivity within this model, without establishing a universal ranking of stochastic and deterministic sampling.",
+    "ko": "Score 편향은 샘플러의 장을, 시간 격자는 그 장의 수치 근사를 바꿉니다. 설정 사이에서 초기 표본과 바탕이 되는 브라운 운동 실현을 공유하며, 기준 행과 오차 적용 행은 같은 시각을 나타냅니다. 전반·후반 편향은 이 모형의 시간별 민감도를 분리하는 장치이며, 확률적·결정적 샘플링의 보편적 우열을 정하지는 않습니다."
+  },
+  "bonusTitle": {
+    "en": "Bonus : parcel assignments and destination counts",
+    "ko": "보너스 : 택배 배정과 구역별 물량"
+  },
+  "bonusIntro": {
+    "en": "Twelve labeled parcels are assigned to three destination zones. Two assignments have the same zone counts but different parcel-to-zone correspondences.",
+    "ko": "번호가 붙은 택배 12개를 세 구역에 배정한 예시입니다. 두 배정의 구역별 물량은 같지만, 각 택배가 향하는 구역은 다릅니다."
+  },
+  "planA": {
+    "en": "Assignment A",
+    "ko": "배정 A"
+  },
+  "planB": {
+    "en": "Assignment B",
+    "ko": "배정 B"
+  },
+  "parcelSelect": {
+    "en": "Selected parcel",
+    "ko": "선택한 택배"
+  },
+  "parcelRoutes": {
+    "en": "Individual assignments",
+    "ko": "개별 배정"
+  },
+  "parcelCounts": {
+    "en": "Destination counts",
+    "ko": "구역별 물량"
+  },
+  "parcelCaption": {
+    "en": "Lines connect parcel identities to destination zones; they are assignment links, not simulated trajectories. Highlighted parcels retain their identity when the assignment changes.",
+    "ko": "선은 택배와 구역의 배정 관계이며 실제 이동 궤적은 아닙니다. 강조된 택배의 번호는 배정을 바꿔도 유지됩니다."
+  },
+  "parcelMeaning": {
+    "en": "A destination histogram contains counts, not identities. Here it remains four parcels per zone under both assignments.",
+    "ko": "도착 구역의 히스토그램은 개체 번호가 아닌 물량을 나타냅니다. 두 배정 모두 구역당 4개로 동일합니다."
+  },
+  "parcelLimit": {
+    "en": "This finite analogy concerns endpoint marginals only. It does not establish equality at intermediate times, nor represent an SDE, ODE or conditional-mean flow.",
+    "ko": "이 유한 예시는 끝점 주변분포와 개체 대응의 차이만 나타냅니다. 중간 시각의 분포 일치나 SDE·ODE·조건부 평균 흐름을 모형화하지 않습니다."
   }
 } ;
 const lang=document.documentElement.lang==='ko'?'ko':'en';
