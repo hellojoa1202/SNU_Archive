@@ -14,4 +14,4 @@ This folder is the independent ver3 version. The other versions are preserved in
 
 - Preserve SNU Archive, other courses and sibling versions. Always update English submission and Korean review versions together. Work on main; the three versions live in separate folders, not branches.
 
-- Latest site revision : the three mathematical experiments remain primary. The fourth bonus is a finite parcel-assignment diagram, illustrating endpoint counts versus identity only; do not claim intermediate marginal alignment or SDE/ODE dynamics for it. Use declarative academic prose, without guided-reading prompts. Use #73b9df for plot marks and #3e7496 for readable text.
+- Latest site revision : the fourth section visualizes the existing exact-score experiment in 3D. Space-time uses time as height; the separate surface uses density as height. Keep these axes explicit, a shared camera and slice time, fixed density scale, and numerical comparison limits. Remove unrelated everyday analogies. Use declarative academic prose. Use #73b9df for plot marks and #3e7496 for readable text.

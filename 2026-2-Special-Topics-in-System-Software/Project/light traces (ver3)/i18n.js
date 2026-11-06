@@ -303,45 +303,57 @@ const LightText = {
     "en": "Score bias changes the sampler field; the time grid changes its numerical approximation. Initial samples and the underlying Brownian realization are shared across settings. Reference and perturbed rows use the same displayed time. Early and late bias isolate temporal sensitivity within this model, without establishing a universal ranking of stochastic and deterministic sampling.",
     "ko": "Score 편향은 샘플러의 장을, 시간 격자는 그 장의 수치 근사를 바꿉니다. 설정 사이에서 초기 표본과 바탕이 되는 브라운 운동 실현을 공유하며, 기준 행과 오차 적용 행은 같은 시각을 나타냅니다. 전반·후반 편향은 이 모형의 시간별 민감도를 분리하는 장치이며, 확률적·결정적 샘플링의 보편적 우열을 정하지는 않습니다."
   },
-  "bonusTitle": {
-    "en": "Bonus : parcel assignments and destination counts",
-    "ko": "보너스 : 택배 배정과 구역별 물량"
+  "spaceTitle": {
+    "en": "Space–time geometry of the same experiment",
+    "ko": "같은 실험의 시공간 기하"
   },
-  "bonusIntro": {
-    "en": "Twelve labeled parcels are assigned to three destination zones. Two assignments have the same zone counts but different parcel-to-zone correspondences.",
-    "ko": "번호가 붙은 택배 12개를 세 구역에 배정한 예시입니다. 두 배정의 구역별 물량은 같지만, 각 택배가 향하는 구역은 다릅니다."
+  "spaceIntro": {
+    "en": "Each path is lifted into three dimensions by using generation time as height. A horizontal slice intersects the paths at one time and contains the corresponding sample cloud. Both panels use the exact-score, 1,024-step reference from section 1.",
+    "ko": "생성 시간을 높이로 두어 각 경로를 3차원에 나타냈습니다. 수평 단면은 한 시각의 경로와 교차하며, 그 시각의 표본 구름을 포함합니다. 두 패널은 1절의 정확한 score·1,024스텝 기준 계산을 그대로 사용합니다."
   },
-  "planA": {
-    "en": "Assignment A",
-    "ko": "배정 A"
+  "spaceTime": {
+    "en": "Slice time · shared with all experiments",
+    "ko": "단면 시각 · 본문 실험과 연동"
   },
-  "planB": {
-    "en": "Assignment B",
-    "ko": "배정 B"
+  "spaceParticle": {
+    "en": "Selected path",
+    "ko": "선택 경로"
   },
-  "parcelSelect": {
-    "en": "Selected parcel",
-    "ko": "선택한 택배"
+  "cameraYaw": {
+    "en": "Camera rotation",
+    "ko": "시점 회전"
   },
-  "parcelRoutes": {
-    "en": "Individual assignments",
-    "ko": "개별 배정"
+  "cameraTilt": {
+    "en": "Camera elevation",
+    "ko": "시점 높이"
   },
-  "parcelCounts": {
-    "en": "Destination counts",
-    "ko": "구역별 물량"
+  "spaceCount": {
+    "en": "Background paths",
+    "ko": "배경 경로 수"
   },
-  "parcelCaption": {
-    "en": "Lines connect parcel identities to destination zones; they are assignment links, not simulated trajectories. Highlighted parcels retain their identity when the assignment changes.",
-    "ko": "선은 택배와 구역의 배정 관계이며 실제 이동 궤적은 아닙니다. 강조된 택배의 번호는 배정을 바꿔도 유지됩니다."
+  "spaceReset": {
+    "en": "Reset view",
+    "ko": "시점 초기화"
   },
-  "parcelMeaning": {
-    "en": "A destination histogram contains counts, not identities. Here it remains four parcels per zone under both assignments.",
-    "ko": "도착 구역의 히스토그램은 개체 번호가 아닌 물량을 나타냅니다. 두 배정 모두 구역당 4개로 동일합니다."
+  "spaceCaption": {
+    "en": "The third axis is time, not a third spatial coordinate. Solid paths precede the slice; faint dashed paths follow it. The slice shows all 384 samples and analytic density contours. The selected path retains all solver steps; background paths use every eighth step. Camera changes alter the view only.",
+    "ko": "세 번째 축은 공간 좌표가 아닌 시간입니다. 실선은 단면 이전, 옅은 점선은 이후의 경로입니다. 단면에는 표본 384개와 해석적 밀도의 등고선이 표시됩니다. 선택 경로는 모든 적분 스텝을, 배경 경로는 8스텝 간격의 점을 연결합니다. 시점 조절은 계산 결과를 바꾸지 않습니다."
   },
-  "parcelLimit": {
-    "en": "This finite analogy concerns endpoint marginals only. It does not establish equality at intermediate times, nor represent an SDE, ODE or conditional-mean flow.",
-    "ko": "이 유한 예시는 끝점 주변분포와 개체 대응의 차이만 나타냅니다. 중간 시각의 분포 일치나 SDE·ODE·조건부 평균 흐름을 모형화하지 않습니다."
+  "spaceInterpretation": {
+    "en": "Different curves can intersect horizontal slices with the same marginal law. The two finite clouds need not coincide, and their visible similarity is not a proof of equality. The CDF readout below compares each full cloud with the analytic horizontal-coordinate reference at the selected grid time.",
+    "ko": "서로 다른 곡선들이 각 수평 단면에서 같은 주변분포를 가질 수 있습니다. 유한 표본 구름 자체가 일치할 필요는 없으며, 외형이 비슷하다는 사실이 분포 일치의 증명은 아닙니다. 아래 CDF 값은 선택한 격자 시각에서 전체 표본 구름과 해석적 가로 좌표 기준을 비교합니다."
+  },
+  "surfaceTitle": {
+    "en": "Analytic density as a surface",
+    "ko": "해석적 밀도의 곡면"
+  },
+  "surfaceCaption": {
+    "en": "Here the height is probability density, not time. The shared reference surface uses the same two-dimensional mixture as every main experiment. The vertical scale stays fixed at 0–2 as time changes; the base contours are level sets of that surface. Peaks indicate concentrations of probability, not particle heights or velocities.",
+    "ko": "이 곡면의 높이는 시간이 아닌 확률밀도입니다. 본문 전체와 같은 2차원 혼합분포의 공통 기준을 나타냅니다. 시간이 바뀌어도 세로 척도는 0–2로 고정되며, 바닥의 등고선은 이 곡면의 등위집합입니다. 봉우리는 확률의 집중을 나타내며 입자의 높이나 속도가 아닙니다."
+  },
+  "spaceLimit": {
+    "en": "The two views separate trajectory geometry from density geometry. Marginal alignment is an exact continuous-time statement; these numerical paths retain discretization and sampling error. The perturbations in section 3 do not affect this exact-score reference view.",
+    "ko": "두 표현은 경로의 기하와 밀도의 기하를 구분합니다. 주변분포 일치는 정확한 연속 시간 과정의 성질이며, 여기에 표시된 수치 경로에는 이산화·표본 오차가 남습니다. 3절의 편향 설정은 이 정확한 score 기준 장면에 적용되지 않습니다."
   }
 } ;
 const lang=document.documentElement.lang==='ko'?'ko':'en';

@@ -2,10 +2,11 @@
 'use strict';
 const M=LightMath,$=id=>document.getElementById(id),BLUE='#73b9df',RED='#ae4c54',INK='#344652',GREY='#84919c';
 const korean=document.documentElement.lang==='ko',say=(en,ko)=>korean?ko:en;
-let state={time:.6,particle:0,px:.6,py:.4,bias:0,steps:512,window:'all',seed:17,parcelPlan:0,parcelId:0};
+let state={time:.6,particle:0,px:.6,py:.4,bias:0,steps:512,window:'all',seed:17,cameraYaw:35,cameraTilt:25,spaceCount:24};
 try{const saved=JSON.parse(sessionStorage.getItem('light-ver3')||'null');if(saved){for(const key of Object.keys(state))if(typeof saved[key]===typeof state[key])state[key]=saved[key];}}catch{}
 state.time=Math.max(.05,Math.min(.95,state.time));state.particle=Math.max(0,Math.min(383,Math.round(state.particle)));state.px=Math.max(-1.5,Math.min(1.5,state.px));state.py=Math.max(-1.5,Math.min(1.5,state.py));state.bias=Math.max(-.8,Math.min(.8,state.bias));if(![32,128,512,1024].includes(state.steps))state.steps=512;if(!['all','early','late'].includes(state.window))state.window='all';
-state.parcelPlan=state.parcelPlan===1?1:0;state.parcelId=Math.max(0,Math.min(11,Math.round(state.parcelId)));
+state.cameraYaw=Math.max(-180,Math.min(180,state.cameraYaw));state.cameraTilt=Math.max(10,Math.min(65,state.cameraTilt));if(![12,24,48].includes(state.spaceCount))state.spaceCount=24;
+let spaceBounds=3.5,spaceVisible=false;
 let data,base,reference,errorResult,worker,job=0,playing=false,last=0,highlightTimer,geometryMap,frameMaps={},errorTimer,errorPlot=null,errorPending=true,errorConfig=null,cacheHit=false;
 const save=()=>{try{sessionStorage.setItem('light-ver3',JSON.stringify(state));}catch{}};
 function emphasize(scope,keys){
@@ -14,7 +15,7 @@ function emphasize(scope,keys){
 }
 function highlight(...keys){emphasize(document,keys);}
 function highlightError(...keys){emphasize($('approximation'),keys);}
-function sync(){for(const[id,value]of Object.entries({time:state.time,'geo-time':state.time,'error-time':state.time,particle:state.particle+1,'probe-x':state.px,'probe-y':state.py,bias:state.bias,steps:state.steps,window:state.window})){$(id).value=value;if($(id+'-out'))$(id+'-out').textContent=id==='particle'?value:Number(value).toFixed(id.includes('time')?3:2);}}
+function sync(){for(const[id,value]of Object.entries({time:state.time,'geo-time':state.time,'error-time':state.time,'space-time':state.time,particle:state.particle+1,'space-particle':state.particle+1,'camera-yaw':state.cameraYaw,'camera-tilt':state.cameraTilt,'space-count':state.spaceCount,'probe-x':state.px,'probe-y':state.py,bias:state.bias,steps:state.steps,window:state.window})){$(id).value=value;if($(id+'-out'))$(id+'-out').textContent=['particle','space-particle','camera-yaw','camera-tilt','space-count'].includes(id)?value:Number(value).toFixed(id.includes('time')?3:2);}}
 function context(id){const c=$(id),w=c.clientWidth,h=c.clientHeight,d=Math.min(devicePixelRatio||1,2);if(c.width!==Math.round(w*d)||c.height!==Math.round(h*d)){c.width=Math.round(w*d);c.height=Math.round(h*d);}const ctx=c.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.font='10px system-ui';ctx.lineWidth=1;return{c,ctx,w,h};}
 function plane(id,bound=2.8,labels=['x','y']){const q=context(id),{ctx,w,h}=q,pad=25,scale=Math.min(w-2*pad,h-2*pad)/(2*bound),cx=w/2,cy=h/2,xy=p=>[cx+p[0]*scale,cy-p[1]*scale];ctx.strokeStyle='#e5e9ed';ctx.beginPath();ctx.moveTo(pad,cy);ctx.lineTo(w-pad,cy);ctx.moveTo(cx,pad);ctx.lineTo(cx,h-pad);ctx.stroke();ctx.fillStyle='#87939d';ctx.fillText(labels[0],w-pad+5,cy+3);ctx.fillText(labels[1],cx+5,14);ctx.fillText('0',cx+5,cy+13);for(const v of[-2,-1,1,2]){if(Math.abs(v)>=bound)continue;const px=xy([v,0]);ctx.beginPath();ctx.moveTo(px[0],cy-2);ctx.lineTo(px[0],cy+2);ctx.stroke();ctx.fillText(v,px[0]-3,cy+13);}return{...q,xy,scale,bound,unmap:(x,y)=>[(x-cx)/scale,(cy-y)/scale]};}
 function dot(p,x,color,r=2){const q=p.xy(x);p.ctx.fillStyle=color;p.ctx.beginPath();p.ctx.arc(q[0],q[1],r,0,2*Math.PI);p.ctx.fill();}
@@ -36,28 +37,15 @@ function densityPlot(s,o){const n=32,lo=-2.8,hi=2.8,dx=(hi-lo)/n,hs=Array(n).fil
  for(const[arr,c]of[[hs,BLUE],[ho,RED]]){const pts=[];arr.forEach((y,i)=>{pts.push([lo+i*dx,y],[lo+(i+1)*dx,y]);});curve(p,pts,c+'b0',[],1.2);}curve(p,ref,INK,[4,4]);for(const x of[-2,-1,0,1,2])p.ctx.fillText(x,p.xy(x,0)[0]-3,p.h-9);
  for(const[f,c]of[[s,BLUE],[o,RED]]){const x=f.points[state.particle][0];if(x<lo||x>hi)continue;const px=p.xy(x,0)[0];p.ctx.strokeStyle=c;p.ctx.lineWidth=2;p.ctx.beginPath();p.ctx.moveTo(px,p.bottom-11);p.ctx.lineTo(px,p.bottom+2);p.ctx.stroke();}
 }
-// A finite endpoint-assignment analogy, independent of the continuous samplers.
-function parcelAssignments(plan){return Array.from({length:12},(_,i)=>plan===0?Math.floor(i/4):i%3);}
-function drawParcelBonus(){
- const assignment=parcelAssignments(state.parcelPlan),selected=state.parcelId,zoneNames=['A','B','C'];
- const counts=zoneNames.map((_,g)=>assignment.filter(x=>x===g).length);
- const box=(x,y,id,active)=>`<g><rect x="${x}" y="${y}" width="38" height="20" rx="1" fill="white" stroke="${active?BLUE:'#aeb9c2'}" stroke-width="${active?2:1}"/><path d="M${x+12} ${y}v5h14v-5" fill="none" stroke="#d4dce2"/><text x="${x+19}" y="${y+15}" text-anchor="middle" fill="${active?INK:GREY}" font-size="9">${String(id+1).padStart(2,'0')}</text></g>`;
- let lines='',sources='',zones='';
- assignment.forEach((g,i)=>{const y=31+i*27,ty=62+g*112,active=i===selected;
-  lines+=`<path d="M82 ${y+10} C180 ${y+10},232 ${ty},330 ${ty}" fill="none" stroke="${active?BLUE:'#d9e0e6'}" stroke-width="${active?3:1}"/>`;
-  sources+=box(44,y,i,active);
- });
- zoneNames.forEach((name,g)=>{const y=22+g*112,ids=assignment.map((target,i)=>target===g?i:-1).filter(i=>i>=0);
-  zones+=`<rect x="330" y="${y}" width="150" height="88" rx="2" fill="white" stroke="#cdd6de"/><text x="342" y="${y+18}" fill="${INK}" font-size="10">${say('ZONE','구역')} ${name}</text>`;
-  ids.forEach((id,j)=>{zones+=box(346+(j%2)*62,y+28+Math.floor(j/2)*26,id,id===selected);});
- });
- $('parcel-routing').innerHTML=lines+zones+sources;
- $('parcel-counts').innerHTML=counts.map((n,i)=>`<div class="parcel-count-row"><span>${say('Zone','구역')} ${zoneNames[i]}</span><div class="parcel-bar">${Array.from({length:n},()=>'<i></i>').join('')}</div><strong>${n}</strong></div>`).join('');
- $('parcel-readout').textContent=say('Parcel','택배')+' '+String(selected+1).padStart(2,'0')+' : A → '+zoneNames[parcelAssignments(0)[selected]]+' · B → '+zoneNames[parcelAssignments(1)[selected]];
- $('parcel-id').value=String(selected);
- $('parcel-plan-a').setAttribute('aria-pressed',String(state.parcelPlan===0));$('parcel-plan-b').setAttribute('aria-pressed',String(state.parcelPlan===1));
+// Rendering uses existing paths and density; camera changes never solve again.
+function drawSpace(){
+ if(!base||!spaceVisible)return;
+ const G=LightGeometry3D,s=M.frame(base.sde,state.time),o=M.frame(base.ode,state.time),lines=G.contours(M.density,s.time,spaceBounds);
+ for(const [id,paths,frame,color]of[['space-sde',base.sde,s,BLUE],['space-ode',base.ode,o,RED]])$(id).innerHTML=G.spacetime({paths,frame,color,selected:state.particle,count:state.spaceCount,bound:spaceBounds,yaw:state.cameraYaw,tilt:state.cameraTilt,density:M.density,contourLines:lines});
+ $('density-surface').innerHTML=G.surface({density:M.density,t:s.time,yaw:state.cameraYaw,tilt:state.cameraTilt});
+ $('space-readout').textContent=say('Grid time','격자 시각')+' : '+s.time.toFixed(4)+' · '+say('Projected CDF distance','투영 CDF 거리')+' : SDE '+M.discrepancy(s.points,s.time).toFixed(4)+' · ODE '+M.discrepancy(o.points,o.time).toFixed(4)+' · '+say('Common x/y extent','공통 x/y 범위')+' : ±'+spaceBounds.toFixed(2);
 }
-function drawExact(){if(!base)return;const s=M.frame(base.sde,state.time),o=M.frame(base.ode,state.time);cloud('sde',s.points,s.time,BLUE,state.particle);cloud('ode',o.points,o.time,RED,state.particle);trace('trail-sde',base.sde,s,BLUE);trace('trail-ode',base.ode,o,RED);densityPlot(s,o);drawGeometry();drawErrors();}
+function drawExact(){if(!base)return;const s=M.frame(base.sde,state.time),o=M.frame(base.ode,state.time);cloud('sde',s.points,s.time,BLUE,state.particle);cloud('ode',o.points,o.time,RED,state.particle);trace('trail-sde',base.sde,s,BLUE);trace('trail-ode',base.ode,o,RED);densityPlot(s,o);drawGeometry();drawErrors();drawSpace();}
 function drawGeometry(){const x=[state.px,state.py],t=state.time,result=M.conditional(x,t),terms=M.terms(x,t),p=plane('geometry',2.2);geometryMap=p;contours(p,t);p.ctx.save();p.ctx.beginPath();p.ctx.rect(20,20,p.w-40,p.h-40);p.ctx.clip();for(const c of result.candidates){const a=c.e.map((q,j)=>.95*q+.05*c.y[j]),b=c.e.map((q,j)=>.05*q+.95*c.y[j]);line(p,a,b,'rgba(115,185,223,'+(.12+c.weight*2.4)+')',1);dot(p,b,BLUE+'55',1.6);}arrow(p,x,x.map((q,j)=>q+.28*result.mean[j]),RED,2.2);dot(p,x,INK,3.3);p.ctx.restore();p.ctx.fillStyle=GREY;p.ctx.fillText(say('Position space','위치 공간'),8,p.h-5);
  const B=Math.max(1,...result.candidates.map(c=>Math.max(...c.u.map(Math.abs))),...terms.linear.map(Math.abs),...terms.correction.map(Math.abs))*1.22,vp=plane('velocity',B,['vₓ','vᵧ']);for(const c of result.candidates)arrow(vp,[0,0],c.u,'rgba(104,117,130,'+(.13+c.weight*2.6)+')',1);line(vp,[0,0],terms.linear,BLUE+'b0',1.3,[4,3]);line(vp,terms.linear,terms.v,BLUE+'b0',1.3,[4,3]);arrow(vp,[0,0],result.mean,RED,2);vp.ctx.strokeStyle=BLUE;vp.ctx.lineWidth=1.7;vp.ctx.beginPath();vp.ctx.arc(...vp.xy(terms.v),6,0,Math.PI*2);vp.ctx.stroke();vp.ctx.fillStyle=GREY;vp.ctx.fillText(say('Velocity space','속도 공간'),8,vp.h-5);vp.ctx.fillText('±'+B.toFixed(1),vp.w-45,vp.h-5);
  $('schedule-readout').textContent='a : '+(1-t).toFixed(3)+'  ·  b : '+t.toFixed(3)+'  ·  '+say('Observation','관측점')+' : ('+x.map(q=>q.toFixed(2)).join(', ')+')';
@@ -83,7 +71,7 @@ function drawErrors(){
  p.ctx.fillStyle=GREY;for(const x of[.05,.25,.5,.75,.95])p.ctx.fillText(x.toFixed(2),p.xy(x,0)[0]-9,p.h-9);
  $('error-readout').textContent=say('Displayed grid time','표시된 격자 시각')+' : '+t.toFixed(4)+' · '+say('Projected CDF distance','투영 CDF 거리')+' : SDE '+M.discrepancy(frames.sde.points,t).toFixed(4)+' · ODE '+M.discrepancy(frames.ode.points,t).toFixed(4);
 }
-function buildBase(){data=M.dataset(384,state.seed);base={sde:M.solve(data,{kind:'sde',steps:1024}),ode:M.solve(data,{kind:'ode',steps:1024})};reference={sde:M.errorCurve(base.sde),ode:M.errorCurve(base.ode)};drawExact();}
+function buildBase(){data=M.dataset(384,state.seed);base={sde:M.solve(data,{kind:'sde',steps:1024}),ode:M.solve(data,{kind:'ode',steps:1024})};spaceBounds=2.8;for(const paths of [base.sde,base.ode])for(const path of paths)for(const point of path)spaceBounds=Math.max(spaceBounds,Math.abs(point[0])+.1,Math.abs(point[1])+.1);reference={sde:M.errorCurve(base.sde),ode:M.errorCurve(base.ode)};drawExact();}
 function pending(){
  errorPending=true;$('comparison-views').setAttribute('aria-busy','true');$('errors').classList.add('pending');
  $('status').textContent=say('Updating the comparison…','비교 결과를 갱신하는 중…');
@@ -106,12 +94,12 @@ function accept({id,result,config,cached}){
 }
 try{worker=new Worker('../worker.js');worker.onmessage=e=>accept(e.data);worker.onerror=()=>{worker.terminate();worker=null;calculate();};}catch{worker=null;}
 function clock(value){state.time=Number(value);sync();drawExact();highlight('time','probe','linear','score','noise');save();}
-for(const id of ['time','geo-time','error-time'])$(id).addEventListener('input',e=>{setPlay(false);clock(e.target.value);});
-$('particle').addEventListener('input',e=>{state.particle=Number(e.target.value)-1;sync();drawExact();save();});
+for(const id of ['time','geo-time','error-time','space-time'])$(id).addEventListener('input',e=>{setPlay(false);clock(e.target.value);});
+for(const id of ['particle','space-particle'])$(id).addEventListener('input',e=>{state.particle=Number(e.target.value)-1;sync();drawExact();save();});
 for(const[id,key]of[['probe-x','px'],['probe-y','py']])$(id).addEventListener('input',e=>{state[key]=Number(e.target.value);sync();drawGeometry();highlight('probe','linear','score');save();});
 for(const[id,key]of[['bias','bias'],['steps','steps'],['window','window']])$(id).addEventListener(id==='bias'?'input':'change',e=>{state[key]=key==='window'?e.target.value:Number(e.target.value);sync();highlightError(key==='steps'?'steps':'bias');save();pending();clearTimeout(errorTimer);++job;errorTimer=setTimeout(calculate,160);});
-for(const [id,plan] of [['parcel-plan-a',0],['parcel-plan-b',1]])$(id).onclick=()=>{state.parcelPlan=plan;drawParcelBonus();save();};
-$('parcel-id').addEventListener('change',e=>{state.parcelId=Number(e.target.value);drawParcelBonus();save();});
+for(const [id,key] of [['camera-yaw','cameraYaw'],['camera-tilt','cameraTilt'],['space-count','spaceCount']])$(id).addEventListener(id==='space-count'?'change':'input',e=>{state[key]=Number(e.target.value);sync();drawSpace();save();});
+$('camera-reset').onclick=()=>{state.cameraYaw=35;state.cameraTilt=25;sync();drawSpace();save();};
 $('reset').onclick=()=>{state.bias=0;state.steps=512;state.window='all';sync();save();highlightError('bias','steps');clearTimeout(errorTimer);calculate();};
 $('resample').onclick=()=>{setPlay(false);state.seed+=101;++job;clearTimeout(errorTimer);errorResult=null;pending();$('resample').disabled=true;$('status').textContent=say('Sampling…','표본 생성 중…');setTimeout(()=>{buildBase();calculate();save();$('resample').disabled=false;},30);};
 for(const id of ['sde','ode'])$(id).addEventListener('click',e=>{const q=frameMaps[id],r=e.currentTarget.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;let nearest=0,d=Infinity;q.points.forEach((p,i)=>{const z=q.p.xy(p),dd=(z[0]-x)**2+(z[1]-y)**2;if(dd<d){d=dd;nearest=i;}});state.particle=nearest;sync();drawExact();save();});
@@ -128,8 +116,9 @@ function setPlay(value){playing=value;last=0;$('play').textContent=value?say('Pa
 $('play').onclick=()=>{if(!playing&&state.time>=.95){state.time=.05;sync();drawExact();}setPlay(!playing);};
 function animate(now){if(playing&&(!last||now-last>65)){if(last)state.time=Math.min(.95,state.time+(now-last)/17000);last=now;sync();drawExact();if(state.time>=.95){setPlay(false);save();}}requestAnimationFrame(animate);}
 new IntersectionObserver(entries=>{if(!entries[0].isIntersecting)setPlay(false);},{threshold:.05}).observe($('exposure'));
+new IntersectionObserver(entries=>{spaceVisible=entries[0].isIntersecting;if(spaceVisible)drawSpace();},{rootMargin:'200px'}).observe($('space-section'));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)setPlay(false);});
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{drawExact();drawErrors();},120);});
 window.LightLab={snapshot:()=>({...state,playing,mean:M.conditional([state.px,state.py],state.time).mean,field:M.velocity([state.px,state.py],state.time),pending:errorPending,cacheHit,errorTime:errorResult?M.packedFrame(errorResult.sde,state.time).time:null,config:errorConfig,errors:errorResult?{sde:errorResult.sde.curve.at(-1).d,ode:errorResult.ode.curve.at(-1).d}:null}),ready:false};
 document.querySelectorAll('input,select,button').forEach(e=>e.disabled=true);
-sync();drawParcelBonus();$('status').textContent=say('Preparing analytic references…','해석적 기준을 준비하는 중…');setTimeout(()=>{buildBase();calculate();LightLab.ready=true;$('top').setAttribute('aria-busy','false');document.querySelectorAll('input,select,button').forEach(e=>e.disabled=false);requestAnimationFrame(animate);},30);
+sync();$('status').textContent=say('Preparing analytic references…','해석적 기준을 준비하는 중…');setTimeout(()=>{buildBase();calculate();LightLab.ready=true;$('top').setAttribute('aria-busy','false');document.querySelectorAll('input,select,button').forEach(e=>e.disabled=false);requestAnimationFrame(animate);},30);

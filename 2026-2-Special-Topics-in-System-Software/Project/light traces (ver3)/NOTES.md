@@ -43,6 +43,10 @@ The comparison worker stores the active seed's samples and fine-grid Brownian in
 
 Time scrubbing reads stored frames without solving again. New error/grid settings run in the worker; request IDs discard obsolete responses and the previous view is visibly dimmed while pending. Initial loading disables controls until reference frames exist. The direct-computation fallback is available when a browser cannot start the worker.
 
-## Replacement bonus diagram
+## Three-dimensional geometry
 
-The concourse views were replaced by a finite parcel-assignment SVG and destination-count display. Assignment A groups IDs in blocks of four; assignment B assigns IDs cyclically. Both give four parcels to each of three zones. The highlighted identity persists when the assignment changes. The schematic lines denote assignment, not motion. This example concerns endpoint marginals only and has no time slider, SDE, ODE or FM interpretation. Main prose now uses declarative descriptions rather than guided-reading questions and prompts. The sampler model and audited equations are unchanged.
+Section 4 uses the original exact-score, 1,024-step SDE/ODE paths. Orthographic camera rotation changes only projection. Both views use a shared spatial bound containing every stored path and generation time as their vertical coordinate. A movable horizontal slice includes all 384 positions and analytic density contours. Background traces use every eighth grid point; the selected path retains all steps. Future path segments are dashed.
+
+A separate surface represents analytic density as height, on a fixed 0–2 vertical scale and spatial domain [-2.2,2.2] squared. Its height is not time. The projected CDF comparisons use the full clouds at the exact selected solver grid time and do not establish full 2D agreement. These are numerical reference experiments, not a proof of continuous-time marginal alignment. Score bias in section 3 does not affect them.
+
+`geometry3d.js` provides dependency-free orthographic projection and SVG rendering. Section rendering is deferred while outside the viewport. Time, selected path and camera controls persist across languages.
