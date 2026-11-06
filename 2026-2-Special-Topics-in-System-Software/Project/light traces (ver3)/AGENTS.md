@@ -13,3 +13,5 @@ This folder is the independent ver3 version. The other versions are preserved in
 - Preserve worker frame caching and request-ID rejection of stale results. Step changes emphasize discrete step sizes in the audited Euler–Maruyama/Heun equations, never the differential ds. Error controls highlight only the approximate experiment.
 
 - Preserve SNU Archive, other courses and sibling versions. Always update English submission and Korean review versions together. Work on main; the three versions live in separate folders, not branches.
+
+- Latest site revision : keep the three mathematical experiments primary; pedestrian tracking is a concise fourth bonus section with linked controls. Use brighter sky blue (#73b9df) for plot marks and darker blue (#3e7496) for readable text. Update canvas, CSS, and bilingual legends consistently.

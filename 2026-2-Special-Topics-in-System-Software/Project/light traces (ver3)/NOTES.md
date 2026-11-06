@@ -48,3 +48,7 @@ Time scrubbing reads stored frames without solving again. New error/grid setting
 The additional concourse view reads existing exact-reference samples as overhead tracking data. Occupancy uses the ODE positions; the adjacent panel compares the selected identity's SDE and ODE paths from the same initial point. Both use the shared time, selection and seed, with a common coordinate scale. No independent probability family, physical units, pedestrian interaction or destination model is introduced. Matching time marginals does not imply matching the joint law of a tracked route.
 
 Bilingual reading guides explain the score and drift/noise balance, posterior averaging as the population squared-error regression target, the Gaussian-source assumptions of the FM identity, and a zero-bias/grid-refinement comparison before adding score bias. They distinguish horizontal CDF discrepancy from full 2D agreement and numerical references from exact distributions. No displayed equations are added or changed.
+
+## Presentation revision
+
+The pedestrian-tracking analogy now follows the three main mathematical experiments as a short bonus section. Its local time and identity sliders share the main state. The concourse plan is schematic decoration, with no obstacle or pedestrian dynamics. Main-section prose expands marginal versus path laws, posterior velocity averaging, the Gaussian bridge assumptions and controlled score/grid comparisons. Plot sky blue is #73b9df; text uses #3e7496 for readability. No numerical model or displayed lecture equation was changed.

@@ -1,6 +1,6 @@
 /* Shared rendering and state for both languages. */
 'use strict';
-const M=LightMath,$=id=>document.getElementById(id),BLUE='#6085ad',RED='#ae4c54',INK='#344652',GREY='#84919c';
+const M=LightMath,$=id=>document.getElementById(id),BLUE='#73b9df',RED='#ae4c54',INK='#344652',GREY='#84919c';
 const korean=document.documentElement.lang==='ko',say=(en,ko)=>korean?ko:en;
 let state={time:.6,particle:0,px:.6,py:.4,bias:0,steps:512,window:'all',seed:17};
 try{const saved=JSON.parse(sessionStorage.getItem('light-ver3')||'null');if(saved){for(const key of Object.keys(state))if(typeof saved[key]===typeof state[key])state[key]=saved[key];}}catch{}
@@ -13,7 +13,7 @@ function emphasize(scope,keys){
 }
 function highlight(...keys){emphasize(document,keys);}
 function highlightError(...keys){emphasize($('approximation'),keys);}
-function sync(){for(const[id,value]of Object.entries({time:state.time,'geo-time':state.time,'error-time':state.time,particle:state.particle+1,'probe-x':state.px,'probe-y':state.py,bias:state.bias,steps:state.steps,window:state.window})){$(id).value=value;if($(id+'-out'))$(id+'-out').textContent=['particle'].includes(id)?value:Number(value).toFixed(id.includes('time')?3:2);}}
+function sync(){for(const[id,value]of Object.entries({time:state.time,'geo-time':state.time,'error-time':state.time,'bonus-time':state.time,particle:state.particle+1,'bonus-particle':state.particle+1,'probe-x':state.px,'probe-y':state.py,bias:state.bias,steps:state.steps,window:state.window})){$(id).value=value;if($(id+'-out'))$(id+'-out').textContent=['particle','bonus-particle'].includes(id)?value:Number(value).toFixed(id.includes('time')?3:2);}}
 function context(id){const c=$(id),w=c.clientWidth,h=c.clientHeight,d=Math.min(devicePixelRatio||1,2);if(c.width!==Math.round(w*d)||c.height!==Math.round(h*d)){c.width=Math.round(w*d);c.height=Math.round(h*d);}const ctx=c.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.font='10px system-ui';ctx.lineWidth=1;return{c,ctx,w,h};}
 function plane(id,bound=2.8,labels=['x','y']){const q=context(id),{ctx,w,h}=q,pad=25,scale=Math.min(w-2*pad,h-2*pad)/(2*bound),cx=w/2,cy=h/2,xy=p=>[cx+p[0]*scale,cy-p[1]*scale];ctx.strokeStyle='#e5e9ed';ctx.beginPath();ctx.moveTo(pad,cy);ctx.lineTo(w-pad,cy);ctx.moveTo(cx,pad);ctx.lineTo(cx,h-pad);ctx.stroke();ctx.fillStyle='#87939d';ctx.fillText(labels[0],w-pad+5,cy+3);ctx.fillText(labels[1],cx+5,14);ctx.fillText('0',cx+5,cy+13);for(const v of[-2,-1,1,2]){if(Math.abs(v)>=bound)continue;const px=xy([v,0]);ctx.beginPath();ctx.moveTo(px[0],cy-2);ctx.lineTo(px[0],cy+2);ctx.stroke();ctx.fillText(v,px[0]-3,cy+13);}return{...q,xy,scale,bound,unmap:(x,y)=>[(x-cx)/scale,(cy-y)/scale]};}
 function dot(p,x,color,r=2){const q=p.xy(x);p.ctx.fillStyle=color;p.ctx.beginPath();p.ctx.arc(q[0],q[1],r,0,2*Math.PI);p.ctx.fill();}
@@ -26,7 +26,7 @@ function contours(p,t){const n=33,B=p.bound,grid=[];let max=0;for(let j=0;j<=n;j
   for(let e=0;e<4;e++){const f=(e+1)%4;if((vs[e]<level)===(vs[f]<level))continue;const s=(level-vs[e])/(vs[f]-vs[e]);hits.push(cs[e].map((a,d)=>-B+2*B*(a+s*(cs[f][d]-a))/n));}
   for(let z=0;z+1<hits.length;z+=2){ctx.beginPath();ctx.moveTo(...p.xy(hits[z]));ctx.lineTo(...p.xy(hits[z+1]));ctx.stroke();}
  }ctx.restore();}
-function cloud(id,points,t,color,selected=-1){const p=plane(id);contours(p,t);let out=0;p.ctx.save();p.ctx.beginPath();p.ctx.rect(20,20,p.w-40,p.h-40);p.ctx.clip();points.forEach((x,i)=>{const pixel=p.xy(x);if(pixel[0]<20||pixel[0]>p.w-20||pixel[1]<20||pixel[1]>p.h-20)out++;dot(p,x,color+'8c',1.7);});if(selected>=0){const q=p.xy(points[selected]);p.ctx.strokeStyle=INK;p.ctx.lineWidth=1.3;p.ctx.beginPath();p.ctx.arc(...q,5,0,2*Math.PI);p.ctx.stroke();}p.ctx.restore();p.ctx.fillStyle=GREY;p.ctx.fillText('t = '+t.toFixed(3),8,p.h-5);if(out)p.ctx.fillText(say('Outside frame : ','화면 밖 : ')+out,p.w-115,p.h-5);frameMaps[id]={p,points};}
+function cloud(id,points,t,color,selected=-1){const p=plane(id);contours(p,t);let out=0;p.ctx.save();p.ctx.beginPath();p.ctx.rect(20,20,p.w-40,p.h-40);p.ctx.clip();points.forEach((x,i)=>{const pixel=p.xy(x);if(pixel[0]<20||pixel[0]>p.w-20||pixel[1]<20||pixel[1]>p.h-20)out++;dot(p,x,color+'c4',1.7);});if(selected>=0){const q=p.xy(points[selected]);p.ctx.strokeStyle=INK;p.ctx.lineWidth=1.3;p.ctx.beginPath();p.ctx.arc(...q,5,0,2*Math.PI);p.ctx.stroke();}p.ctx.restore();p.ctx.fillStyle=GREY;p.ctx.fillText('t = '+t.toFixed(3),8,p.h-5);if(out)p.ctx.fillText(say('Outside frame : ','화면 밖 : ')+out,p.w-115,p.h-5);frameMaps[id]={p,points};}
 function trace(id,paths,frame,color){const selected=paths[state.particle],path=selected.slice(0,frame.index+1),B=Math.max(1.6,...base.sde[state.particle].map(q=>Math.max(Math.abs(q[0]),Math.abs(q[1]))),...base.ode[state.particle].map(q=>Math.max(Math.abs(q[0]),Math.abs(q[1]))))+.2,p=plane(id,B);
  p.ctx.lineWidth=1.1;p.ctx.strokeStyle=color;p.ctx.beginPath();path.forEach((x,i)=>{const q=p.xy(x);i?p.ctx.lineTo(...q):p.ctx.moveTo(...q);});p.ctx.stroke();dot(p,path[0],'#fff',3);p.ctx.strokeStyle=GREY;p.ctx.beginPath();p.ctx.arc(...p.xy(path[0]),3,0,2*Math.PI);p.ctx.stroke();dot(p,path.at(-1),color,3);p.ctx.fillStyle=GREY;p.ctx.fillText(say('Light ','광점 ')+(state.particle+1),8,p.h-5);}
 function plot(id,xmin,xmax,ymax){const p=context(id),left=39,right=p.w-14,top=15,bottom=p.h-28,xy=(x,y)=>[left+(right-left)*(x-xmin)/(xmax-xmin),bottom-(bottom-top)*y/ymax];p.ctx.strokeStyle='#e1e6eb';p.ctx.beginPath();p.ctx.moveTo(left,top);p.ctx.lineTo(left,bottom);p.ctx.lineTo(right,bottom);p.ctx.stroke();p.ctx.fillStyle=GREY;for(let j=0;j<=2;j++){const v=ymax*j/2,y=xy(0,v)[1];p.ctx.fillText(v.toFixed(2),3,y+3);}return {...p,xy,left,right,top,bottom};}
@@ -42,6 +42,13 @@ function drawOccupancy(s,o){
  function floor(id){const p=context(id),pad=24,scale=Math.min(p.w-2*pad,p.h-2*pad)/(2*bound);
   p.xy=q=>[p.w/2+q[0]*scale,p.h/2-q[1]*scale];
   p.ctx.strokeStyle='#e1e6eb';p.ctx.strokeRect(pad,pad,p.w-2*pad,p.h-2*pad);
+  p.ctx.save();p.ctx.strokeStyle='#edf0f3';p.ctx.setLineDash([2,5]);
+  for(let i=1;i<5;i++){const x=pad+(p.w-2*pad)*i/5;p.ctx.beginPath();p.ctx.moveTo(x,pad);p.ctx.lineTo(x,p.h-pad);p.ctx.stroke();}
+  p.ctx.restore();
+  p.ctx.fillStyle=GREY;p.ctx.fillText(say('CONCOURSE · SCHEMATIC PLAN','대합실 · 개념 평면도'),pad,14);
+  // Two entrance marks are schematic context, not boundary conditions.
+  p.ctx.strokeStyle='#aab8c2';p.ctx.lineWidth=2;
+  for(const x of [p.w*.32,p.w*.68]){p.ctx.beginPath();p.ctx.moveTo(x-12,pad);p.ctx.lineTo(x+12,pad);p.ctx.stroke();}
   p.ctx.fillStyle=GREY;p.ctx.fillText('t : '+o.time.toFixed(3),pad,p.h-7);
   p.ctx.save();p.ctx.beginPath();p.ctx.rect(pad,pad,p.w-2*pad,p.h-2*pad);p.ctx.clip();return p;
  }
@@ -57,10 +64,10 @@ function drawOccupancy(s,o){
  dot(b,pathO[0],INK,3);b.ctx.restore();
 }
 function drawExact(){if(!base)return;const s=M.frame(base.sde,state.time),o=M.frame(base.ode,state.time);cloud('sde',s.points,s.time,BLUE,state.particle);cloud('ode',o.points,o.time,RED,state.particle);trace('trail-sde',base.sde,s,BLUE);trace('trail-ode',base.ode,o,RED);densityPlot(s,o);drawOccupancy(s,o);drawGeometry();drawErrors();}
-function drawGeometry(){const x=[state.px,state.py],t=state.time,result=M.conditional(x,t),terms=M.terms(x,t),p=plane('geometry',2.2);geometryMap=p;contours(p,t);p.ctx.save();p.ctx.beginPath();p.ctx.rect(20,20,p.w-40,p.h-40);p.ctx.clip();for(const c of result.candidates){const a=c.e.map((q,j)=>.95*q+.05*c.y[j]),b=c.e.map((q,j)=>.05*q+.95*c.y[j]);line(p,a,b,'rgba(96,133,173,'+(.12+c.weight*2.4)+')',1);dot(p,b,BLUE+'55',1.6);}arrow(p,x,x.map((q,j)=>q+.28*result.mean[j]),RED,2.2);dot(p,x,INK,3.3);p.ctx.restore();p.ctx.fillStyle=GREY;p.ctx.fillText(say('Position space','위치 공간'),8,p.h-5);
+function drawGeometry(){const x=[state.px,state.py],t=state.time,result=M.conditional(x,t),terms=M.terms(x,t),p=plane('geometry',2.2);geometryMap=p;contours(p,t);p.ctx.save();p.ctx.beginPath();p.ctx.rect(20,20,p.w-40,p.h-40);p.ctx.clip();for(const c of result.candidates){const a=c.e.map((q,j)=>.95*q+.05*c.y[j]),b=c.e.map((q,j)=>.05*q+.95*c.y[j]);line(p,a,b,'rgba(115,185,223,'+(.12+c.weight*2.4)+')',1);dot(p,b,BLUE+'55',1.6);}arrow(p,x,x.map((q,j)=>q+.28*result.mean[j]),RED,2.2);dot(p,x,INK,3.3);p.ctx.restore();p.ctx.fillStyle=GREY;p.ctx.fillText(say('Position space','위치 공간'),8,p.h-5);
  const B=Math.max(1,...result.candidates.map(c=>Math.max(...c.u.map(Math.abs))),...terms.linear.map(Math.abs),...terms.correction.map(Math.abs))*1.22,vp=plane('velocity',B,['vₓ','vᵧ']);for(const c of result.candidates)arrow(vp,[0,0],c.u,'rgba(104,117,130,'+(.13+c.weight*2.6)+')',1);line(vp,[0,0],terms.linear,BLUE+'b0',1.3,[4,3]);line(vp,terms.linear,terms.v,BLUE+'b0',1.3,[4,3]);arrow(vp,[0,0],result.mean,RED,2);vp.ctx.strokeStyle=BLUE;vp.ctx.lineWidth=1.7;vp.ctx.beginPath();vp.ctx.arc(...vp.xy(terms.v),6,0,Math.PI*2);vp.ctx.stroke();vp.ctx.fillStyle=GREY;vp.ctx.fillText(say('Velocity space','속도 공간'),8,vp.h-5);vp.ctx.fillText('±'+B.toFixed(1),vp.w-45,vp.h-5);
  $('schedule-readout').textContent='a : '+(1-t).toFixed(3)+'  ·  b : '+t.toFixed(3)+'  ·  '+say('Observation','관측점')+' : ('+x.map(q=>q.toFixed(2)).join(', ')+')';
- const difference=Math.hypot(...result.mean.map((q,j)=>q-terms.v[j]));$('mean-readout').textContent=say('Mean velocity','평균 속도')+' : ('+result.mean.map(q=>q.toFixed(3)).join(', ')+')  ·  '+say('Difference between constructions','두 계산의 차이')+' : '+difference.toExponential(1)+'  ·  '+say('Dashed blue : linear term, then score term','파란 점선 : 선형항, 이어서 score 항');}
+ const difference=Math.hypot(...result.mean.map((q,j)=>q-terms.v[j]));$('mean-readout').textContent=say('Mean velocity','평균 속도')+' : ('+result.mean.map(q=>q.toFixed(3)).join(', ')+')  ·  '+say('Difference between constructions','두 계산의 차이')+' : '+difference.toExponential(1)+'  ·  '+say('Dashed sky blue : linear term, then score term','하늘색 점선 : 선형항, 이어서 score 항');}
 function drawErrors(){
  if(!errorResult||!base)return;
  const frames={sde:M.packedFrame(errorResult.sde,state.time),ode:M.packedFrame(errorResult.ode,state.time)},t=frames.sde.time;
@@ -105,8 +112,8 @@ function accept({id,result,config,cached}){
 }
 try{worker=new Worker('../worker.js');worker.onmessage=e=>accept(e.data);worker.onerror=()=>{worker.terminate();worker=null;calculate();};}catch{worker=null;}
 function clock(value){state.time=Number(value);sync();drawExact();highlight('time','probe','linear','score','noise');save();}
-for(const id of ['time','geo-time','error-time'])$(id).addEventListener('input',e=>{setPlay(false);clock(e.target.value);});
-$('particle').addEventListener('input',e=>{state.particle=Number(e.target.value)-1;sync();drawExact();save();});
+for(const id of ['time','geo-time','error-time','bonus-time'])$(id).addEventListener('input',e=>{setPlay(false);clock(e.target.value);});
+for(const id of ['particle','bonus-particle'])$(id).addEventListener('input',e=>{state.particle=Number(e.target.value)-1;sync();drawExact();save();});
 for(const[id,key]of[['probe-x','px'],['probe-y','py']])$(id).addEventListener('input',e=>{state[key]=Number(e.target.value);sync();drawGeometry();highlight('probe','linear','score');save();});
 for(const[id,key]of[['bias','bias'],['steps','steps'],['window','window']])$(id).addEventListener(id==='bias'?'input':'change',e=>{state[key]=key==='window'?e.target.value:Number(e.target.value);sync();highlightError(key==='steps'?'steps':'bias');save();pending();clearTimeout(errorTimer);++job;errorTimer=setTimeout(calculate,160);});
 $('reset').onclick=()=>{state.bias=0;state.steps=512;state.window='all';sync();save();highlightError('bias','steps');clearTimeout(errorTimer);calculate();};
