@@ -35,7 +35,28 @@ function densityPlot(s,o){const n=32,lo=-2.8,hi=2.8,dx=(hi-lo)/n,hs=Array(n).fil
  for(const[arr,c]of[[hs,BLUE],[ho,RED]]){const pts=[];arr.forEach((y,i)=>{pts.push([lo+i*dx,y],[lo+(i+1)*dx,y]);});curve(p,pts,c+'b0',[],1.2);}curve(p,ref,INK,[4,4]);for(const x of[-2,-1,0,1,2])p.ctx.fillText(x,p.xy(x,0)[0]-3,p.h-9);
  for(const[f,c]of[[s,BLUE],[o,RED]]){const x=f.points[state.particle][0];if(x<lo||x>hi)continue;const px=p.xy(x,0)[0];p.ctx.strokeStyle=c;p.ctx.lineWidth=2;p.ctx.beginPath();p.ctx.moveTo(px,p.bottom-11);p.ctx.lineTo(px,p.bottom+2);p.ctx.stroke();}
 }
-function drawExact(){if(!base)return;const s=M.frame(base.sde,state.time),o=M.frame(base.ode,state.time);cloud('sde',s.points,s.time,BLUE,state.particle);cloud('ode',o.points,o.time,RED,state.particle);trace('trail-sde',base.sde,s,BLUE);trace('trail-ode',base.ode,o,RED);densityPlot(s,o);drawGeometry();drawErrors();}
+// The everyday reading reuses the exact experiment; it adds no crowd dynamics.
+function drawOccupancy(s,o){
+ const pathS=base.sde[state.particle],pathO=base.ode[state.particle];
+ const bound=Math.max(2.8,...pathS.flatMap(q=>q.map(Math.abs)),...pathO.flatMap(q=>q.map(Math.abs)))+.15;
+ function floor(id){const p=context(id),pad=24,scale=Math.min(p.w-2*pad,p.h-2*pad)/(2*bound);
+  p.xy=q=>[p.w/2+q[0]*scale,p.h/2-q[1]*scale];
+  p.ctx.strokeStyle='#e1e6eb';p.ctx.strokeRect(pad,pad,p.w-2*pad,p.h-2*pad);
+  p.ctx.fillStyle=GREY;p.ctx.fillText('t : '+o.time.toFixed(3),pad,p.h-7);
+  p.ctx.save();p.ctx.beginPath();p.ctx.rect(pad,pad,p.w-2*pad,p.h-2*pad);p.ctx.clip();return p;
+ }
+ const a=floor('occupancy-map');
+ o.points.forEach(q=>dot(a,q,RED+'75',1.8));
+ const current=a.xy(o.points[state.particle]);a.ctx.strokeStyle=INK;a.ctx.beginPath();a.ctx.arc(...current,6,0,2*Math.PI);a.ctx.stroke();a.ctx.restore();
+ const b=floor('occupancy-track');
+ for(const [path,frame,color] of [[pathS,s,BLUE],[pathO,o,RED]]){
+  b.ctx.strokeStyle=color;b.ctx.lineWidth=1.4;b.ctx.beginPath();
+  path.slice(0,frame.index+1).forEach((q,i)=>{const xy=b.xy(q);i?b.ctx.lineTo(...xy):b.ctx.moveTo(...xy);});b.ctx.stroke();
+  const end=b.xy(path[frame.index]);b.ctx.beginPath();b.ctx.arc(...end,4,0,2*Math.PI);b.ctx.stroke();
+ }
+ dot(b,pathO[0],INK,3);b.ctx.restore();
+}
+function drawExact(){if(!base)return;const s=M.frame(base.sde,state.time),o=M.frame(base.ode,state.time);cloud('sde',s.points,s.time,BLUE,state.particle);cloud('ode',o.points,o.time,RED,state.particle);trace('trail-sde',base.sde,s,BLUE);trace('trail-ode',base.ode,o,RED);densityPlot(s,o);drawOccupancy(s,o);drawGeometry();drawErrors();}
 function drawGeometry(){const x=[state.px,state.py],t=state.time,result=M.conditional(x,t),terms=M.terms(x,t),p=plane('geometry',2.2);geometryMap=p;contours(p,t);p.ctx.save();p.ctx.beginPath();p.ctx.rect(20,20,p.w-40,p.h-40);p.ctx.clip();for(const c of result.candidates){const a=c.e.map((q,j)=>.95*q+.05*c.y[j]),b=c.e.map((q,j)=>.05*q+.95*c.y[j]);line(p,a,b,'rgba(96,133,173,'+(.12+c.weight*2.4)+')',1);dot(p,b,BLUE+'55',1.6);}arrow(p,x,x.map((q,j)=>q+.28*result.mean[j]),RED,2.2);dot(p,x,INK,3.3);p.ctx.restore();p.ctx.fillStyle=GREY;p.ctx.fillText(say('Position space','위치 공간'),8,p.h-5);
  const B=Math.max(1,...result.candidates.map(c=>Math.max(...c.u.map(Math.abs))),...terms.linear.map(Math.abs),...terms.correction.map(Math.abs))*1.22,vp=plane('velocity',B,['vₓ','vᵧ']);for(const c of result.candidates)arrow(vp,[0,0],c.u,'rgba(104,117,130,'+(.13+c.weight*2.6)+')',1);line(vp,[0,0],terms.linear,BLUE+'b0',1.3,[4,3]);line(vp,terms.linear,terms.v,BLUE+'b0',1.3,[4,3]);arrow(vp,[0,0],result.mean,RED,2);vp.ctx.strokeStyle=BLUE;vp.ctx.lineWidth=1.7;vp.ctx.beginPath();vp.ctx.arc(...vp.xy(terms.v),6,0,Math.PI*2);vp.ctx.stroke();vp.ctx.fillStyle=GREY;vp.ctx.fillText(say('Velocity space','속도 공간'),8,vp.h-5);vp.ctx.fillText('±'+B.toFixed(1),vp.w-45,vp.h-5);
  $('schedule-readout').textContent='a : '+(1-t).toFixed(3)+'  ·  b : '+t.toFixed(3)+'  ·  '+say('Observation','관측점')+' : ('+x.map(q=>q.toFixed(2)).join(', ')+')';

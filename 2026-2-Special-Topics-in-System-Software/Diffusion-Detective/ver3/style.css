@@ -2,3 +2,15 @@
 /* Let the equation wrapper scroll on narrow screens, not individual MathML boxes. */
 math{overflow:visible;flex:none;padding:7px 4px}.equation{overflow-y:hidden;min-height:68px}#eq-bridge{min-height:96px}
 .comparison-clock{margin-bottom:3px}.comparison-clock label{max-width:none}.comparison-row-label{border-bottom:1px solid var(--line);padding:11px 0 6px;font-size:11px;color:var(--muted)}.comparison-row{margin:12px 0 3px}.comparison-row canvas{height:220px}.parameter-readout{font-size:11px;font-variant-numeric:tabular-nums;color:#536777;margin:10px 0;line-height:1.8}.numerical-updates{border-top:1px solid var(--line);padding-top:16px;margin-top:12px}.solver-formula>span{font-size:10px;color:var(--muted)}.solver-formula .equation{padding:7px 0;margin:0}#eq-heun{min-height:110px}#eq-em{min-height:80px}#comparison-views[aria-busy=true],#errors.pending{opacity:.45}#errors{touch-action:none;cursor:ew-resize}main[aria-busy=true] canvas{pointer-events:none}#step-readout{padding-top:8px}button:disabled,input:disabled,select:disabled{cursor:wait;opacity:.5}@media(max-width:640px){.comparison-row{grid-template-columns:1fr 1fr;gap:10px}.comparison-row canvas{height:195px}.comparison-row h3{font-size:10px;line-height:1.5}.solver-formula .equation{justify-content:flex-start}.solver-formula math{margin-left:auto;margin-right:auto;font-size:14px}.numerical-updates{min-width:0}}
+
+/* A restrained tracking-data analogy, using the same samples and clock. */
+.occupancy-study{margin:30px 0;padding:22px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.occupancy-study .eyebrow{margin:0 0 10px;letter-spacing:.07em;font-size:11px}
+.occupancy-study>h3{font-size:13px;font-weight:400;line-height:1.9;max-width:850px}
+.occupancy-study .paired{margin-top:20px}.occupancy-study canvas{height:240px}
+.occupancy-study .caption{margin-bottom:10px}
+.reading-guide{margin:22px 0 26px;max-width:870px;border-left:2px solid var(--line);padding:2px 0 2px 18px}
+.reading-guide h3{font-size:13px;font-weight:600;margin-bottom:9px}
+.reading-guide p{font-size:13px;line-height:1.95;color:#495866}
+.reading-guide p+p{margin-top:10px}
+@media(max-width:640px){.occupancy-study canvas{height:220px}.reading-guide{padding-left:13px}.reading-guide p{font-size:12px}}

@@ -42,3 +42,9 @@ Run `node --test model.test.cjs` from this folder. Checks cover the analytic sco
 The comparison worker stores the active seed's samples and fine-grid Brownian increments, plus the three most recent settings. Compact Float32 frame buffers retain every solver grid state; plots show the nearest grid point rather than interpolating stochastic paths. CDF curves are evaluated at 33 grid times; the movable cursor evaluates the selected snapshot directly, so its marker need not lie exactly on the line joining those sampled curve values. Reference snapshots use the same grid time as the current setting.
 
 Time scrubbing reads stored frames without solving again. New error/grid settings run in the worker; request IDs discard obsolete responses and the previous view is visibly dimmed while pending. Initial loading disables controls until reference frames exist. The direct-computation fallback is available when a browser cannot start the worker.
+
+## Concourse tracking analogy and explanatory reading
+
+The additional concourse view reads existing exact-reference samples as overhead tracking data. Occupancy uses the ODE positions; the adjacent panel compares the selected identity's SDE and ODE paths from the same initial point. Both use the shared time, selection and seed, with a common coordinate scale. No independent probability family, physical units, pedestrian interaction or destination model is introduced. Matching time marginals does not imply matching the joint law of a tracked route.
+
+Bilingual reading guides explain the score and drift/noise balance, posterior averaging as the population squared-error regression target, the Gaussian-source assumptions of the FM identity, and a zero-bias/grid-refinement comparison before adding score bias. They distinguish horizontal CDF discrepancy from full 2D agreement and numerical references from exact distributions. No displayed equations are added or changed.
