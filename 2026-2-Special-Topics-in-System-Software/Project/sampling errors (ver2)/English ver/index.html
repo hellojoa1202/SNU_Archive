@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Interactive course notes: the three approximations of a diffusion sampler (prior, score, time grid), measured one at a time on an analytic toy.">
+<title>Three Approximations of a Diffusion Sampler</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+<script defer src="../model.js"></script>
+<script defer src="../sampler.js"></script>
+<script defer src="../budget.js"></script>
+<script defer src="../traps.js"></script>
+<script defer src="../i18n.js"></script>
+<script defer src="../app.js"></script>
+</head>
+<body>
+<a data-i18n="skip" class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="#main"><span class="brand-symbol">∿</span>diffusion<span>detective</span></a>
+  <span class="top-caption">PRIOR · SCORE · TIME GRID</span>
+  <div class="header-actions">
+    <div class="language-switch" aria-label="Language"><button data-lang="en">EN</button><button data-lang="ko">한국어</button></div>
+    <a class="source-link" href="https://github.com/hellojoa1202/SNU_Archive/tree/main/2026-2-Special-Topics-in-System-Software/Project/sampling%20errors%20%28ver2%29" target="_blank" rel="noopener">Source ↗</a>
+  </div>
+</header>
+<div class="reading-progress"><div id="reading-progress"></div></div>
+
+<div class="page">
+<aside class="contents">
+  <div class="eyebrow">CONTENTS</div>
+  <nav>
+    <a href="#forward"><span>1.</span><span data-i18n="nav-forward">Forward process</span></a>
+    <a href="#family"><span>2.</span><span data-i18n="nav-family">Reverse SDE and PF-ODE</span></a>
+    <a href="#lab"><span>3.</span><span data-i18n="nav-lab">Three substitutions</span></a>
+    <a href="#budget"><span>4.</span><span data-i18n="nav-budget">Error budget</span></a>
+    <a href="#flow"><span>5.</span><span data-i18n="nav-flow">Flow matching</span></a>
+  </nav>
+  <p>2026 FALL<br>Special Topics in<br>System Software</p>
+</aside>
+
+<main id="main">
+<section class="hero">
+  <div class="eyebrow">INTERACTIVE COURSE NOTES</div>
+  <h1 data-i18n="hero-title">Three approximations<br><span>of a diffusion sampler.</span></h1>
+  <p data-i18n="hero-lead" class="hero-lead">Prior. Score. Time grid.</p>
+  <p data-i18n="hero-body" class="abstract">The reverse SDE and the probability flow ODE are exact with the true p<sub>T</sub>, the true score and continuous time. A sampler has none of the three. Switch each substitution on by itself and measure what it costs.</p>
+  <div class="method-route">
+    <div><small>01 · FORWARD</small><svg viewBox="0 0 240 86" aria-hidden="true"><g fill="#5076a6"><circle cx="18" cy="22" r="2.6"/><circle cx="38" cy="22" r="2.6"/><circle cx="58" cy="22" r="2.6"/><circle cx="78" cy="22" r="2.6"/><circle cx="18" cy="43" r="2.6"/><circle cx="38" cy="43" r="2.6"/><circle cx="58" cy="43" r="2.6"/><circle cx="78" cy="43" r="2.6"/><circle cx="18" cy="64" r="2.6"/><circle cx="38" cy="64" r="2.6"/><circle cx="58" cy="64" r="2.6"/><circle cx="78" cy="64" r="2.6"/></g><path d="M98 43H132M124 37L132 43L124 49" fill="none" stroke="#acbdcc" stroke-width="1.4"/><g fill="none" stroke="#dce5ec"><circle cx="186" cy="43" r="36"/><circle cx="186" cy="43" r="25"/><circle cx="186" cy="43" r="14"/></g><circle cx="186" cy="43" r="5" fill="#5076a6"/></svg><b data-i18n="route-1-b">What the sampler has to undo</b><span data-i18n="route-1-s">48 modes blurred into one Gaussian.</span></div>
+    <div><small>02 · REVERSE</small><svg viewBox="0 0 240 86" aria-hidden="true"><g fill="none" stroke="#dce5ec"><circle cx="40" cy="30" r="12"/><circle cx="40" cy="62" r="12"/><circle cx="76" cy="46" r="12"/></g><path d="M222 43L204 28L190 50L172 30L154 52L136 36L118 56L100 40L84 58L66 46L48 56L40 62" fill="none" stroke="#5076a6" stroke-width="2"/><path d="M222 43C180 20 120 10 40 30" fill="none" stroke="#ae4c54" stroke-width="2"/><circle cx="222" cy="43" r="4" fill="#17283e"/><circle cx="40" cy="62" r="3.5" fill="#5076a6"/><circle cx="40" cy="30" r="3.5" fill="#ae4c54"/></svg><b data-i18n="route-2-b">Two exact ways back</b><span data-i18n="route-2-s">Same marginals, different paths.</span></div>
+    <div><small>03 · APPROXIMATE</small><svg viewBox="0 0 240 86" aria-hidden="true"><g stroke="#acbdcc" stroke-width="1.4"><path d="M20 20H220M20 43H220M20 66H220"/></g><g fill="#5076a6"><circle cx="150" cy="20" r="5"/><circle cx="64" cy="43" r="5"/></g><circle cx="196" cy="66" r="5" fill="#ae4c54"/></svg><b data-i18n="route-3-b">Prior, score, discretization</b><span data-i18n="route-3-s">One knob at a time, next to the exact run.</span></div>
+  </div>
+  <p data-i18n="hero-note" class="caption">Toy: an equal mixture of 48 Gaussians (τ = 0.06) on an 8 × 6 grid, forward process dx = dw. Density, score, mode masses and the KL to the prior are all in closed form, so nothing is trained and nothing is estimated.</p>
+</section>
+
+<!-- 1 -->
+<section id="forward" class="chapter">
+  <div class="chapter-number">1. THE FORWARD PROCESS</div>
+  <h2 data-i18n="forward-title">The forward SDE and its marginals</h2>
+  <p data-i18n="forward-intro">We use the variance-exploding SDE from the lecture, dx = dw, so f = 0, g = 1 and σ²(t) = t. The perturbation kernel is a Gaussian around the starting point, and the marginal p<sub>t</sub> averages it over the data.</p>
+  <div class="equation" role="math" data-equation="kernel">p_t(x_t \mid x_0) = \mathcal N\big(x_t ;\, x_0,\ [\,\htmlData{link=time}{\sigma^2(t) - \sigma^2(0)}\,]\, I\big)</div>
+  <p class="caption equation-source" data-i18n="kernel-source">Computing the kernel, variance exploding · Score SDE notes, p. 18.</p>
+  <div class="equation" role="math" data-equation="marginal">p_t(x_t) = \htmlData{link=mixture}{\int p_t(x_t \mid x_0)\, p_{\mathrm{data}}(x_0)\, dx_0}</div>
+  <p class="caption equation-source" data-i18n="forward-source">Marginal densities · Score SDE notes, p. 21. For our mixture the integral is the same mixture with variance τ² + t.</p>
+  <p data-i18n="forward-p2">The modes are 0.22 apart, so they merge once √(τ² + t) reaches about half that, near t = 0.01. By t = 0.05 the density is one blob. SNR(t) = 1 / t says how much of x<sub>0</sub> is still in x<sub>t</sub>; it never reaches zero, which is the first approximation waiting to happen.</p>
+  <div class="experiment">
+    <div class="experiment-heading"><h3 data-i18n="forward-view">Samples of the forward SDE and the marginal p<sub>t</sub></h3><span class="mode-label">AUTO + MANUAL</span></div>
+    <div class="playback"><button id="forward-play"></button><button id="forward-again"><span data-i18n="btn-again">New realisation</span></button><label class="inline-check"><input type="checkbox" id="forward-arrows"><span data-i18n="forward-arrows">score ∇ log p<sub>t</sub></span></label></div>
+    <div class="controls">
+      <label for="forward-time"><span data-i18n="forward-time">Time t</span><output id="forward-time-out"></output><input type="range" id="forward-time" min="0" max="1" step="0.002" value="0"></label>
+      <div class="metric-grid compact"><div><span data-i18n="m-variance">component variance τ² + t</span><output id="forward-variance"></output></div><div><span data-i18n="m-contrast">mode contrast</span><output id="forward-contrast"></output></div><div><span>SNR(t) = 1 / t</span><output id="forward-snr"></output></div></div>
+    </div>
+    <div class="scene-pair">
+      <div><h3 data-i18n="forward-left">384 samples · gray contours: p<sub>t</sub></h3><canvas id="forward-board" role="img"></canvas></div>
+      <div><h3 data-i18n="forward-right">x-marginal of p<sub>t</sub>, closed form</h3><canvas id="forward-marginal" role="img"></canvas></div>
+    </div>
+    <p data-i18n="forward-legend" class="caption">The slider is the highlighted term σ²(t) − σ²(0) = t, on a cubic scale so that small t gets most of the range. Mode contrast is the density at a centre over the density midway to its neighbour, normalised to 1 at t = 0. The score arrows point to the nearest mode at small t and to the centre of the cloud at large t.</p>
+  </div>
+  <p data-i18n="forward-bridge" class="transition"><b>The forward process cannot be inverted sample by sample.</b><span>Its family of marginals can. The lecture gives two processes that do it.</span></p>
+</section>
+
+<!-- 2 -->
+<section id="family" class="chapter">
+  <div class="chapter-number">2. GENERATION</div>
+  <h2 data-i18n="family-title">Reverse SDE and probability flow ODE share the marginals</h2>
+  <p data-i18n="family-intro">Both equations pass through every p<sub>t</sub>: their Fokker–Planck equations are solved by the forward marginals. The reverse SDE uses the full score and fresh noise; the probability flow ODE uses half the score and no noise. Nothing is said about individual trajectories.</p>
+  <div class="equation" role="math" data-equation="reverse-sde">d\bar x(t) = \big[\, f(\bar x(t), t) - \htmlData{link=score}{g(t)^2\, \nabla \log p_t(\bar x(t))} \,\big]\, dt + \htmlData{link=randomness}{g(t)\, d\bar w(t)}, \qquad \bar x(T) \sim p_T</div>
+  <p class="caption equation-source" data-i18n="reverse-source">Reverse-time SDE · Score SDE notes, p. 63.</p>
+  <div class="equation" role="math" data-equation="pf-ode">\frac{d\tilde x(t)}{dt} = f(\tilde x(t), t) - \htmlData{link=score}{\frac{1}{2}\, g(t)^2\, \nabla \log p_t(\tilde x(t))}</div>
+  <p class="caption equation-source" data-i18n="pfode-source">Probability flow ODE · Score SDE notes, p. 73.</p>
+  <p data-i18n="family-p2">They are the two ends of one family. For every η ≥ 0 the process below has the same marginals: the extra ½ η² g² of score in the drift cancels the extra noise exactly. η = 1 is the reverse SDE, η = 0 the probability flow ODE.</p>
+  <div class="equation" role="math" data-equation="eta-family">d\bar x(t) = \Big[\, f - \htmlData{link=eta}{\frac{1+\eta^2}{2}}\, g^2\, \htmlData{link=score}{\nabla \log p_t} \,\Big]\, dt + \htmlData{link=randomness}{\eta\, g\, d\bar w(t)}, \qquad \eta \ge 0</div>
+  <p class="caption equation-source" data-i18n="family-source">One marginal family, many processes · Score SDE notes, p. 78.</p>
+  <div class="experiment" id="filings">
+    <div class="experiment-heading"><h3 data-i18n="fil-view">Iron filings: the score is a field you can see</h3><span class="mode-label">AUTO + MANUAL</span></div>
+    <p data-i18n="fil-p1" class="caption">Iron filings on a sheet of paper line up with the magnetic field underneath, and tapping the paper lets them settle onto the magnets. Read the η-family this way. The field is the score ∇ log p<sub>t</sub>, the 48 magnets are the modes, and the filings are the samples. Tapping is the noise term, so η is how hard you tap. Tilting the paper adds the same push everywhere, which is a biased score. A thicker sheet blurs the field, which is a smoothed score. How often you tap and let the filings move is the time grid. At large t the field points at the centre of the sheet; as t decreases it breaks up into 48 small fields, and the filings follow.</p>
+    <div class="playback"><button id="fil-play"></button><button id="fil-again"><span data-i18n="btn-pour">New pour</span></button><label class="inline-check"><input type="checkbox" id="fil-field" checked><span data-i18n="fil-field">show the field</span></label></div>
+    <div class="controls three">
+      <label for="fil-progress"><span data-i18n="progress">Generation progress</span><output id="fil-progress-out"></output><input type="range" id="fil-progress" min="0" max="1" step="0.004" value="0"></label>
+      <label for="fil-eta"><span data-i18n="fil-eta">Tapping η (0 = probability flow ODE, 1 = reverse SDE)</span><output id="fil-eta-out"></output><input type="range" id="fil-eta" min="0" max="1" step="0.25" value="1"></label>
+      <label><span data-i18n="fil-steps">Taps · time grid</span><select id="fil-steps"><option value="256" data-i18n="taps-256">256 steps</option><option value="32" data-i18n="taps-32">32 steps</option><option value="8" data-i18n="taps-8">8 steps</option></select></label>
+    </div>
+    <div class="controls">
+      <label for="fil-tilt"><span data-i18n="fil-tilt">Tilt of the sheet · score bias b<sub>x</sub></span><output id="fil-tilt-out"></output><input type="range" id="fil-tilt" min="-1.5" max="1.5" step="0.1" value="0"></label>
+      <label for="fil-thick"><span data-i18n="fil-thick">Thickness of the sheet · score smoothing δ</span><output id="fil-thick-out"></output><input type="range" id="fil-thick" min="0" max="0.1" step="0.005" value="0"></label>
+    </div>
+    <canvas id="fil-board" class="fil-board" role="img"></canvas>
+    <div class="metric-grid compact"><div><span data-i18n="m-fil-onsite">filings on a magnet (within 3τ)</span><output id="fil-onsite"></output></div><div><span data-i18n="m-fil-tv">mass on the wrong magnet, at the end</span><output id="fil-tv"></output></div><div><span data-i18n="m-fil-step">step Δt</span><output id="fil-step"></output></div></div>
+    <p data-i18n="fil-legend" class="caption">Gray strokes: the score field ∇ log p<sub>t+δ</sub> + b, drawn the way filings reveal a field, darker where p<sub>t</sub> is larger. Blue strokes: 400 samples, each aligned with the field where it sits. Drag the tilt while the sheet is cold and the whole pattern slides; thicken the sheet and the clumps widen; cut the taps to 8 and the filings stop short of the magnets.</p>
+  </div>
+  <div class="experiment">
+    <div class="experiment-heading"><h3 data-i18n="family-view">Follow one particle. Compare the whole population.</h3><span class="mode-label">AUTO + MANUAL</span></div>
+    <div class="playback"><button id="family-play"></button><button id="family-noise"><span data-i18n="btn-noise">New noise, same starts</span></button><button id="family-starts"><span data-i18n="btn-starts">New initial sample</span></button><label class="inline-check"><input type="checkbox" id="family-trails" checked><span data-i18n="family-trails">trails of 40 particles</span></label><label class="inline-check"><input type="checkbox" id="family-colors"><span data-i18n="family-colors">colour by starting angle</span></label></div>
+    <div class="controls">
+      <label for="family-progress"><span data-i18n="progress">Generation progress</span><output id="family-progress-out"></output><input type="range" id="family-progress" min="0" max="1" step="0.004" value="0"></label>
+      <label for="family-count"><span data-i18n="family-count">Population size</span><select id="family-count"><option value="256">256</option><option value="1024" selected>1024</option></select></label>
+    </div>
+    <div class="scene-pair">
+      <div><h3 data-i18n="family-left">Reverse SDE (η = 1)</h3><canvas id="sde-board" tabindex="0" role="img"></canvas></div>
+      <div><h3 data-i18n="family-right">Probability flow ODE (η = 0)</h3><canvas id="ode-board" tabindex="0" role="img"></canvas></div>
+    </div>
+    <p data-i18n="family-legend" class="caption">Blue: SDE · Red: ODE · Gray contours: analytic p<sub>t</sub> · Black dot: the tracked particle's start. Click a point to track the same initial particle in both panels; arrow keys move to the next one. Same 1024 starts from the exact p<sub>1</sub>, exact score, 256 steps; only η differs.</p>
+    <canvas id="family-projection" class="projection-chart" role="img"></canvas>
+    <div class="metric-grid"><div><span data-i18n="m-sde-ks">SDE: x-marginal KS distance</span><output id="family-sde-ks"></output></div><div><span data-i18n="m-ode-ks">ODE: x-marginal KS distance</span><output id="family-ode-ks"></output></div><div><span data-i18n="m-sep">Tracked particle separation</span><output id="family-sep"></output></div></div>
+    <p data-i18n="family-note" class="caption">Both step curves lie on the dashed analytic density at every time; 1024 exact draws give a KS distance of about 0.03, and both samplers sit there. The tracked particle ends up a cloud-width apart. ODE trails never cross; SDE trails do. Equal marginals, unrelated paths.</p>
+  </div>
+  <p data-i18n="family-bridge" class="transition"><b>Everything above used the true p<sub>1</sub>, the true score and a fine grid.</b><span>A sampler has none of them. The next section replaces them one at a time.</span></p>
+</section>
+
+<!-- 3 -->
+<section id="lab" class="chapter">
+  <div class="chapter-number">3. THE THREE APPROXIMATIONS</div>
+  <h2 data-i18n="lab-title">Prior, score, discretization: one substitution at a time</h2>
+  <p data-i18n="lab-intro">A sampler starts from the prior instead of p<sub>T</sub>, evaluates a trained network s<sub>ϕ<sup>×</sup></sub> instead of ∇ log p<sub>t</sub>, and takes finite steps. The lecture writes the generative equations with these replacements and notes that they are the only three approximations.</p>
+  <div class="equation" role="math" data-equation="oracle">\begin{aligned} d\bar x &= \big[\, f(\bar x, t) - g^2(t)\, \htmlData{link=score-term}{s_{\phi^\times}(\bar x, t)} \,\big]\, dt + g(t)\, d\bar w, \qquad & \htmlData{link=start}{\bar x(T) \sim p_{\mathrm{prior}}} \\[2pt] \frac{d\tilde x}{dt} &= f(\tilde x, t) - \frac{1}{2}\, g^2(t)\, \htmlData{link=score-term}{s_{\phi^\times}(\tilde x, t)}, & \htmlData{link=start}{\tilde x(T) \sim p_{\mathrm{prior}}} \end{aligned}</div>
+  <p class="caption equation-source" data-i18n="lab-source">From the oracle to the model · Score SDE notes, p. 86.</p>
+  <div class="equation" role="math" data-equation="em-step">x_{t-\Delta t} \leftarrow x_t - \big[\, f(x_t, t) - g^2(t)\, \htmlData{link=score-term}{s_{\phi^\times}(x_t, t)} \,\big]\, \htmlData{link=grid}{\Delta t} + g(t)\, \htmlData{link=grid}{\sqrt{\Delta t}}\, z</div>
+  <p class="caption equation-source" data-i18n="em-source">Euler–Maruyama step · Score SDE notes, p. 87. The Euler step of the ODE drops the noise and halves the score term; Heun adds a second evaluation per step (appendix p. 16).</p>
+  <div class="equation" role="math" data-equation="kl-bound">\htmlData{link=start}{D_{\mathrm{KL}}\big(p_T \,\|\, \mathcal N(0, P(T)\, I)\big) \le \frac{1}{2}\, \mathrm{SNR}(T)\, \mathbb E\lVert x_0\rVert^2}, \qquad \mathrm{SNR}(T) = \frac{E(0 \to T)^2}{P(T)}</div>
+  <p class="caption equation-source" data-i18n="kl-source">The residue is the signal-to-noise ratio · Score SDE notes, p. 23, 26. Here E ≡ 1, P(T) = T, so SNR(T) = 1 / T.</p>
+  <p data-i18n="lab-p2">The prior and the grid are reproduced exactly as a sampler makes them. The toy has no trained network, so two controlled errors stand in for it: a smoothing δ, which evaluates the exact score at t + δ, and a constant bias b. The sampler then sees ∇ log p<sub>t+δ</sub>(x) + b.</p>
+  <div class="experiment">
+    <div class="experiment-heading"><h3 data-i18n="lab-view">Exact run on the left, one substitution on the right</h3><span class="mode-label">MANUAL</span></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="start" aria-selected="true"><b data-i18n="tab-start">Prior</b><span data-i18n="tab-start-sub">N(0, T I) in place of p<sub>T</sub></span></button>
+      <button role="tab" data-tab="score" aria-selected="false"><b data-i18n="tab-score">Score</b><span data-i18n="tab-score-sub">∇ log p<sub>t+δ</sub> + b in place of ∇ log p<sub>t</sub></span></button>
+      <button role="tab" data-tab="grid" aria-selected="false"><b data-i18n="tab-grid">Discretization</b><span data-i18n="tab-grid-sub">N steps in place of the continuum</span></button>
+    </div>
+    <div class="tab-panels">
+      <div class="controls three" data-panel="start">
+        <label for="lab-T"><span data-i18n="lab-T">Terminal time T</span><output id="lab-T-out"></output><input type="range" id="lab-T" min="0.25" max="4" step="0.05" value="1"></label>
+        <label><span data-i18n="lab-start-law">Initial law of the right panel</span><select id="lab-start"><option value="prior" data-i18n="opt-prior">N(0, T I), the prior</option><option value="exact" data-i18n="opt-exact">p_T (exact, no substitution)</option></select></label>
+        <div class="metric-grid compact"><div><span>SNR(T) = 1 / T</span><output id="lab-snr"></output></div><div><span data-i18n="m-klbound">bound ½ SNR(T) E‖x₀‖²</span><output id="lab-klbound"></output></div><div><span data-i18n="m-kl">KL(p<sub>T</sub> ‖ N(0, T I))</span><output id="lab-kl"></output></div></div>
+        <div class="presets"><button data-preset="prior-short"><span data-i18n="pre-prior-short">Preset: T = 0.25, ODE</span></button><button data-preset="prior-short-sde"><span data-i18n="pre-prior-short-sde">Preset: T = 0.25, SDE</span></button></div>
+      </div>
+      <div class="controls three" data-panel="score" hidden>
+        <label for="lab-bias"><span data-i18n="lab-bias">Constant bias b<sub>x</sub></span><output id="lab-bias-out"></output><input type="range" id="lab-bias" min="-2" max="2" step="0.1" value="0"></label>
+        <label for="lab-smooth"><span data-i18n="lab-smooth">Smoothing δ</span><output id="lab-smooth-out"></output><input type="range" id="lab-smooth" min="0" max="0.1" step="0.002" value="0"></label>
+        <label class="inline-check tall"><input type="checkbox" id="lab-arrows"><span data-i18n="lab-arrows">draw the substituted score at t = 0.02</span></label>
+        <div class="presets"><button data-preset="bias"><span data-i18n="pre-bias">Preset: bias 1.0</span></button><button data-preset="smooth"><span data-i18n="pre-smooth">Preset: smoothing 0.03</span></button></div>
+      </div>
+      <div class="controls three" data-panel="grid" hidden>
+        <label><span data-i18n="lab-nfe">Score evaluations N</span><select id="lab-nfe"><option>8</option><option>16</option><option>32</option><option>64</option><option selected>128</option><option>256</option><option>512</option></select></label>
+        <label><span data-i18n="lab-method">Integrator</span><select id="lab-method"><option value="auto" data-i18n="opt-auto">Euler–Maruyama (η &gt; 0) / Heun (η = 0)</option><option value="euler" data-i18n="opt-euler">Euler, η = 0</option><option value="heun" data-i18n="opt-heun">Heun, η = 0</option></select></label>
+        <div class="metric-grid compact"><div><span data-i18n="m-step">step Δt = T / N</span><output id="lab-step"></output></div><div><span data-i18n="m-nfe">evaluations spent</span><output id="lab-nfe-out"></output></div></div>
+        <div class="presets"><button data-preset="coarse-sde"><span data-i18n="pre-coarse-sde">Preset: 8 steps, SDE</span></button><button data-preset="coarse-heun"><span data-i18n="pre-coarse-heun">Preset: 16 evaluations, Heun</span></button></div>
+      </div>
+    </div>
+    <div class="controls">
+      <label for="lab-eta"><span data-i18n="lab-eta">η for both panels (0 = ODE, 1 = SDE)</span><output id="lab-eta-out"></output><input type="range" id="lab-eta" min="0" max="1.5" step="0.05" value="1"></label>
+      <label for="lab-progress"><span data-i18n="progress">Generation progress</span><output id="lab-progress-out"></output><input type="range" id="lab-progress" min="0" max="1" step="0.004" value="1"></label>
+    </div>
+    <div class="playback"><button id="lab-play"></button><button id="lab-noise"><span data-i18n="btn-noise2">New noise</span></button><button id="lab-reset"><span data-i18n="btn-reset">Reset</span></button><span class="live-note" id="lab-status"></span></div>
+    <div class="scene-pair">
+      <div><h3 data-i18n="lab-left">Exact: p<sub>T</sub>, ∇ log p<sub>t</sub>, 256 evaluations</h3><canvas id="ref-board" role="img"></canvas></div>
+      <div><h3 id="lab-right-title" data-i18n="lab-right">With the substitution</h3><canvas id="lab-board" role="img"></canvas></div>
+    </div>
+    <canvas id="lab-projection" class="projection-chart" role="img"></canvas>
+    <div class="metric-grid"><div><span data-i18n="m-tv">mass in the wrong mode (total variation over 48 cells)</span><output id="lab-tv"></output><small id="lab-tv-floor"></small></div><div><span data-i18n="m-spread">mode width / exact</span><output id="lab-spread"></output><small id="lab-spread-floor"></small></div><div><span data-i18n="m-ks">x-marginal KS distance</span><output id="lab-ks"></output><small id="lab-ks-floor"></small></div></div>
+    <p data-i18n="lab-legend" class="caption">Gray: exact run · Blue: with the substitution · Dashed: analytic x-marginal of p<sub>0</sub>. Same seeds, same η, 1024 samples each. The small gray numbers are the exact run's values and are the baseline. Each tab has a preset that shows its typical fingerprint.</p>
+  </div>
+  <ul class="concept-points">
+    <li data-i18n="lab-point-start"><b>Prior.</b> The bound gives 0.2 nats at T = 1; the true KL is 0.02. The ODE is a bijection and carries the start error to t = 0: at T = 0.25 a fifth of the mass lands in the wrong mode. The SDE forgets its start and shows half of that.</li>
+    <li data-i18n="lab-point-score"><b>Score.</b> A bias moves mass between modes and leaves their width alone; smoothing widens the modes and leaves the masses alone. The SDE is <em>more</em> sensitive to a bias than the ODE, by the factor (1 + η²)/2 in front of the score; noise cannot average out an error that points the same way every step.</li>
+    <li data-i18n="lab-point-grid"><b>Discretization.</b> ‖∇ log p<sub>t</sub>‖ grows like 1 / (τ² + t), so a uniform grid arrives at the last steps, where the modes form, with a step that is too large. With few evaluations Euler beats Heun, whose predictor overshoots the narrow modes; Heun wins from about 256 evaluations. Euler–Maruyama also needs √Δt ≪ τ in its last step.</li>
+  </ul>
+  <p data-i18n="lab-bridge" class="transition"><b>Three substitutions, two kinds of damage.</b><span>Prior and bias move mass between modes; smoothing and a coarse grid widen them. The next section sweeps each knob.</span></p>
+</section>
+
+<!-- 4 -->
+<section id="budget" class="chapter">
+  <div class="chapter-number">4. PUTTING IT TOGETHER</div>
+  <h2 data-i18n="budget-title">The error budget</h2>
+  <p data-i18n="budget-intro">Each panel sweeps one knob with the other two substitutions off, for the ODE with Heun (η = 0, blue) and the SDE with Euler–Maruyama (η = 1, red). The T sweep holds Δt = 1/128 fixed. 2048 samples per point; the dashed line is what 2048 exact draws score, and nothing below it is informative.</p>
+  <div class="experiment">
+    <div class="experiment-heading"><h3 data-i18n="budget-view">One knob at a time</h3><span class="mode-label">PRECOMPUTED · RECOMPUTABLE</span></div>
+    <div class="sweep-grid">
+      <div><h3 data-i18n="sw-T">Prior · mass in the wrong mode against T</h3><canvas id="sweep-T" role="img"></canvas><p class="caption" data-i18n="sw-T-note">The ODE inherits the prior mismatch and loses it only as T grows; the SDE sits at the floor for every T.</p></div>
+      <div><h3 data-i18n="sw-bias">Score bias · mass in the wrong mode against b<sub>x</sub></h3><canvas id="sweep-bias" role="img"></canvas><p class="caption" data-i18n="sw-bias-note">Linear in the bias for both, steeper for the SDE by (1 + η²)/2.</p></div>
+      <div><h3 data-i18n="sw-smooth">Score smoothing · mode width against δ</h3><canvas id="sweep-smooth" role="img"></canvas><p class="caption" data-i18n="sw-smooth-note">Width grows with δ and the two samplers agree; mass between modes stays at the floor until δ ≈ 0.03.</p></div>
+      <div><h3 data-i18n="sw-nfe">Discretization · mode width against evaluations</h3><canvas id="sweep-nfe" role="img"></canvas><p class="caption" data-i18n="sw-nfe-note">Heun is worst below 32 evaluations and best from 256; Euler–Maruyama approaches the exact width from above.</p></div>
+    </div>
+    <div class="experiment-bottom"><button id="sweep-run"><span data-i18n="btn-recompute">Recompute in this browser</span></button><span class="live-note" id="sweep-status"></span></div>
+  </div>
+  <p data-i18n="budget-note" class="caption">The budget is not additive: mass moved to the wrong mode is not recovered by more steps, and a grid too coarse at the end is not repaired by a longer forward time. The first metric says where the mass went, the second how tightly it gathered.</p>
+</section>
+
+<!-- 5 -->
+<section id="flow" class="chapter">
+  <div class="chapter-number">5. THE SAME THREE, ELSEWHERE</div>
+  <h2 data-i18n="flow-title">Flow matching is a probability flow ODE</h2>
+  <p data-i18n="flow-intro">With a Gaussian source the conditional velocity of flow matching is an affine function of the conditional score, and averaging over the posterior makes the marginal velocity a drift plus a multiple of ∇ log p<sub>t</sub>. With the matched schedule α<sub>s</sub> = b<sub>T−s</sub>, σ<sub>s</sub> = a<sub>T−s</sub> the flow-matching ODE and the probability flow ODE agree on (0, T).</p>
+  <div class="equation" role="math" data-equation="fm">v_t(x) = \htmlData{link=fm-drift}{\frac{\dot b_t}{b_t}\, x} + \htmlData{link=fm-score}{a_t^2 \Big( \frac{\dot b_t}{b_t} - \frac{\dot a_t}{a_t} \Big) \nabla \log p_t(x)}</div>
+  <p class="caption equation-source" data-i18n="flow-source">The marginal velocity is a marginal score · Flow-based notes, p. 64; identification on the open interval, p. 69, 74.</p>
+  <p data-i18n="flow-p2">So a flow-matching sampler is a probability flow ODE sampler and makes the same three substitutions.</p>
+  <ul class="concept-points">
+    <li data-i18n="flow-point-1"><b>The prior</b> becomes exact, since b₀ = 0 puts the interpolant at p<sub>prior</sub> at t = 0. The cost moves into the coefficients of the matched diffusion, which diverge at that endpoint.</li>
+    <li data-i18n="flow-point-2"><b>The score</b> error becomes a velocity error. Conditional flow matching regresses on ȧ<sub>t</sub>x₀ + ḃ<sub>t</sub>x<sub>T</sub>, with the same conditional-expectation argument as denoising score matching.</li>
+    <li data-i18n="flow-point-3"><b>The discretization</b> is unchanged: conditional paths are straight, marginal trajectories are curved, and the solver still follows a curve.</li>
+  </ul>
+  <div class="notes">
+    <h3 data-i18n="limits-title">Scope</h3>
+    <p data-i18n="limits-body">The filings picture is a picture of the score field, not a model of magnetism: real filings align with B and are pulled towards ∇|B|², and a real sheet does not tap itself with the right strength at every step. Bias and smoothing stand in for the unknown error of a trained network because their effects can be predicted and checked. The time grid is uniform.</p>
+    <h3 data-i18n="scope-title">Model and sources</h3>
+    <p data-i18n="scope-body">Toy: 48 Gaussians, τ = 0.06, pitch 0.22, forward dx = dw. Closed forms for p<sub>t</sub>, ∇ log p<sub>t</sub>, cell masses and the x-marginal; KL by quadrature. Samplers: the η-family with Euler–Maruyama for η &gt; 0 and Euler or Heun for η = 0, seeded. Tests (node --test) check the score against finite differences, the heat equation, the KL bound, the cell masses and the marginal alignment of the family. Lecture notes: <em>Mathematical Principles of Diffusion Models</em>, Prof. Taesup Moon, Fall 2026, following Lai, Song, Kim, Mitsufuji and Ermon, <em>The Principles of Diffusion Models</em>, arXiv:2510.21890.</p>
+  </div>
+</section>
+</main>
+</div>
+<footer><span>DIFFUSION DETECTIVE</span><span>SNU · SPECIAL TOPICS IN SYSTEM SOFTWARE · 2026</span></footer>
+</body>
+</html>

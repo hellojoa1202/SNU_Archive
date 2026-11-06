@@ -1,0 +1,26 @@
+name: Verify project versions
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ['diffusion flow (ver1)', 'sampling errors (ver2)', 'light traces (ver3)']
+    defaults:
+      run:
+        working-directory: 2026-2-Special-Topics-in-System-Software/Project/${{ matrix.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Check syntax and mathematics
+        run: |
+          for file in *.js; do node --check "$file"; done
+          node --test *.test.cjs
