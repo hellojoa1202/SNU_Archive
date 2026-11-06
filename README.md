@@ -1,13 +1,24 @@
-# Final submission
+<p><sub><strong>SNU Archive</strong></sub></p>
 
-최종 제출용 브랜치입니다. 제출 버전을 선택하기 전까지 구현 파일을 두지 않습니다.
+---
 
-| 개발 브랜치 | 주제 |
-| --- | --- |
-| [diffusion-flow-ver1](https://github.com/hellojoa1202/SNU_Archive/tree/diffusion-flow-ver1) | Diffusion → Flow Matching (ver1) |
-| [sampling-errors-ver2](https://github.com/hellojoa1202/SNU_Archive/tree/sampling-errors-ver2) | Prior · score · time-grid errors (ver2) |
-| [light-traces-ver3](https://github.com/hellojoa1202/SNU_Archive/tree/light-traces-ver3) | Light Traces (ver3) |
+<p><sub>대학원(서울대) 전공 수업 프로젝트 아카이빙</sub></p>
 
-모든 버전은 영어 제출용과 한국어 검토용을 함께 수정합니다. 개발 브랜치의 수정은 공개 제출 사이트에 자동 배포하지 않습니다.
-
-분리 전 상태 : `backup/pre-version-split-20261106`.
+<table>
+  <thead>
+    <tr>
+      <th><sub>날짜</sub></th>
+      <th><sub>과목</sub></th>
+      <th><sub>활동</sub></th>
+      <th><sub>구분</sub></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><sub>2026-2</sub></td>
+      <td><sub>시스템소프트웨어특강</sub></td>
+      <td><sub>Diffusion Detective: 확산의 주파수 해석과 역과정</sub></td>
+      <td><sub>개인</sub></td>
+    </tr>
+  </tbody>
+</table>
