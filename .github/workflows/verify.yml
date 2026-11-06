@@ -1,4 +1,4 @@
-name: Verify project versions
+name: Verify and deploy project versions
 on:
   push:
     branches: [main]
@@ -24,3 +24,51 @@ jobs:
         run: |
           for file in *.js; do node --check "$file"; done
           node --test *.test.cjs
+
+  deploy:
+    needs: verify
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Assemble course project sites
+        run: |
+          mkdir -p _site
+          cp -R 2026-2-Special-Topics-in-System-Software _site/
+          touch _site/.nojekyll
+          python3 - <<'PYBUILD'
+          from pathlib import Path
+          from hashlib import sha256
+          import re
+          project = Path('_site/2026-2-Special-Topics-in-System-Software/Project')
+          for folder in project.iterdir():
+              if not folder.is_dir():
+                  continue
+              digest = lambda path: sha256(path.read_bytes()).hexdigest()[:12]
+              worker, model, app = folder/'worker.js', folder/'model.js', folder/'app.js'
+              if worker.exists():
+                  worker.write_text(worker.read_text().replace("importScripts('model.js')", "importScripts('model.js?v=" + digest(model) + "')"))
+                  app.write_text(app.read_text().replace("new Worker('../worker.js')", "new Worker('../worker.js?v=" + digest(worker) + "')"))
+              for page in folder.rglob('*.html'):
+                  def version(match):
+                      path = page.parent / match.group(2)
+                      return match.group(1) + match.group(2) + '?v=' + digest(path) + match.group(3) if path.is_file() else match.group(0)
+                  page.write_text(re.sub(r'(\b(?:src|href)=")([^"?]+\.(?:js|css))(")', version, page.read_text()))
+          PYBUILD
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - name: Deploy all three versions
+        id: deployment
+        uses: actions/deploy-pages@v5
