@@ -14,7 +14,7 @@ jobs:
         version: ['diffusion flow (ver1)', 'sampling errors (ver2)', 'light traces (ver3)']
     defaults:
       run:
-        working-directory: 2026-2-Special-Topics-in-System-Software/Project/${{ matrix.version }}
+        working-directory: 2026-2/2026-2-Special-Topics-in-System-Software/Project/${{ matrix.version }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -44,13 +44,13 @@ jobs:
       - name: Assemble course project sites
         run: |
           mkdir -p _site
-          cp -R 2026-2-Special-Topics-in-System-Software _site/
+          cp -R 2026-2 _site/
           touch _site/.nojekyll
           python3 - <<'PYBUILD'
           from pathlib import Path
           from hashlib import sha256
           import re
-          project = Path('_site/2026-2-Special-Topics-in-System-Software/Project')
+          project = Path('_site/2026-2/2026-2-Special-Topics-in-System-Software/Project')
           for folder in project.iterdir():
               if not folder.is_dir():
                   continue
@@ -64,6 +64,22 @@ jobs:
                       path = page.parent / match.group(2)
                       return match.group(1) + match.group(2) + '?v=' + digest(path) + match.group(3) if path.is_file() else match.group(0)
                   page.write_text(re.sub(r'(\b(?:src|href)=")([^"?]+\.(?:js|css))(")', version, page.read_text()))
+          # Keep previously shared Pages links working after the semester move.
+          from urllib.parse import quote
+          import json
+          old_project = Path('_site/2026-2-Special-Topics-in-System-Software/Project')
+          for folder in project.iterdir():
+              if not folder.is_dir():
+                  continue
+              for language in ['', 'English ver', 'Korean ver']:
+                  legacy = old_project / folder.name / language
+                  legacy.mkdir(parents=True, exist_ok=True)
+                  relative = folder.relative_to(Path('_site'))
+                  target = '/SNU_Archive/' + quote(str(relative), safe='/') + '/'
+                  if language:
+                      target += quote(language, safe='') + '/'
+                  html = '<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=' + target + '"><title>Moved</title></head><body><a href="' + target + '">Continue</a><script>location.replace(' + json.dumps(target) + ' + location.search + location.hash);</script></body></html>'
+                  (legacy / 'index.html').write_text(html)
           PYBUILD
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
